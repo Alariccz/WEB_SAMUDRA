@@ -264,7 +264,7 @@ function renderRealContent(heroContainer, stackContainer, latestContainer, apiAr
   const defaultGuides = [
     {
       category: 'Riset Seismik',
-      readTime: '8 Min Read',
+      readTime: '8 Menit Baca',
       title: 'Memahami Siklus Gempa Megathrust & Potensi Gelombang',
       excerpt: 'Analisis mendalam mengenai dinamika lempeng tektonik aktif, pemetaan rekahan dasar laut, dan transmisi sinyal tekanan dasar samudra.',
       content: `Zona megathrust merupakan bidang kontak pertemuan lempeng samudra yang menunjam ke bawah lempeng benua. Akumulasi deformasi elastis selama ratusan tahun dapat terlepas secara tiba-tiba dalam bentuk gempa bermagnitudo besar.
@@ -278,7 +278,7 @@ Sistem pemantauan InaTEWS menggunakan kombinasi seismometer broadband di darat d
     },
     {
       category: 'Strategi Evakuasi',
-      readTime: '7 Min Read',
+      readTime: '7 Menit Baca',
       title: 'Membangun Respons Cepat Warga di Detik-Detik Kritis',
       excerpt: 'Kerangka disiplin evakuasi mandiri berbasis tanda-tanda alam dan peringatan dini BMKG sebelum gelombang pertama tiba.',
       content: `Kunci keselamatan utama di kawasan pesisir adalah reaksi instan tanpa menunggu sirene resmi jika guncangan gempa berlangsung lebih dari 20 detik atau membuat Anda sulit berdiri tegak.
@@ -295,7 +295,7 @@ Gunakan selalu rute darat terbuka dan hindari jembatan muara atau jalan tepi teb
     },
     {
       category: 'Teknologi Sensor',
-      readTime: '6 Min Read',
+      readTime: '6 Menit Baca',
       title: 'Sensor Buoy & Kabel Bawah Laut: Cara Kerjanya',
       excerpt: 'Membongkar alur transmisi data tekanan hidrostatik dasar samudra ke satelit hingga menjadi notifikasi darurat di ponsel Anda.',
       content: `Teknologi deteksi tsunami modern bertumpu pada Bottom Pressure Recorder (BPR) yang dijangkarkan di kedalaman 2.000 hingga 5.000 meter. Sensor piezoresistif presisi tinggi ini mampu mendeteksi kenaikan muka air laut setipis 1 milimeter di tengah gelombang samudra yang liar.
@@ -307,7 +307,7 @@ Data diubah menjadi sinyal akustik bawah air menuju pelampung (buoy) di permukaa
     },
     {
       category: 'Market Intelligence',
-      readTime: '8 Min Read',
+      readTime: '8 Menit Baca',
       title: 'Deteksi Cepat Penurunan Muka Tanah Pesisir',
       excerpt: 'Korelasi antara subsiden tanah dan amplifikasi tinggi rayapan tsunami di teluk tertutup.',
       content: `Penurunan muka tanah (land subsidence) di kawasan teluk pesisir perkotaan dapat meningkatkan kedalaman genangan tsunami hingga 30-50% lebih luas dibandingkan estimasi model garis pantai statis.
@@ -319,7 +319,7 @@ SAMUDRA mengintegrasikan data elevasi topografi digital terbaru (DEMNAS) agar zo
     },
     {
       category: 'Digital Education',
-      readTime: '6 Min Read',
+      readTime: '6 Menit Baca',
       title: 'Protokol Golden Time: 20-20-20 di Tepi Pantai',
       excerpt: 'Panduan baku 20 detik guncangan gempa, 20 menit evakuasi mandiri, menuju tempat dengan ketinggian minimal 20 meter.',
       content: `Di era teknologi digital, ponsel Anda adalah kompas evakuasi tercepat. Namun, jangan biarkan proses memverifikasi berita menunda langkah evakuasi Anda.
@@ -331,7 +331,7 @@ Jika Anda berada di zona merah pantai dan merasakan lindhu hebat, mulailah berge
     },
     {
       category: 'Riset Oseanografi',
-      readTime: '5 Min Read',
+      readTime: '5 Menit Baca',
       title: 'Pemodelan Batimetri: Bagaimana Topografi Membelokkan Ombak',
       excerpt: 'Simulasi numerik menunjukkan terumbu karang dan palung laut mampu memecah serta mengalihkan konsentrasi energi destruktif gelombang.',
       content: `Topografi dasar laut (batimetri) berperan besar dalam mengarahkan energi tsunami. Palung laut sempit dapat memfokuskan gelombang seperti lensa cembung memfokuskan cahaya, menghasilkan kenaikan run-up yang dahsyat di ujung teluk.

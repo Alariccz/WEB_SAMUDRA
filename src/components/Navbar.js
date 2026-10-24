@@ -2,7 +2,7 @@ export function renderNavbar(container) {
   const nav = document.createElement('nav');
   nav.className = 'nav';
   nav.innerHTML = `
-    <a class="nav__logo" href="#top">TSUNAMI</a>
+    <a class="nav__logo" href="#top">SAMUDRA</a>
     <div class="nav__links">
       <a class="nav__link nav__link--active" href="#top" data-target="top">Beranda</a>
       <a class="nav__link" href="#fitur" data-target="fitur">Fitur</a>
@@ -10,7 +10,16 @@ export function renderNavbar(container) {
       <a class="nav__link" href="#mitigasi" data-target="mitigasi">Mitigasi</a>
       <a class="nav__link" href="#artikel" data-target="artikel">Berita</a>
     </div>
-    <a class="nav__cta" href="#akses">Buka aplikasi &nbsp;→</a>
+    <div class="nav__actions">
+      <a class="nav__btn-apk" href="#unduh-apk" title="Unduh File APK Android">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Unduh APK</span>
+      </a>
+    </div>
   `;
   container.appendChild(nav);
 
@@ -25,29 +34,32 @@ function initScrollSpy(nav) {
     const windowH = window.innerHeight;
     const docH = document.documentElement.scrollHeight;
 
-    // Ordered sections to track
+    // Trackable key sections in order
     const sections = [
       { id: 'top', target: 'top' },
-      { id: 'alur', target: 'fitur' },     // Alur leads directly into Fitur
+      { id: 'alur', target: 'fitur' },
       { id: 'fitur', target: 'fitur' },
       { id: 'simulasi', target: 'simulasi' },
       { id: 'mitigasi', target: 'mitigasi' },
-      { id: 'artikel', target: 'artikel' },
-      { id: 'akses', target: 'artikel' },
+      { id: 'artikel', target: 'artikel' }
     ];
 
     let currentTarget = 'top';
 
-    // If near bottom of page, highlight artikel
-    if (scrollY + windowH >= docH - 80) {
+    // If reached bottom of document, highlight the last section (Berita)
+    if (scrollY + windowH >= docH - 120) {
       currentTarget = 'artikel';
     } else {
-      for (const sec of sections) {
+      // Evaluate from bottom-most section upwards using accurate viewport coordinates
+      const checkPosition = scrollY + 180;
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const sec = sections[i];
         const el = document.getElementById(sec.id);
         if (el) {
-          const top = sec.id === 'top' ? 0 : el.offsetTop - 140;
-          if (scrollY >= top) {
+          const top = el.getBoundingClientRect().top + scrollY;
+          if (checkPosition >= top) {
             currentTarget = sec.target;
+            break;
           }
         }
       }
@@ -65,17 +77,17 @@ function initScrollSpy(nav) {
   window.addEventListener('scroll', updateActive, { passive: true });
   window.addEventListener('resize', updateActive, { passive: true });
 
-  // Initial check
+  // Initial check after DOM paint
   setTimeout(updateActive, 100);
 
-  // Smooth navigation on click
+  // Smooth navigation on click with pixel-accurate offset
   links.forEach(link => {
     link.addEventListener('click', (e) => {
       const targetId = link.dataset.target;
       const el = document.getElementById(targetId);
       if (el) {
         e.preventDefault();
-        const top = targetId === 'top' ? 0 : el.offsetTop - 80;
+        const top = targetId === 'top' ? 0 : (el.getBoundingClientRect().top + window.scrollY - 70);
         window.scrollTo({ top, behavior: 'smooth' });
 
         links.forEach(l => l.classList.remove('nav__link--active'));

@@ -134,7 +134,7 @@ Prinsip Utama Evakuasi Mandiri 20-20-20:
   const authorName = articleData.author?.name ? articleData.author.name.split('_').pop() : 'Rizal Zaky Firmansyah';
   const authorRole = articleData.author?.role ? articleData.author.role.replace(/_/g, ' ').toUpperCase() : 'TIM KONTRIBUTOR RESMI';
   const avatarUrl = articleData.author?.avatarUrl;
-  const readTime = '5 min read';
+  const readTime = '5 menit baca';
 
   // Build content sections and Table of Contents
   const rawParagraphs = (articleData.content || 'Konten edukasi dan panduan resmi dari sistem database SAMUDRA.')

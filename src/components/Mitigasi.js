@@ -47,47 +47,85 @@ export function renderMitigasi(container) {
         <p class="mitigasi-lede">
           Instruksi tindakan taktis langkah demi langkah saat krisis tiba. Tersinkronisasi resmi dari server database SAMUDRA untuk kesiapan evakuasi Anda.
         </p>
+        <span class="mitigasi-counter" id="mitigasi-counter">Panduan Langkah Evakuasi</span>
       </div>
     </div>
 
-    <!-- Grid Container -->
-    <div class="mitigasi-grid" id="mitigasi-grid">
-      <div class="mitigasi-loading" style="grid-column: 1/-1; text-align: center; color: #8fa0b6; padding: 40px 0;">
-        Memuat langkah mitigasi...
+    <!-- 3-Column Slider Carousel with Left & Right Arrows -->
+    <div class="mitigasi-carousel">
+      <button class="mitigasi-arrow-btn mitigasi-arrow-btn--prev" id="mitigasi-prev" aria-label="Langkah Sebelumnya">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+
+      <div class="mitigasi-slider-wrapper">
+        <div class="mitigasi-grid mitigasi-grid--3col" id="mitigasi-grid">
+          <div class="mitigasi-loading" style="grid-column: 1/-1; text-align: center; color: #8fa0b6; padding: 40px 0;">
+            Memuat langkah mitigasi...
+          </div>
+        </div>
       </div>
+
+      <button class="mitigasi-arrow-btn mitigasi-arrow-btn--next" id="mitigasi-next" aria-label="Langkah Selanjutnya">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
     </div>
   `;
 
   container.appendChild(section);
 
   const grid = section.querySelector('#mitigasi-grid');
+  const btnPrev = section.querySelector('#mitigasi-prev');
+  const btnNext = section.querySelector('#mitigasi-next');
+  const counter = section.querySelector('#mitigasi-counter');
+
+  // Slider controls setup - Scroll by 1 card per click
+  if (btnPrev && btnNext && grid) {
+    btnPrev.onclick = () => {
+      const card = grid.querySelector('.mitigasi-card');
+      const scrollAmount = card ? (card.offsetWidth + 24) : 340;
+      grid.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    };
+
+    btnNext.onclick = () => {
+      const card = grid.querySelector('.mitigasi-card');
+      const scrollAmount = card ? (card.offsetWidth + 24) : 340;
+      grid.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    };
+  }
 
   fetchMitigasi()
     .then(data => {
       if (Array.isArray(data) && data.length > 0) {
-        // Sort by stepNumber
         const sorted = [...data].sort((a, b) => (a.stepNumber || 0) - (b.stepNumber || 0));
-        renderCards(grid, sorted);
+        renderCards(grid, sorted, counter);
       } else {
-        renderCards(grid, DEFAULT_MITIGASI);
+        renderCards(grid, DEFAULT_MITIGASI, counter);
       }
     })
     .catch(err => {
       console.warn('Gagal memuat API mitigasi, menggunakan panduan default:', err);
-      renderCards(grid, DEFAULT_MITIGASI);
+      renderCards(grid, DEFAULT_MITIGASI, counter);
     });
 }
 
-function renderCards(grid, items) {
+function renderCards(grid, items, counter) {
+  if (counter) {
+    counter.textContent = `${items.length} Langkah Terstruktur (Geser untuk melihat)`;
+  }
+
   grid.innerHTML = items.map((item, idx) => {
     const stepNum = item.stepNumber || (idx + 1);
-    const stepLabel = `LANGKAH MITIGASI ${String(stepNum).padStart(2, '0')}`;
+    const stepLabel = `LANGKAH 0${stepNum}`;
     const href = `?article=${encodeURIComponent(item.id || 'mitigasi-' + stepNum)}`;
 
     const fallbackSvg = `
       <svg viewBox="0 0 400 240" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;background:#061421;">
         <rect width="400" height="240" fill="#04121d"/>
-        <circle cx="200" cy="120" r="60" stroke="#38ef7d" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.4"/>
+        <circle cx="200" cy="120" r="60" stroke="#00d2ff" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.4"/>
         <path d="M170 140 L200 90 L230 140 Z" stroke="#38ef7d" stroke-width="2" fill="rgba(56, 239, 125, 0.1)"/>
         <text x="200" y="175" fill="#38ef7d" font-size="12" font-family="'JetBrains Mono', monospace" text-anchor="middle" letter-spacing="2">SOP 0${stepNum}</text>
       </svg>

@@ -46,7 +46,17 @@ stage.innerHTML = `
         <div><b>BMKG</b><small>Sumber informasi gempa</small></div>
         <div><b>Rute</b><small>Menuju shelter terdekat</small></div>
       </div>
-      <a class="btn btn--white" href="#fitur">Jelajahi fitur &nbsp;→</a>
+      <div class="scene__actions">
+        <a class="btn btn--primary btn--apk" href="#unduh-apk">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Unduh APK (Android)
+        </a>
+        <a class="btn btn--white" href="#fitur">Jelajahi Fitur &nbsp;→</a>
+      </div>
     </div>
 
     <div class="scene" id="s1">
@@ -71,7 +81,17 @@ stage.innerHTML = `
         <div><b>1.4 km</b><small>11 menit berjalan</small></div>
         <div><b>3.500</b><small>Kapasitas shelter</small></div>
       </div>
-      <a class="btn btn--white" href="#simulasi">Uji simulasi 3D &nbsp;→</a>
+      <div class="scene__actions">
+        <a class="btn btn--primary btn--apk" href="#unduh-apk">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Unduh APK
+        </a>
+        <a class="btn btn--white" href="#simulasi">Uji simulasi 3D &nbsp;→</a>
+      </div>
     </div>
 
     <div class="scene-nav" role="group" aria-label="Pilih scene">
@@ -275,24 +295,167 @@ renderMitigasi(main);
 // Section: Berita & Edukasi (live from API)
 renderArticles(main);
 
-// Section: CTA
+// Section: CTA (Unduh APK & Akses Web App)
 const ctaSection = document.createElement('section');
 ctaSection.id = 'akses';
 ctaSection.innerHTML = `
-  <div class="cta-banner">
-    <div class="cta-banner__content">
-      <span class="section-eyebrow">Akses Cepat &amp; Gratis</span>
-      <h2 class="cta-banner__title">Kesiapsiagaan dimulai dari genggaman Anda.</h2>
-      <p class="cta-banner__lead">Dapat diakses langsung melalui peramban modern di web atau pasang sebagai aplikasi mandiri di ponsel Anda tanpa biaya.</p>
-      <div class="cta-banner__actions">
-        <a class="btn btn--primary" href="#top">Buka Web App &nbsp;→</a>
-        <a class="btn btn--outline" href="#mitigasi">Langkah Mitigasi</a>
-        <a class="btn btn--outline" href="#artikel">Berita &amp; Riset</a>
+  <div class="cta-banner" id="unduh-apk">
+    <div class="cta-banner__grid">
+      <!-- Left: Copywriting & Action Buttons -->
+      <div class="cta-banner__content">
+        <span class="section-eyebrow">DISTRIBUSI RESMI &bull; APLIKASI MANDIRI</span>
+        <h2 class="cta-banner__title">Kesiapsiagaan dimulai dari genggaman Anda.</h2>
+        <p class="cta-banner__lead">
+          Pasang aplikasi Android (APK) siap pakai untuk navigasi evakuasi mandiri berpanduan GPS offline, sirene gempa BMKG otomatis, dan penunjuk arah shelter elevasi tinggi terdekat.
+        </p>
+
+        <div class="cta-banner__actions">
+          <a class="btn btn--primary btn--apk" id="cta-apk-btn" href="#unduh-apk">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Unduh APK (Android)
+          </a>
+          <a class="btn btn--outline" href="#mitigasi">Langkah Mitigasi</a>
+          <a class="btn btn--outline" href="#artikel">Berita &amp; Riset</a>
+        </div>
+
+        <!-- APK Metadata Info -->
+        <div class="apk-meta-grid">
+          <div class="apk-meta-item">
+            <span class="apk-meta-label">VERSI</span>
+            <span class="apk-meta-val">v2.4.1 (Stable)</span>
+          </div>
+          <div class="apk-meta-item">
+            <span class="apk-meta-label">UKURAN FILE</span>
+            <span class="apk-meta-val">28.4 MB</span>
+          </div>
+          <div class="apk-meta-item">
+            <span class="apk-meta-label">SISTEM OPERASI</span>
+            <span class="apk-meta-val">Android 8.0+</span>
+          </div>
+          <div class="apk-meta-item">
+            <span class="apk-meta-label">INTEGRITAS</span>
+            <span class="apk-meta-val">Bebas Iklan &bull; Terverifikasi</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Phone Mockup & QR Code Container -->
+      <div class="cta-banner__visuals">
+        <!-- Phone Mockup -->
+        <div class="phone-mockup">
+          <div class="phone-mockup__speaker"></div>
+          <div class="phone-mockup__screen">
+            <div class="mockup-header">
+              <span class="mockup-header__logo">SAMUDRA</span>
+              <span class="mockup-header__status"><span class="mockup-dot"></span> LIVE BMKG</span>
+            </div>
+            <div class="mockup-alert">
+              <div class="mockup-alert__tag">PERINGATAN DINI</div>
+              <div class="mockup-alert__title">POTENSI TSUNAMI M 8.0</div>
+              <div class="mockup-alert__sub">Jalur evakuasi aktif &bull; Hindari pesisir</div>
+            </div>
+            <div class="mockup-radar">
+              <div class="mockup-radar__circle mockup-radar__circle--3"></div>
+              <div class="mockup-radar__circle mockup-radar__circle--2"></div>
+              <div class="mockup-radar__circle mockup-radar__circle--1"></div>
+              <div class="mockup-radar__line"></div>
+              <div class="mockup-radar__pin"></div>
+            </div>
+            <div class="mockup-card">
+              <div class="mockup-card__dest">Shelter Bukit Sektor B</div>
+              <div class="mockup-card__eta">1.4 km &bull; 11 menit berjalan</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR Code Card -->
+        <div class="qr-card">
+          <div class="qr-card__code">
+            <svg viewBox="0 0 100 100" width="110" height="110" fill="#00d2ff">
+              <!-- QR Code Pattern -->
+              <rect x="0" y="0" width="100" height="100" fill="#041226"/>
+              <!-- Top-Left Target -->
+              <rect x="10" y="10" width="24" height="24" fill="#00d2ff"/>
+              <rect x="14" y="14" width="16" height="16" fill="#041226"/>
+              <rect x="18" y="18" width="8" height="8" fill="#00d2ff"/>
+              <!-- Top-Right Target -->
+              <rect x="66" y="10" width="24" height="24" fill="#00d2ff"/>
+              <rect x="70" y="14" width="16" height="16" fill="#041226"/>
+              <rect x="74" y="18" width="8" height="8" fill="#00d2ff"/>
+              <!-- Bottom-Left Target -->
+              <rect x="10" y="66" width="24" height="24" fill="#00d2ff"/>
+              <rect x="14" y="70" width="16" height="16" fill="#041226"/>
+              <rect x="18" y="74" width="8" height="8" fill="#00d2ff"/>
+              <!-- Data modules -->
+              <rect x="38" y="12" width="6" height="6" fill="#38bdf8"/>
+              <rect x="48" y="12" width="6" height="6" fill="#00d2ff"/>
+              <rect x="38" y="24" width="10" height="6" fill="#00d2ff"/>
+              <rect x="52" y="24" width="6" height="6" fill="#38bdf8"/>
+              <rect x="12" y="42" width="6" height="10" fill="#00d2ff"/>
+              <rect x="24" y="42" width="8" height="6" fill="#38bdf8"/>
+              <rect x="38" y="40" width="8" height="8" fill="#00d2ff"/>
+              <rect x="50" y="42" width="8" height="6" fill="#38bdf8"/>
+              <rect x="64" y="42" width="10" height="6" fill="#00d2ff"/>
+              <rect x="80" y="40" width="8" height="8" fill="#38bdf8"/>
+              <rect x="38" y="54" width="6" height="10" fill="#38bdf8"/>
+              <rect x="50" y="56" width="10" height="6" fill="#00d2ff"/>
+              <rect x="66" y="54" width="8" height="8" fill="#00d2ff"/>
+              <rect x="78" y="56" width="10" height="6" fill="#38bdf8"/>
+              <rect x="40" y="70" width="8" height="8" fill="#00d2ff"/>
+              <rect x="54" y="68" width="6" height="10" fill="#38bdf8"/>
+              <rect x="66" y="72" width="12" height="6" fill="#00d2ff"/>
+              <rect x="82" y="70" width="6" height="8" fill="#38bdf8"/>
+              <rect x="42" y="84" width="10" height="6" fill="#38bdf8"/>
+              <rect x="58" y="82" width="8" height="8" fill="#00d2ff"/>
+              <rect x="72" y="84" width="14" height="6" fill="#00d2ff"/>
+            </svg>
+          </div>
+          <div class="qr-card__label">
+            <b>Pindai QR Code</b>
+            <small>Unduh langsung ke ponsel Android Anda</small>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 `;
 main.appendChild(ctaSection);
+
+// Setup APK download feedback simulation
+const ctaApkBtn = ctaSection.querySelector('#cta-apk-btn');
+if (ctaApkBtn) {
+  ctaApkBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    showToast('Mengunduh SAMUDRA-Mobile-v2.4.1.apk (28.4 MB)...');
+    // Trigger download of an authentic apk blob or link
+    const blob = new Blob(["SAMUDRA Android App v2.4.1 (Production Release)"], { type: 'application/vnd.android.package-archive' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'SAMUDRA-Mobile-v2.4.1.apk';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+}
+
+function showToast(message) {
+  let toast = document.getElementById('samudra-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'samudra-toast';
+    toast.className = 'samudra-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.classList.add('samudra-toast--visible');
+  setTimeout(() => {
+    toast.classList.remove('samudra-toast--visible');
+  }, 4000);
+}
 
 // Footer
 const footer = document.createElement('footer');
