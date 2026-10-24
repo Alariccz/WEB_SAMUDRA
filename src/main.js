@@ -109,7 +109,7 @@ alurSection.innerHTML = `
   <div class="flow-grid">
     <div class="flow-card">
       <div class="flow-card__top">
-        <span class="flow-card__badge">01</span>
+        <span class="flow-card__badge"><span class="flow-card__badge-pulse"></span>01</span>
         <div class="flow-card__icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
@@ -123,12 +123,13 @@ alurSection.innerHTML = `
       <h3 class="flow-card__title">BMKG Merilis Informasi</h3>
       <p class="flow-card__desc">Data real-time magnitudo, episentrum, kedalaman, dan tingkat peringatan diverifikasi serta diproses dalam hitungan detik.</p>
       <div class="flow-card__footer">
-        <span class="flow-card__pill">Telemetri Sensor Otomatis</span>
+        <span class="flow-card__pill"><span class="flow-card__dot"></span> Telemetri Sensor BMKG</span>
+        <span class="flow-card__metric">&lt; 3 Detik</span>
       </div>
     </div>
     <div class="flow-card">
       <div class="flow-card__top">
-        <span class="flow-card__badge">02</span>
+        <span class="flow-card__badge"><span class="flow-card__badge-pulse"></span>02</span>
         <div class="flow-card__icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -139,12 +140,13 @@ alurSection.innerHTML = `
       <h3 class="flow-card__title">Anda Mendapat Notifikasi</h3>
       <p class="flow-card__desc">Peringatan darurat langsung dikirim ke gawai warga pesisir dengan instruksi padat, lugas, dan bebas kepanikan.</p>
       <div class="flow-card__footer">
-        <span class="flow-card__pill">Edge Push Broadcast</span>
+        <span class="flow-card__pill"><span class="flow-card__dot"></span> Edge Push Broadcast</span>
+        <span class="flow-card__metric">Multi-Platform</span>
       </div>
     </div>
     <div class="flow-card">
       <div class="flow-card__top">
-        <span class="flow-card__badge">03</span>
+        <span class="flow-card__badge"><span class="flow-card__badge-pulse"></span>03</span>
         <div class="flow-card__icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="3 11 22 2 13 21 11 13 3 11"/>
@@ -154,7 +156,8 @@ alurSection.innerHTML = `
       <h3 class="flow-card__title">Anda Mengikuti Rute</h3>
       <p class="flow-card__desc">Navigasi evakuasi mandiri memandu Anda ke titik aman dan bukit terdekat, menghindari jembatan dan area genangan.</p>
       <div class="flow-card__footer">
-        <span class="flow-card__pill">Offline Dynamic GPS</span>
+        <span class="flow-card__pill"><span class="flow-card__dot"></span> Offline Dynamic GPS</span>
+        <span class="flow-card__metric">Peta Lokal</span>
       </div>
     </div>
   </div>
@@ -166,79 +169,97 @@ const fiturSection = document.createElement('section');
 fiturSection.id = 'fitur';
 fiturSection.innerHTML = `
   <div class="section-header">
-    <span class="section-eyebrow">Fitur Utama Aplikasi</span>
+    <span class="section-eyebrow">Fitur Utama Platform</span>
     <h2 class="section-title">Solusi cepat saat detik-detik kritis.</h2>
-    <p class="section-lead">Aplikasi dirancang dengan tiga pilar utama: navigasi ke tempat lebih aman, akses kontak darurat instan, dan artikel edukasi mitigasi resmi.</p>
+    <p class="section-lead">Aplikasi dirancang dengan arsitektur tangguh: navigasi ke tempat aman, akses kontak darurat instan, dan artikel edukasi mitigasi resmi.</p>
   </div>
   <div class="features-bento">
     <div class="feature-card">
-      <div class="feature-card__icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="3 11 22 2 13 21 11 13 3 11"/>
-        </svg>
+      <div class="feature-card__top">
+        <div class="feature-card__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+          </svg>
+        </div>
+        <span class="feature-card__tag">NAVIGASI &amp; EVAKUASI</span>
       </div>
-      <span class="feature-card__tag">NAVIGASI &amp; EVAKUASI</span>
       <h3 class="feature-card__title">Navigasi ke Tempat Lebih Aman</h3>
       <p class="feature-card__desc">Panduan rute dinamis yang menuntun Anda dari lokasi rawan menuju bukit dan shelter elevasi tinggi, menghindari zona genangan dan jembatan berisiko.</p>
+      <div class="feature-card__action"><span>Pelajari Sistem</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </div>
     <div class="feature-card">
-      <div class="feature-card__icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-        </svg>
+      <div class="feature-card__top">
+        <div class="feature-card__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+        </div>
+        <span class="feature-card__tag">RESPONS DARURAT SOS</span>
       </div>
-      <span class="feature-card__tag">RESPONS DARURAT SOS</span>
       <h3 class="feature-card__title">Akses Kontak Darurat</h3>
       <p class="feature-card__desc">Panggilan cepat satu ketukan ke posko BPBD terdekat, Basarnas, Ambulans darurat, PMI, serta daftar nomor darurat keluarga yang telah tersimpan.</p>
+      <div class="feature-card__action"><span>Pelajari Sistem</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </div>
     <div class="feature-card">
-      <div class="feature-card__icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-        </svg>
+      <div class="feature-card__top">
+        <div class="feature-card__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+        </div>
+        <span class="feature-card__tag">EDUKASI &amp; RISET</span>
       </div>
-      <span class="feature-card__tag">EDUKASI &amp; RISET</span>
       <h3 class="feature-card__title">Artikel &amp; Panduan Mitigasi</h3>
       <p class="feature-card__desc">Publikasi edukasi kebencanaan resmi yang terhubung langsung dengan database backend, mencakup langkah penyelamatan dan pengenalan tanda alam.</p>
+      <div class="feature-card__action"><span>Pelajari Sistem</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </div>
     <div class="feature-card">
-      <div class="feature-card__icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
+      <div class="feature-card__top">
+        <div class="feature-card__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </div>
+        <span class="feature-card__tag">DATA TELEMETRI BMKG</span>
       </div>
-      <span class="feature-card__tag">DATA TELEMETRI BMKG</span>
       <h3 class="feature-card__title">Peringatan Dini Real-Time</h3>
       <p class="feature-card__desc">Integrasi langsung dengan sistem diseminasi BMKG untuk memproses data magnitudo, kedalaman, dan status potensi tsunami dalam hitungan detik.</p>
+      <div class="feature-card__action"><span>Pelajari Sistem</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </div>
     <div class="feature-card">
-      <div class="feature-card__icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
+      <div class="feature-card__top">
+        <div class="feature-card__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <span class="feature-card__tag">TITIK KUMPUL TERVERIFIKASI</span>
       </div>
-      <span class="feature-card__tag">TITIK KUMPUL TERVERIFIKASI</span>
       <h3 class="feature-card__title">Peta Titik Kumpul Aman</h3>
       <p class="feature-card__desc">Menampilkan lokasi shelter evakuasi vertikal dan area kumpul aman di perbukitan yang telah dipetakan dan diverifikasi aman dari inundasi.</p>
+      <div class="feature-card__action"><span>Pelajari Sistem</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </div>
     <div class="feature-card">
-      <div class="feature-card__icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="1" y1="1" x2="23" y2="23"/>
-          <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
-          <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
-          <path d="M10.71 5.05A16 16 0 0 1 22.58 9"/>
-          <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
-          <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-          <line x1="12" y1="20" x2="12.01" y2="20"/>
-        </svg>
+      <div class="feature-card__top">
+        <div class="feature-card__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="1" y1="1" x2="23" y2="23"/>
+            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+            <path d="M10.71 5.05A16 16 0 0 1 22.58 9"/>
+            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+            <line x1="12" y1="20" x2="12.01" y2="20"/>
+          </svg>
+        </div>
+        <span class="feature-card__tag">OFFLINE READINESS</span>
       </div>
-      <span class="feature-card__tag">OFFLINE READINESS</span>
       <h3 class="feature-card__title">Dukungan Mode Offline</h3>
       <p class="feature-card__desc">Peta jalur evakuasi dan nomor kontak darurat tetap tersimpan secara lokal dan dapat dibuka saat jaringan seluler terputus pascagempa.</p>
+      <div class="feature-card__action"><span>Pelajari Sistem</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </div>
   </div>
 `;

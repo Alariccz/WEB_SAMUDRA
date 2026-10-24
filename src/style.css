@@ -336,8 +336,9 @@ a { color: inherit; text-decoration: none; }
 
 /* ===== LIVE EARTHQUAKE BANNER ===== */
 .quake-banner {
-  background: #080d0a;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(90deg, #020713 0%, #061934 50%, #020713 100%);
+  border-bottom: 1px solid rgba(0, 210, 255, 0.18);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
   padding: 14px clamp(20px, 5vw, 72px);
   display: flex;
   align-items: center;
@@ -366,11 +367,105 @@ a { color: inherit; text-decoration: none; }
 .quake-banner__tsunami { color: #f87171; font-weight: 600; }
 .quake-banner__aman { color: #00d2ff; font-weight: 600; }
 
-/* ===== MAIN SECTIONS ===== */
+/* ===== MAIN TWO-TONE SECTIONS (HITAM & BIRU SAMUDRA) ===== */
+main {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 main section {
-  padding: clamp(72px, 10vw, 130px) clamp(20px, 5vw, 72px);
+  width: 100%;
+  box-sizing: border-box;
+  padding: clamp(76px, 9vw, 130px) clamp(20px, 5vw, 72px);
+  position: relative;
+}
+
+.section-header,
+.flow-grid,
+.features-bento,
+.sim,
+.mitigasi-header,
+.mitigasi-grid,
+.morgana-header,
+.morgana-hero-grid,
+.morgana-latest,
+.morgana-faq,
+.cta-banner {
   max-width: 1240px;
-  margin: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* SECTION 1: ALUR -> Obsidian Dark Tech (#020610) */
+#alur {
+  background: #020610;
+  border-top: 1px solid rgba(0, 210, 255, 0.14);
+}
+
+#alur::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 260px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(0, 180, 255, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* SECTION 2: FITUR -> Deep Ocean Navy Sapphire (Dual-Tone Contrast) */
+#fitur {
+  background: linear-gradient(180deg, #041026 0%, #030d1f 100%);
+  border-top: 1px solid rgba(0, 210, 255, 0.22);
+  border-bottom: 1px solid rgba(0, 210, 255, 0.12);
+}
+
+#fitur::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, #00d2ff 50%, transparent 100%);
+  opacity: 0.6;
+}
+
+/* SECTION 3: SIMULASI -> Obsidian Laboratory Dark */
+#simulasi {
+  background: #020610;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* SECTION 4: MITIGASI -> Deep Tactical Sapphire */
+#mitigasi {
+  background: linear-gradient(180deg, #030f24 0%, #020817 100%);
+  border-top: 1px solid rgba(0, 210, 255, 0.22);
+  border-bottom: 1px solid rgba(0, 210, 255, 0.12);
+}
+
+#mitigasi::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, #38bdf8 50%, transparent 100%);
+  opacity: 0.6;
+}
+
+/* SECTION 5: ARTIKEL -> Obsidian Editorial Dark */
+#artikel {
+  background: #02050f;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* SECTION 6: AKSES (CTA) -> Luminous Ocean Blue Gradient */
+#akses {
+  background: linear-gradient(180deg, #030c1d 0%, #01040d 100%);
+  border-top: 1px solid rgba(0, 210, 255, 0.16);
 }
 
 h2 {
@@ -394,7 +489,7 @@ h2 {
 }
 
 .section-eyebrow {
-  font: 500 11px/1 'JetBrains Mono', monospace;
+  font: 600 11.5px/1 'JetBrains Mono', monospace;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #00d2ff;
@@ -402,6 +497,10 @@ h2 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.25);
+  padding: 6px 14px;
+  border-radius: 999px;
 }
 
 .section-eyebrow::before {
@@ -429,30 +528,43 @@ h2 {
   line-height: 1.7;
 }
 
-/* ===== 3-STEP FLOW CARDS (#alur) ===== */
+/* ===== ENHANCED 3-STEP FLOW CARDS (#alur) ===== */
 .flow-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  gap: 24px;
   position: relative;
 }
 
 .flow-card {
-  background: linear-gradient(145deg, #07152c 0%, #030a17 100%);
-  border: 1px solid rgba(0, 210, 255, 0.16);
-  border-radius: 18px;
-  padding: 30px 28px;
+  background: linear-gradient(155deg, rgba(8, 28, 58, 0.95) 0%, rgba(3, 10, 22, 0.98) 100%);
+  border: 1px solid rgba(0, 210, 255, 0.2);
+  border-radius: 20px;
+  padding: 32px 28px;
   display: flex;
   flex-direction: column;
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.flow-card::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 130px;
+  height: 130px;
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.16) 0%, transparent 70%);
+  filter: blur(16px);
+  pointer-events: none;
 }
 
 .flow-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(0, 210, 255, 0.45);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 24px rgba(0, 210, 255, 0.12);
+  transform: translateY(-6px);
+  border-color: rgba(0, 210, 255, 0.55);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.65), 0 0 35px rgba(0, 210, 255, 0.22);
 }
 
 .flow-card__top {
@@ -463,44 +575,61 @@ h2 {
 }
 
 .flow-card__badge {
-  font: 500 12px/1 'JetBrains Mono', monospace;
-  color: #00d2ff;
-  background: rgba(0, 210, 255, 0.08);
-  border: 1px solid rgba(0, 210, 255, 0.28);
-  padding: 6px 12px;
+  font: 700 12px/1 'JetBrains Mono', monospace;
+  color: #020b18;
+  background: linear-gradient(135deg, #00d2ff, #0088ff);
+  padding: 6px 14px;
   border-radius: 999px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 0 14px rgba(0, 210, 255, 0.35);
+}
+
+.flow-card__badge-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  animation: pulse 1.8s infinite;
 }
 
 .flow-card__icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0, 210, 255, 0.12), rgba(0, 80, 180, 0.22));
+  border: 1px solid rgba(0, 210, 255, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #f8fafc;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  color: #00d2ff;
+  box-shadow: 0 0 18px rgba(0, 210, 255, 0.2);
+  transition: all 0.25s ease;
 }
 
 .flow-card:hover .flow-card__icon {
-  background: rgba(0, 210, 255, 0.12);
-  border-color: rgba(0, 210, 255, 0.35);
-  color: #00d2ff;
+  transform: scale(1.08);
+  border-color: #00d2ff;
+  box-shadow: 0 0 25px rgba(0, 210, 255, 0.45);
 }
 
 .flow-card__title {
-  font: 500 18px/1.3 'Inter', sans-serif;
+  font: 500 19px/1.3 'Inter', sans-serif;
   letter-spacing: -0.015em;
   color: #f8fafc;
   margin: 0 0 12px;
+  transition: color 0.2s;
+}
+
+.flow-card:hover .flow-card__title {
+  color: #00d2ff;
 }
 
 .flow-card__desc {
   font-size: 14px;
-  line-height: 1.65;
+  line-height: 1.68;
   color: #8fa0b6;
   margin: 0 0 24px;
   flex-grow: 1;
@@ -508,83 +637,141 @@ h2 {
 
 .flow-card__footer {
   padding-top: 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(0, 210, 255, 0.12);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .flow-card__pill {
-  font: 400 11px/1 'JetBrains Mono', monospace;
-  color: #64748b;
-  letter-spacing: 0.06em;
+  font: 500 11px/1 'JetBrains Mono', monospace;
+  color: #38bdf8;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.2);
+  padding: 5px 12px;
+  border-radius: 999px;
 }
 
-/* ===== BENTO GRID FEATURES (#fitur) ===== */
+.flow-card__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00d2ff;
+  box-shadow: 0 0 8px #00d2ff;
+}
+
+.flow-card__metric {
+  font: 600 11.5px 'JetBrains Mono', monospace;
+  color: #64748b;
+}
+
+/* ===== ENHANCED BENTO GRID FEATURES (#fitur) ===== */
 .features-bento {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  gap: 22px;
 }
 
 .feature-card {
-  background: linear-gradient(145deg, #07152c 0%, #030a17 100%);
-  border: 1px solid rgba(0, 210, 255, 0.16);
-  border-radius: 18px;
-  padding: 30px 28px;
+  background: linear-gradient(155deg, rgba(5, 15, 32, 0.96) 0%, rgba(2, 7, 16, 0.98) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 20px;
+  padding: 32px 28px;
   display: flex;
   flex-direction: column;
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   position: relative;
+  overflow: hidden;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .feature-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(0, 210, 255, 0.45);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 24px rgba(0, 210, 255, 0.12);
+  transform: translateY(-6px);
+  border-color: rgba(0, 210, 255, 0.55);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.65), 0 0 35px rgba(0, 210, 255, 0.2);
+}
+
+.feature-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
 
 .feature-card__icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(0, 80, 180, 0.25));
+  border: 1px solid rgba(0, 210, 255, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #00d2ff;
-  margin-bottom: 20px;
-  transition: background 0.2s, border-color 0.2s;
+  box-shadow: 0 0 18px rgba(0, 210, 255, 0.2);
+  transition: all 0.25s ease;
 }
 
 .feature-card:hover .feature-card__icon {
-  background: rgba(0, 210, 255, 0.12);
-  border-color: rgba(0, 210, 255, 0.35);
+  transform: scale(1.08);
+  border-color: #00d2ff;
+  box-shadow: 0 0 25px rgba(0, 210, 255, 0.4);
 }
 
 .feature-card__tag {
-  font: 500 10px/1 'JetBrains Mono', monospace;
+  font: 600 10.5px/1 'JetBrains Mono', monospace;
   letter-spacing: 0.14em;
-  color: #64748b;
+  color: #38bdf8;
   text-transform: uppercase;
-  margin-bottom: 10px;
-  display: block;
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.22);
+  border-radius: 999px;
+  padding: 5px 12px;
+  display: inline-block;
 }
 
 .feature-card__title {
-  font: 500 18px/1.3 'Inter', sans-serif;
+  font: 500 18.5px/1.3 'Inter', sans-serif;
   letter-spacing: -0.015em;
-  color: #f8fafc;
+  color: #ffffff;
   margin: 0 0 12px;
+  transition: color 0.2s;
+}
+
+.feature-card:hover .feature-card__title {
+  color: #00d2ff;
 }
 
 .feature-card__desc {
-  font-size: 14px;
-  line-height: 1.65;
+  font-size: 13.5px;
+  line-height: 1.68;
   color: #8fa0b6;
-  margin: 0;
+  margin: 0 0 22px;
+  flex-grow: 1;
 }
 
-/* ===== SIMULATION ===== */
+.feature-card__action {
+  font: 600 12px/1 'JetBrains Mono', monospace;
+  color: #38bdf8;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: gap 0.25s ease, color 0.2s ease;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.feature-card:hover .feature-card__action {
+  gap: 12px;
+  color: #00d2ff;
+}
+
+/* ===== ENHANCED SIMULATION CARDS (#simulasi) ===== */
 .sim {
   display: grid;
   grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
@@ -595,10 +782,11 @@ h2 {
 .sim__controls {
   display: grid;
   gap: 22px;
-  padding: 30px 28px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  background: #080d0a;
+  padding: 32px 28px;
+  border: 1px solid rgba(0, 210, 255, 0.22);
+  border-radius: 20px;
+  background: linear-gradient(155deg, #071936 0%, #030b18 100%);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .sim__controls label {
@@ -626,44 +814,50 @@ input[type=range] {
   width: 100%;
   height: auto;
   aspect-ratio: 16/9;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border: 1px solid rgba(0, 210, 255, 0.22);
+  border-radius: 18px;
   background: #040914;
   display: block;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
 }
 
 .sim__outputs {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 16px;
+  gap: 16px;
+  margin-top: 20px;
 }
 
 .sim__output {
-  padding: 18px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  background: #080d0a;
-  transition: border-color .2s;
+  padding: 20px 22px;
+  border: 1px solid rgba(0, 210, 255, 0.2);
+  border-radius: 16px;
+  background: linear-gradient(150deg, #071936 0%, #030c1c 100%);
+  transition: all 0.25s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .sim__output:hover {
-  border-color: rgba(0, 210, 255, 0.4);
+  border-color: rgba(0, 210, 255, 0.5);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55), 0 0 24px rgba(0, 210, 255, 0.2);
 }
 
 .sim__output small {
   display: block;
-  color: #64748b;
-  font: 500 11px/1 'JetBrains Mono', monospace;
-  letter-spacing: 0.12em;
+  color: #38bdf8;
+  font: 600 11px/1 'JetBrains Mono', monospace;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   margin-bottom: 8px;
 }
 
 .sim__output b {
-  font-size: 26px;
-  font-weight: 500;
-  color: #f8fafc;
+  background: linear-gradient(90deg, #ffffff 0%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 28px;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
