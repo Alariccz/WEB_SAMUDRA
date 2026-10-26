@@ -32,26 +32,50 @@ jobs:
     needs: build-and-test
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Execute remote deployment commands via SSH
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          passphrase: ${{ secrets.SERVER_SSH_PASSPHRASE }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          port: ${{ secrets.SERVER_PORT || 22 }}
-          script_stop: true
-          script: |
-            echo "🚀 Memulai otomatisasi deployment pada server..."
-            cd ${{ secrets.SERVER_PATH }}
-            
-            echo "📥 Mengambil perubahan terbaru dari branch main..."
+      - name: Install cloudflared and sshpass
+        run: |
+          curl -sL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared.deb
+          sudo dpkg -i cloudflared.deb
+          rm cloudflared.deb
+          sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Setup SSH config for Cloudflare Tunnel
+        run: |
+          mkdir -p ~/.ssh
+          cat << 'EOF' > ~/.ssh/config
+          Host ssh.rizalzaky.cloud
+              ProxyCommand cloudflared access ssh --hostname %h
+              StrictHostKeyChecking no
+              UserKnownHostsFile /dev/null
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Deploy to Server via SSH
+        env:
+          SSH_HOST: ${{ secrets.SERVER_HOST || 'ssh.rizalzaky.cloud' }}
+          SSH_USER: ${{ secrets.SERVER_USER || 'rizal' }}
+          SSH_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+          TARGET_DIR: ${{ secrets.SERVER_PATH || '/home/rizal/web-samudra' }}
+        run: |
+          if [ -z "$SSH_PASSWORD" ]; then
+            echo "❌ ERROR: Secret SERVER_PASSWORD belum diisi di GitHub Repository Secrets!"
+            echo "Silakan tambahkan secret SERVER_PASSWORD di Settings -> Secrets and variables -> Actions"
+            exit 1
+          fi
+
+          echo "🚀 Menghubungkan ke $SSH_USER@$SSH_HOST..."
+          sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" "bash -s" << EOF
+            set -euo pipefail
+            echo "📁 Berpindah ke direktori $TARGET_DIR..."
+            cd "$TARGET_DIR"
+
+            echo "📥 Mengambil perubahan terbaru dari origin/main..."
             git fetch origin main
             git reset --hard origin/main
-            
-            echo "⚙️ Menjalankan script deployment..."
+
+            echo "⚙️ Menjalankan script deploy..."
             chmod +x deploy.sh
             ./deploy.sh
-            
+
             echo "🎉 Deployment selesai dengan sukses!"
+          EOF

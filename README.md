@@ -1,72 +1,46 @@
 # Web Samudra - CI/CD & Deployment Guide
 
-Dokumentasi otomatisasi CI/CD untuk aplikasi Web Samudra menggunakan **GitHub Actions**, **Docker**, dan **Nginx**.
+Dokumentasi otomatisasi CI/CD untuk aplikasi Web Samudra ke server `ssh.rizalzaky.cloud` menggunakan **GitHub Actions**, **Cloudflare Tunnel**, **Docker**, dan **Nginx**.
 
 ---
 
 ## 🚀 Alur Kerja CI/CD
 
-Pipeline CI/CD ini dipicu secara otomatis setiap kali ada `git push` ke branch `main` atau dijalankan secara manual via `workflow_dispatch`:
+Pipeline CI/CD ini dipicu secara otomatis setiap kali ada `git push` ke branch `main` atau melalui tombol **Run workflow** di GitHub Actions:
 
 1. **Job 1: Build & Verification**
    - Melakukan checkout kode repository.
    - Menginstal dependensi (`npm ci`).
-   - Melakukan build project Vite (`npm run build`) untuk memvalidasi tidak ada error sintaks atau build failure sebelum deploy.
+   - Melakukan build project Vite (`npm run build`) untuk memastikan kode valid dan bebas error.
 2. **Job 2: Deploy to Production Server**
-   - Menghubungkan ke server Anda secara aman melalui SSH.
-   - Berpindah ke direktori project di server (`SERVER_PATH`).
-   - Menarik pembaruan terbaru (`git fetch origin main && git reset --hard origin/main`).
-   - Menjalankan `./deploy.sh` untuk me-rebuild Docker image dan merestart container secara zero/minimal downtime.
+   - Memasang `cloudflared` pada GitHub Actions runner agar dapat menembus Cloudflare Tunnel ke `ssh.rizalzaky.cloud`.
+   - Mengakses server sebagai user `rizal` secara aman menggunakan `sshpass`.
+   - Masuk ke direktori `/home/rizal/web-samudra`.
+   - Mengambil pembaruan branch `main` (`git fetch origin main && git reset --hard origin/main`).
+   - Menjalankan `./deploy.sh` untuk rebuild dan restart container Docker `web-samudra` di port `3006`.
 
 ---
 
-## 🔑 Konfigurasi GitHub Repository Secrets
+## 🔑 Konfigurasi GitHub Repository Secret (PENTING)
 
-Agar GitHub Actions dapat mengakses server Anda secara otomatis, tambahkan secrets berikut di repository GitHub Anda:
+Karena repository ini bersifat publik, password server **TIDAK BOLEH** disimpan langsung di file kode agar server Anda tetap aman. Simpan password di **GitHub Repository Secrets**:
 
-**Langkah:** Buka repository GitHub -> **Settings** -> **Secrets and variables** -> **Actions** -> **New repository secret**.
+1. Buka repository: [https://github.com/Alariccz/WEB_SAMUDRA](https://github.com/Alariccz/WEB_SAMUDRA)
+2. Klik tab **Settings** ➔ di menu kiri klik **Secrets and variables** ➔ **Actions**.
+3. Klik tombol **New repository secret**.
+4. Isi data berikut:
+   - **Name**: `SERVER_PASSWORD`
+   - **Secret**: `rizal2302.`
+5. Klik **Add secret**.
 
-| Secret Name | Deskripsi | Contoh Nilai | Wajib / Opsional |
-|-------------|-----------|--------------|------------------|
-| `SERVER_HOST` | IP Address publik atau Domain server Anda | `103.123.45.67` atau `vps.domainanda.com` | **Wajib** |
-| `SERVER_USER` | Username user SSH di server | `root` atau `ubuntu` | **Wajib** |
-| `SERVER_PATH` | Path absolut folder project di server | `/var/www/WEB_SAMUDRA` | **Wajib** |
-| `SERVER_SSH_KEY` | Private SSH Key server (`id_rsa` / `id_ed25519`) | `-----BEGIN OPENSSH PRIVATE KEY----- ...` | **Wajib** (jika pakai key) |
-| `SERVER_PASSWORD` | Password SSH user server | `passwordAnda` | Opsional (jika pakai password) |
-| `SERVER_PORT` | Port SSH server (default: `22`) | `22` | Opsional |
-| `SERVER_SSH_PASSPHRASE` | Passphrase SSH Key (jika key diproteksi passphrase) | `passphraseRahasia` | Opsional |
+*(Semua konfigurasi lain seperti host `ssh.rizalzaky.cloud`, user `rizal`, dan path `/home/rizal/web-samudra` sudah terpasang secara default di dalam pipeline).*
 
 ---
 
-## 🖥️ Persiapan Awal di Sisi Server (Sekali Saja)
+## 🖥️ Server Details
 
-Pastikan server Anda sudah disiapkan dengan langkah-langkah berikut:
-
-1. **Install Docker & Docker Compose**:
-   ```bash
-   sudo apt update
-   sudo apt install -y docker.io docker-compose-plugin
-   sudo systemctl enable --now docker
-   ```
-
-2. **Clone Repository ke Server**:
-   ```bash
-   mkdir -p /var/www
-   cd /var/www
-   git clone https://github.com/Alariccz/WEB_SAMUDRA.git
-   cd WEB_SAMUDRA
-   chmod +x deploy.sh
-   ```
-
-3. **Pastikan Port 3006 Terbuka di Firewall**:
-   Aplikasi berjalan pada port `3006` (sesuai `docker-compose.yml`).
-   ```bash
-   sudo ufw allow 3006/tcp
-   ```
-
-4. **Test Jalankan Manual Pertama Kali (Opsional)**:
-   ```bash
-   ./deploy.sh
-   ```
-
-Setelah konfigurasi Secrets di GitHub selesai, setiap commit baru yang di-push ke branch `main` akan langsung ter-deploy otomatis ke server Anda!
+- **Host**: `ssh.rizalzaky.cloud` (via Cloudflare Tunnel)
+- **User**: `rizal`
+- **Path**: `/home/rizal/web-samudra`
+- **Aplikasi Port**: `3006` (Nginx container `web-samudra`)
+- **Deploy Script**: `./deploy.sh`
