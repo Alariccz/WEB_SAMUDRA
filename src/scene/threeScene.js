@@ -68,7 +68,7 @@ const calm = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.25 : 1;
 // ---- Shared GLSL chunks ----
 const SK = `float hs(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float nz(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hs(i),hs(i+vec2(1.,0.)),f.x),mix(hs(i+vec2(0.,1.)),hs(i+vec2(1.)),f.x),f.y);}float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*nz(p);p*=2.03;a*=.5;}return s;}float fbm3(vec2 p){float a=.5,s=0.;for(int i=0;i<3;i++){s+=a*nz(p);p*=2.03;a*=.5;}return s/.875;}vec3 SUN(){return normalize(vec3(-.5,.55-.51*min(uTod*2.,1.)-max(uTod-.5,0.)*.6,-.8));}vec3 TM(vec3 c){c*=1.15;c=(c*(2.51*c+.03))/(c*(2.43*c+.59)+.14);return pow(clamp(c,0.,1.),vec3(.4545));}vec3 h3(vec3 p){p=fract(p*vec3(.1031,.103,.0973));p+=dot(p,p.yxz+33.33);return fract((p.xxy+p.yxx)*p.zyx);}vec3 STARS(vec3 d){vec3 col=vec3(0.);for(int l=0;l<2;l++){float sc=l==0?70.:170.;float th=l==0?.93:.86;vec3 p=d*sc,id=floor(p),f=fract(p),h=h3(id);vec3 pos=.2+.6*h;float dist=length(f-pos);float mg=pow(h3(id+7.).x,5.);float pr=step(th,h3(id+3.).y);float sz=.06+.2*mg;float core=1.-smoothstep(0.,sz,dist);float tw=.55+.45*sin(uT*(3.+3.*h.z)+h.x*40.)*(.8+.2*sin(uT*11.+h.y*60.));float glow=(exp(-dist*dist/(sz*sz*18.))*.6+exp(-dist/(sz*5.))*.14*step(.12,mg))*(.7+.3*tw);vec3 tc=mix(vec3(.65,.78,1.),vec3(1.,.82,.62),h3(id+11.).z);col+=tc*(core*core*tw+glow)*(.35+3.2*mg)*pr*(l==0?1.:.5);}return col;}vec3 SKY(vec3 d){float k=uTod;float cvr=0.;vec3 zen,hor;if(k<.5){float q=k*2.;zen=mix(vec3(.06,.2,.55),vec3(.04,.08,.22),q);hor=mix(vec3(.55,.75,.9),vec3(1.,.45,.2),q);}else{float q=(k-.5)*2.;zen=mix(vec3(.04,.08,.22),vec3(.004,.01,.04),q);hor=mix(vec3(1.,.45,.2),vec3(.04,.09,.18),q);}float y=max(d.y,0.);vec3 c=mix(hor,zen,pow(y,.5));vec3 sd=SUN();float sp=max(dot(d,sd),0.);vec3 sc=mix(vec3(1.,.85,.6),vec3(1.,.5,.25),(1.-smoothstep(0.,.5,sd.y)));c+=sc*(pow(sp,900.)*6.+pow(sp,16.)*.5+pow(sp,3.)*.12)*(1.-k*.8);if(d.y>0.){vec2 cp=d.xz/(d.y+.12)*1.3+vec2(uT*.02,uT*.008);float n1=fbm(cp),n2=fbm(cp+sd.xz*.15);float cl=smoothstep(.45,.72,n1)*smoothstep(0.,.15,d.y);cvr=cl;float lit=clamp(.5+(n1-n2)*5.,0.,1.);vec3 top=(mix(vec3(1.),hor*1.4,.35))*(1.-k*.9)+.012,base=mix(hor*.5,vec3(.4,.45,.55),.4)*(1.-k*.85)+.008;c=mix(c,mix(base,top,lit),cl*.92);}float nt=smoothstep(.55,.95,k)*smoothstep(0.,.2,d.y)*(1.-cvr);if(nt<.002)return c;vec3 ax=normalize(vec3(.5,.6,-.6));float mb=exp(-pow(dot(d,ax)*3.5,2.));float cd=fbm(vec2(dot(d,vec3(.8,-.2,.55)),dot(d,vec3(0.,.95,.3)))*7.);return c+(vec3(.3,.36,.55)*mb*(.12+.9*cd*cd)*.45)*nt;}`;
 
-const HF = `uniform float uT,uAmp,uTsu,uFront,uPr,uPa,uBv,uTsuH,uTod;uniform vec2 uPc,uBu;float WV(float x){float s=.5+.5*sin(x);return s*s*2.-.75;}float H(vec2 p){float h=WV(dot(p,vec2(.9,.4))*.55+uT*1.1)*.5+WV(dot(p,vec2(-.3,1.))*.8+uT*1.4)*.32+WV(dot(p,vec2(.7,-.7))*1.5+uT*1.9)*.16+WV(dot(p,vec2(.2,.95))*2.7+uT*2.6)*.08+WV(dot(p,vec2(-.8,-.5))*4.1+uT*3.1)*.04;h*=uAmp;float d=(p.x-uFront)/3.6;h+=uTsu*uTsuH*exp(-d*d)*(1.+.12*sin(p.y*.5));float r=length(p-uPc);h+=uPa*.2*exp(-pow((r-uPr)*1.5,2.));float b=length(p-uBu);h+=.07*sin(b*3.-uT*3.)*exp(-b*.35)*uBv;return h;}`;
+const HF = `uniform float uT,uAmp,uTsu,uFront,uPr,uPa,uBv,uTsuH,uTod;uniform vec2 uPc,uBu;float WV(float x){float s=.5+.5*sin(x);return s*s*2.-.75;}float H(vec2 p){float h=WV(dot(p,vec2(.9,.4))*.55+uT*1.1)*.5+WV(dot(p,vec2(-.3,1.))*.8+uT*1.4)*.32+WV(dot(p,vec2(.7,-.7))*1.5+uT*1.9)*.16+WV(dot(p,vec2(.2,.95))*2.7+uT*2.6)*.08+WV(dot(p,vec2(-.8,-.5))*4.1+uT*3.1)*.04;h*=uAmp;float d=(p.x-uFront)/3.6;h+=uTsu*uTsuH*exp(-d*d)*(1.+.12*sin(p.y*.5));float r=length(p-uPc);h+=uPa*.05*exp(-pow((r-uPr)*1.6,2.));float b=length(p-uBu);h+=.07*sin(b*3.-uT*3.)*exp(-b*.35)*uBv;return h;}`;
 
 function createFallbackScene(canvas) {
   const stageEl = canvas.closest('.stage__sticky') || canvas.parentElement;
@@ -141,7 +141,7 @@ function createFallbackScene(canvas) {
     },
     scene: {},
     world: dummyGroup,
-    ping: () => { pingT = 0; U.uPa.value = 1; },
+    ping: () => { pingT = 0; U.uPa.value = 1; U.uPr.value = 0; },
     sun: { position: dummyVec, intensity: 1 },
     amb: { intensity: 1 },
     getState: () => ({ pp, pt, cur, yaw, yawT, drag, lx, crestT, rk, mx, my }),
@@ -166,6 +166,8 @@ function createFallbackScene(canvas) {
 }
 
 export function createScene(canvas) {
+  function lerp(a, b, k) { return a + (b - a) * k; }
+
   // Dispose previous renderer if existed on HMR
   if (window.__samudra_renderer) {
     try {
@@ -340,9 +342,9 @@ void main(){
   // Brilliant sparkling spray glint along breaking wave crest
   c += vec3(1., .98, .92) * (pow(max(dot(r, sd), 0.), 35.) * 1.2 + 0.25) * shoreCrash;
 
-  // Ping ripple
+  // Ping ripple (smoothly contained in water, fading naturally near coastline)
   float rr = length(vP - uPc);
-  c += vec3(0., 1., .6) * uPa * exp(-pow((rr - uPr)*1.1, 2.)) * .7;
+  c += vec3(0., 1., .6) * uPa * exp(-pow((rr - uPr)*1.1, 2.)) * .7 * smoothstep(0.0, 0.25, depth);
 
   // Shoreline hazard glow tint in water (matching reference image)
   if (uRisk > 0.01) {
@@ -838,6 +840,7 @@ void main(){
     new THREE.Color(0xa16207), // golden woven bamboo
   ];
 
+  const coastalHuts = [];
   villageCenters.forEach(vc => {
     for (let j = 0; j < 7 && hutCount < MAX_HUTS; j++) {
       const hx = vc.x + (Math.random() - 0.5) * vc.r * 1.5;
@@ -853,13 +856,39 @@ void main(){
       const hs = 0.82 + Math.random() * 0.38;
       const aspectX = 0.90 + Math.random() * 0.30;
       const aspectZ = 0.90 + Math.random() * 0.30;
+      const rotY = (Math.floor(Math.random() * 6) * Math.PI) / 3;
+      const scaleX = hs * aspectX;
+      const scaleY = hs * (0.90 + Math.random() * 0.25);
+      const scaleZ = hs * aspectZ;
+
       dummy.position.set(hx, hy + 0.02, hz);
-      dummy.rotation.set(0, (Math.floor(Math.random() * 6) * Math.PI) / 3, 0);
-      dummy.scale.set(hs * aspectX, hs * (0.90 + Math.random() * 0.25), hs * aspectZ);
+      dummy.rotation.set(0, rotY, 0);
+      dummy.scale.set(scaleX, scaleY, scaleZ);
       dummy.updateMatrix();
 
       hutMesh.setMatrixAt(hutCount, dummy.matrix);
       hutMesh.setColorAt(hutCount, hutColors[Math.floor(Math.random() * hutColors.length)]);
+
+      coastalHuts.push({
+        idx: hutCount,
+        basePos: new THREE.Vector3(hx, hy + 0.02, hz),
+        baseRot: new THREE.Euler(0, rotY, 0),
+        baseScale: new THREE.Vector3(scaleX, scaleY, scaleZ),
+        pos: new THREE.Vector3(hx, hy + 0.02, hz),
+        rot: new THREE.Euler(0, rotY, 0),
+        scale: new THREE.Vector3(scaleX, scaleY, scaleZ),
+        vel: new THREE.Vector3(0, 0, 0),
+        angVel: new THREE.Vector3(0, 0, 0),
+        tiltDirZ: (Math.random() - 0.5) * 0.8,
+        isWashedAway: false,
+        launched: false,
+        inAir: false,
+        settled: false,
+        floatBob: Math.random() * Math.PI * 2,
+        collapseAmount: 0.15 + Math.random() * 0.25,
+        driftSpeedFactor: 0.8 + Math.random() * 0.4
+      });
+
       hutCount++;
     }
   });
@@ -868,6 +897,94 @@ void main(){
   hutMesh.instanceMatrix.needsUpdate = true;
   if (hutMesh.instanceColor) hutMesh.instanceColor.needsUpdate = true;
   landGroup.add(hutMesh);
+
+  // ---- 2a. Dynamic Hut Debris (Flying Thatch Roofs & Timber Planks from Demolished Huts) ----
+  const dynamicHutDebris = [];
+  const thatchMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.92, flatShading: true });
+  const woodDebrisMat = new THREE.MeshStandardMaterial({ color: 0x54381e, roughness: 0.88, flatShading: true });
+
+  const MAX_ROOF_DEBRIS = 8;
+  for (let r = 0; r < MAX_ROOF_DEBRIS; r++) {
+    const rGeo = new THREE.ConeGeometry(1.05, 0.62, 4);
+    rGeo.rotateY(Math.PI / 4);
+    const rMesh = new THREE.Mesh(rGeo, thatchMat);
+    rMesh.position.set(0, -999, 0);
+    landGroup.add(rMesh);
+    dynamicHutDebris.push({
+      type: 'roof',
+      mesh: rMesh,
+      pos: new THREE.Vector3(0, -999, 0),
+      rot: new THREE.Euler(0, 0, 0),
+      vel: new THREE.Vector3(0, 0, 0),
+      angVel: new THREE.Vector3(0, 0, 0),
+      active: false,
+      settled: false
+    });
+  }
+
+  const MAX_TIMBER_DEBRIS = 16;
+  for (let t = 0; t < MAX_TIMBER_DEBRIS; t++) {
+    const tGeo = new THREE.BoxGeometry(0.95, 0.08, 0.12);
+    const tMesh = new THREE.Mesh(tGeo, woodDebrisMat);
+    tMesh.position.set(0, -999, 0);
+    landGroup.add(tMesh);
+    dynamicHutDebris.push({
+      type: 'timber',
+      mesh: tMesh,
+      pos: new THREE.Vector3(0, -999, 0),
+      rot: new THREE.Euler(0, 0, 0),
+      vel: new THREE.Vector3(0, 0, 0),
+      angVel: new THREE.Vector3(0, 0, 0),
+      active: false,
+      settled: false
+    });
+  }
+
+  let nextRoofIdx = 0;
+  let nextTimberIdx = 0;
+  function triggerHutDebris(originPos, tsuH, force = 1.0) {
+    if (Math.random() < 0.65) {
+      const roofPieces = dynamicHutDebris.filter(d => d.type === 'roof');
+      const roof = roofPieces[nextRoofIdx % roofPieces.length];
+      nextRoofIdx++;
+      roof.active = true;
+      roof.settled = false;
+      roof.pos.copy(originPos);
+      roof.pos.y += 1.2;
+      roof.vel.set(
+        (5.5 + tsuH * 1.6) * (0.85 + Math.random() * 0.3) * force,
+        (4.2 + tsuH * 1.5) * (0.85 + Math.random() * 0.3) * force,
+        (Math.random() - 0.5) * 4.5
+      );
+      roof.angVel.set(
+        (Math.random() - 0.5) * 12.0,
+        (Math.random() - 0.5) * 10.0,
+        (Math.random() - 0.5) * 14.0
+      );
+      roof.mesh.position.copy(roof.pos);
+    }
+    const timberPieces = dynamicHutDebris.filter(d => d.type === 'timber');
+    const count = 1 + Math.floor(Math.random() * 2);
+    for (let c = 0; c < count; c++) {
+      const tb = timberPieces[nextTimberIdx % timberPieces.length];
+      nextTimberIdx++;
+      tb.active = true;
+      tb.settled = false;
+      tb.pos.copy(originPos);
+      tb.pos.y += 0.4 + Math.random() * 0.6;
+      tb.vel.set(
+        (6.0 + tsuH * 1.8) * (0.85 + Math.random() * 0.35) * force,
+        (4.8 + tsuH * 1.6) * (0.85 + Math.random() * 0.35) * force,
+        (Math.random() - 0.5) * 5.0
+      );
+      tb.angVel.set(
+        (Math.random() - 0.5) * 16.0,
+        (Math.random() - 0.5) * 14.0,
+        (Math.random() - 0.5) * 18.0
+      );
+      tb.mesh.position.copy(tb.pos);
+    }
+  }
 
   // ---- 2b. Wooden Pier & Jetties (Dermaga Kayu Tradisional dengan Breakable Head) ----
   const pierGroup = new THREE.Group();
@@ -1356,9 +1473,269 @@ void main(){
     foliageMesh.instanceMatrix.needsUpdate = true;
     trunkMesh.instanceMatrix.needsUpdate = true;
 
+    const isWaveResetting = front < -20;
+
+    // 3b. COASTAL HOUSES IMPACT (RUMAH PANGGUNG REALISTIC TSUNAMI IMPACT & FLOTSAM PHYSICS)
+    for (let i = 0; i < coastalHuts.length; i++) {
+      const h = coastalHuts[i];
+
+      // WAVE CYCLE RESET: Smoothly restore foundation when wave recedes
+      if (isWaveResetting) {
+        h.isWashedAway = false;
+        h.launched = false;
+        h.inAir = false;
+        h.settled = false;
+        h.vel.set(0, 0, 0);
+        h.angVel.set(0, 0, 0);
+
+        h.pos.lerp(h.basePos, Math.min(1.0, dt * 5.0));
+        h.rot.x = lerp(h.rot.x, h.baseRot.x, Math.min(1.0, dt * 5.0));
+        h.rot.y = lerp(h.rot.y, h.baseRot.y, Math.min(1.0, dt * 5.0));
+        h.rot.z = lerp(h.rot.z, h.baseRot.z, Math.min(1.0, dt * 5.0));
+        h.scale.lerp(h.baseScale, Math.min(1.0, dt * 5.0));
+
+        dummy.position.copy(h.pos);
+        dummy.rotation.copy(h.rot);
+        dummy.scale.copy(h.scale);
+        dummy.updateMatrix();
+        hutMesh.setMatrixAt(h.idx, dummy.matrix);
+        continue;
+      }
+
+      // CALM MODE (Scene 1 or tsu < 0.05): Stand firmly on ground
+      if (tsu < 0.05) {
+        h.isWashedAway = false;
+        h.launched = false;
+        h.inAir = false;
+        h.settled = false;
+        h.vel.set(0, 0, 0);
+        h.angVel.set(0, 0, 0);
+
+        h.pos.lerp(h.basePos, Math.min(1.0, dt * 4.0));
+        h.rot.x = lerp(h.rot.x, h.baseRot.x, Math.min(1.0, dt * 4.0));
+        h.rot.y = lerp(h.rot.y, h.baseRot.y, Math.min(1.0, dt * 4.0));
+        h.rot.z = lerp(h.rot.z, h.baseRot.z, Math.min(1.0, dt * 4.0));
+        h.scale.lerp(h.baseScale, Math.min(1.0, dt * 4.0));
+
+        dummy.position.copy(h.pos);
+        dummy.rotation.copy(h.rot);
+        dummy.scale.copy(h.scale);
+        dummy.updateMatrix();
+        hutMesh.setMatrixAt(h.idx, dummy.matrix);
+        continue;
+      }
+
+      // TSUNAMI ACTIVE MODE:
+      const terY = th(h.pos.x, h.pos.z);
+      const hWave = (Math.sin((h.pos.x * 0.9 + h.pos.z * 0.4) * 0.55 + t * 1.1) * 0.5 +
+                     Math.sin((-h.pos.x * 0.3 + h.pos.z) * 0.8 + t * 1.4) * 0.32 +
+                     Math.sin((h.pos.x * 0.7 - h.pos.z * 0.7) * 1.5 + t * 1.9) * 0.16) * amp;
+      const dHut = (h.pos.x - front) / 3.6;
+      let waveCrest = tsu * tsuH * Math.exp(-dHut * dHut);
+      // Trailing surge: water remains high behind wave crest
+      if (dHut < 0 && dHut > -3.2) {
+        waveCrest = Math.max(waveCrest, tsu * tsuH * (1.0 - Math.abs(dHut) / 3.2) * 0.45);
+      }
+      const waterY = hWave + waveCrest;
+      const distFromFront = h.pos.x - front;
+      const waterDepth = Math.max(0, waterY - terY);
+
+      // 1. PRE-IMPACT: Stilt vibration, ground tremor & water splashing
+      if (!h.launched) {
+        if (distFromFront > 0 && distFromFront < 4.5 && waterDepth > 0.1) {
+          const shake = Math.sin(t * 32.0 + h.floatBob) * 0.035 * Math.min(1.0, waterDepth);
+          h.rot.z = h.baseRot.z + shake - Math.min(0.24, waterDepth * 0.12);
+          h.rot.x = h.baseRot.x + Math.cos(t * 28.0 + h.floatBob) * 0.025;
+
+          if (Math.random() < 0.12) {
+            triggerImpactSpray(h.pos.x, terY + 0.3, h.pos.z, 10, 1.1, 0.9, 1.8);
+          }
+        } else {
+          h.rot.z = lerp(h.rot.z, h.baseRot.z, Math.min(1.0, dt * 4.0));
+          h.rot.x = lerp(h.rot.x, h.baseRot.x, Math.min(1.0, dt * 4.0));
+        }
+
+        // 2. IMPACT TRIGGER: Tsunami crest strikes the house with violent kinetic force
+        const crestHit = (distFromFront > -2.2 && distFromFront < 1.6 && waterDepth > 0.65);
+        const submerged = (waterY > h.basePos.y + 0.45);
+        if (crestHit || submerged) {
+          h.launched = true;
+          h.isWashedAway = true;
+          h.inAir = true;
+          h.settled = false;
+
+          // Massive breaking water spray explosion when stilts snap
+          triggerImpactSpray(h.pos.x, h.pos.y + 0.6, h.pos.z, 36, 1.8, 1.5, 3.2);
+          triggerImpactSpray(h.pos.x + 0.5, terY + 0.3, h.pos.z, 18, 1.3, 1.0, 2.0);
+
+          // Erupt flying thatch roofs & timber beams
+          triggerHutDebris(h.pos, tsuH, h.driftSpeedFactor);
+
+          // Hydrodynamic impulse: propel house inland (+X) and up into air
+          const pwr = h.driftSpeedFactor * (0.85 + Math.min(2.2, tsuH * 0.45));
+          h.vel.x = (5.2 + tsuH * 1.5) * pwr;
+          h.vel.y = (3.6 + tsuH * 1.3) * pwr;
+          h.vel.z = (Math.sin(h.idx * 2.7) * 3.2);
+          h.angVel.set(
+            (Math.sin(h.idx * 1.9) * 5.0),
+            (Math.cos(h.idx * 2.3) * 3.8),
+            -3.5 - Math.random() * 3.5 // violent backward tumble
+          );
+        }
+      }
+
+      // 3. FLIGHT, GRAVITY, BUOYANCY & LANDING SIMULATION
+      if (h.launched) {
+        const surfY = Math.max(waterY, terY);
+
+        // IN-AIR PHASE (Above water and ground)
+        if (h.inAir || h.pos.y > surfY + 0.08) {
+          // Earth gravity on heavy timber structure
+          h.vel.y -= 14.5 * dt;
+          h.vel.x *= Math.pow(0.965, dt * 60);
+          h.vel.z *= Math.pow(0.965, dt * 60);
+
+          h.pos.x += h.vel.x * dt;
+          h.pos.y += h.vel.y * dt;
+          h.pos.z += h.vel.z * dt;
+
+          h.rot.x += h.angVel.x * dt;
+          h.rot.y += h.angVel.y * dt;
+          h.rot.z += h.angVel.z * dt;
+
+          h.angVel.multiplyScalar(Math.pow(0.94, dt * 60));
+        }
+
+        // SURFACE INTERACTION (Water or Ground)
+        if (h.pos.y <= surfY + 0.08) {
+          // Water/ground crash splash
+          if (h.inAir && Math.abs(h.vel.y) > 2.5) {
+            triggerImpactSpray(h.pos.x, surfY + 0.2, h.pos.z, 22, 1.3, 0.9, 2.2);
+          }
+
+          // CASE A: FLOATING ON SURGING FLOOD WATER
+          if (waterY > terY + 0.20) {
+            h.pos.y = Math.max(h.pos.y, waterY - 0.22);
+            h.vel.y = (waterY - h.pos.y) * 7.0 - h.vel.y * 0.45;
+
+            // Current carries wreckage inland
+            const currentSpeed = (4.2 + Math.min(3.5, tsuH * 0.7)) * h.driftSpeedFactor;
+            h.vel.x += (currentSpeed - h.vel.x) * 2.6 * dt;
+            h.pos.x += h.vel.x * dt;
+            h.pos.z += h.vel.z * dt;
+
+            // Wave bobbing & rocking
+            h.rot.z += Math.sin(t * 4.5 + h.idx) * 0.10 * dt;
+            h.rot.x += Math.cos(t * 3.8 + h.idx) * 0.08 * dt;
+            h.rot.y += 0.5 * dt;
+
+            // Continuous spray around floating house
+            if (Math.random() < 0.08) {
+              triggerImpactSpray(h.pos.x, h.pos.y + 0.25, h.pos.z, 8, 0.9, 0.7, 1.5);
+            }
+
+            h.inAir = false;
+            h.settled = false;
+          }
+          // CASE B: GROUND COLLISION (Terrain contact - NEVER LEAVE HOVERING IN SKY)
+          else {
+            const currentGroundY = th(h.pos.x, h.pos.z);
+            if (h.vel.y < -1.2) {
+              h.vel.y = -h.vel.y * 0.18; // mud bounce
+            } else {
+              h.vel.y = 0;
+              h.pos.y = currentGroundY + 0.04;
+            }
+
+            // Heavy mud & sand friction
+            h.vel.x *= Math.pow(0.24, dt * 60);
+            h.vel.z *= Math.pow(0.24, dt * 60);
+            h.angVel.multiplyScalar(Math.pow(0.20, dt * 60));
+
+            h.pos.x += h.vel.x * dt;
+            h.pos.z += h.vel.z * dt;
+
+            if (Math.hypot(h.vel.x, h.vel.z) < 0.25) {
+              h.inAir = false;
+              h.settled = true;
+              h.vel.set(0, 0, 0);
+              h.angVel.set(0, 0, 0);
+              h.pos.y = currentGroundY + 0.04;
+
+              // Resting wrecked collapse posture
+              h.rot.z = lerp(h.rot.z, -0.42 + h.tiltDirZ * 0.3, Math.min(1.0, dt * 4.0));
+              h.rot.x = lerp(h.rot.x, (h.idx % 2 === 0 ? 0.25 : -0.25), Math.min(1.0, dt * 4.0));
+              h.scale.y = lerp(h.scale.y, h.baseScale.y * (1.0 - h.collapseAmount * 0.75), Math.min(1.0, dt * 4.0));
+            }
+          }
+        }
+      }
+
+      dummy.position.copy(h.pos);
+      dummy.rotation.copy(h.rot);
+      dummy.scale.copy(h.scale);
+      dummy.updateMatrix();
+      hutMesh.setMatrixAt(h.idx, dummy.matrix);
+    }
+    hutMesh.instanceMatrix.needsUpdate = true;
+
+    // 3c. DYNAMIC HUT DEBRIS PHYSICS (FLYING ROOFS & TIMBER BEAMS)
+    for (let d = 0; d < dynamicHutDebris.length; d++) {
+      const deb = dynamicHutDebris[d];
+      if (!deb.active) {
+        deb.mesh.position.set(0, -999, 0);
+        continue;
+      }
+
+      if (isWaveResetting || tsu < 0.05) {
+        deb.active = false;
+        deb.settled = false;
+        deb.mesh.position.set(0, -999, 0);
+        continue;
+      }
+
+      const terY = th(deb.pos.x, deb.pos.z);
+      const dX = (deb.pos.x - front) / 3.6;
+      let wY = tsu * tsuH * Math.exp(-dX * dX);
+      if (dX < 0 && dX > -3.2) {
+        wY = Math.max(wY, tsu * tsuH * (1.0 - Math.abs(dX) / 3.2) * 0.45);
+      }
+      wY += amp * 0.2;
+      const surfY = Math.max(wY, terY);
+
+      if (deb.pos.y > surfY + 0.05) {
+        deb.vel.y -= 15.0 * dt;
+        deb.vel.x *= Math.pow(0.96, dt * 60);
+        deb.vel.z *= Math.pow(0.96, dt * 60);
+
+        deb.pos.x += deb.vel.x * dt;
+        deb.pos.y += deb.vel.y * dt;
+        deb.pos.z += deb.vel.z * dt;
+
+        deb.rot.x += deb.angVel.x * dt;
+        deb.rot.y += deb.angVel.y * dt;
+        deb.rot.z += deb.angVel.z * dt;
+        deb.angVel.multiplyScalar(Math.pow(0.94, dt * 60));
+      } else {
+        if (wY > terY + 0.15) {
+          deb.pos.y = wY - 0.10;
+          deb.vel.x += (4.8 - deb.vel.x) * 3.0 * dt;
+          deb.pos.x += deb.vel.x * dt;
+          deb.rot.z += Math.sin(t * 5.0 + d) * 0.12 * dt;
+        } else {
+          deb.pos.y = terY + 0.04;
+          deb.vel.multiplyScalar(Math.pow(0.2, dt * 60));
+          deb.angVel.multiplyScalar(Math.pow(0.2, dt * 60));
+          deb.settled = true;
+        }
+      }
+
+      deb.mesh.position.copy(deb.pos);
+      deb.mesh.rotation.copy(deb.rot);
+    }
+
     // 4. DYNAMIC BOATS, PIER PLANKS, LANTERN & CRATES PHYSICS
     if (dynamicBoats.length === 0) return;
-    const isWaveResetting = front < -20;
 
     // Dynamic front pilings tilt
     dynamicPilings.forEach(dp => {
@@ -1705,7 +2082,6 @@ void main(){
   buoyGroup.add(body, ring, mast, lamp, cable, base); buoyGroup.position.set(BX, 0, BZ); world.add(buoyGroup);
 
   // Keyframes
-  const lerp = (a, b, k) => a + (b - a) * k;
   const K = [
     { cp: [-2, 3.4, 22], lk: [-1, 1.8, 0], amp: 0.45, tsu: 0, ter: 0, buoy: 1, path: 0 },
     { cp: [-6, 4.4, 19], lk: [4, 2, 0], amp: 0.85, tsu: 1, ter: 1, buoy: 0.95, path: 0 },
@@ -1714,7 +2090,11 @@ void main(){
   const S = { cp: new THREE.Vector3(), lk: new THREE.Vector3(), amp: 0, tsu: 0, ter: 0, buoy: 1, path: 0 };
 
   let pingT = 99;
-  function ping() { pingT = 0; U.uPa.value = 1; }
+  function ping() {
+    pingT = 0;
+    U.uPa.value = 1;
+    U.uPr.value = 0;
+  }
 
   // Scroll-based scene progress
   let pp = 0, pt = 0, cur = -1, yaw = 0, yawT = 0, drag = 0, lx = 0, crestT = 4, rk = 1;
