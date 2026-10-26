@@ -1,0 +1,10 @@
+services:
+  web-samudra:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: web-samudra:latest
+    container_name: web-samudra
+    restart: unless-stopped
+    ports:
+      - "3006:80"
