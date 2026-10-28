@@ -43,12 +43,20 @@ stage.innerHTML = `
   <div class="stage__sticky">
     <canvas id="gl" aria-label="Visualisasi 3D pesisir: pemantauan, hantaman gelombang, evakuasi"></canvas>
     <div class="underwater-fx" id="underwater-fx" aria-hidden="true">
+      <div class="underwater-fx__shock"></div>
       <div class="underwater-fx__abyss"></div>
+      <div class="underwater-fx__turbulent-blur"></div>
       <div class="underwater-fx__caustics"></div>
-      <div class="underwater-fx__bubbles" id="uw-bubbles"></div>
-      <div class="underwater-fx__wetlens" id="uw-wetlens"></div>
+      <div class="underwater-fx__chromatic"></div>
       <div class="underwater-fx__vignette"></div>
+      <div class="underwater-fx__wetlens"></div>
     </div>
+    <svg class="uw-svg-filters" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none">
+      <filter id="waterRefractFilter" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence id="uw-fe-turb" type="fractalNoise" baseFrequency="0.024 0.038" numOctaves="3" result="turb" seed="5"/>
+        <feDisplacementMap id="uw-fe-disp" in="SourceGraphic" in2="turb" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </svg>
     <div class="vig"></div>
 
     <div class="scene scene--active" id="s0">
@@ -568,58 +576,13 @@ function Hj(x, z, t, tsu, fr, amp) {
   return h + tsu * U.uTsuH.value * Math.exp(-d * d);
 }
 
-// ===== UNDERWATER TSUNAMI CAM FX =====
-const uwBubblesEl = stage.querySelector('#uw-bubbles');
-const uwWetlensEl = stage.querySelector('#uw-wetlens');
-
+// ===== REALISTIC CINEMATIC TSUNAMI COLLISION & OPTICS =====
 let wasUnderwater = false;
 let uwFactor = 0;
-let wetLensTimer = null;
-
-function spawnUnderwaterBubble() {
-  if (!uwBubblesEl) return;
-  if (uwBubblesEl.children.length > 30) return;
-  const b = document.createElement('div');
-  b.className = 'uw-bubble';
-  const size = 5 + Math.random() * 22;
-  const left = Math.random() * 100;
-  const dur = 0.8 + Math.random() * 1.5;
-  const wobble = (Math.random() - 0.5) * 60;
-  b.style.width = `${size}px`;
-  b.style.height = `${size}px`;
-  b.style.left = `${left}%`;
-  b.style.animationDuration = `${dur}s`;
-  b.style.setProperty('--wobble', `${wobble}px`);
-  uwBubblesEl.appendChild(b);
-  setTimeout(() => b.remove(), dur * 1000);
-}
-
-function triggerWetLensDrip() {
-  if (!stage) return;
-  stage.style.setProperty('--wet-lens', '1');
-  if (uwWetlensEl) {
-    uwWetlensEl.innerHTML = '';
-    for (let i = 0; i < 18; i++) {
-      const d = document.createElement('div');
-      d.className = 'uw-droplet';
-      const size = 7 + Math.random() * 24;
-      const x = 4 + Math.random() * 92;
-      const y = 6 + Math.random() * 70;
-      const dripY = 35 + Math.random() * 95;
-      d.style.width = `${size}px`;
-      d.style.height = `${size * (1 + Math.random() * 0.45)}px`;
-      d.style.left = `${x}%`;
-      d.style.top = `${y}%`;
-      d.style.setProperty('--drip-y', `${dripY}px`);
-      uwWetlensEl.appendChild(d);
-    }
-  }
-  clearTimeout(wetLensTimer);
-  wetLensTimer = setTimeout(() => {
-    stage.style.setProperty('--wet-lens', '0');
-    setTimeout(() => { if (uwWetlensEl) uwWetlensEl.innerHTML = ''; }, 650);
-  }, 2400);
-}
+let impactShock = 0;
+let wetLensVal = 0;
+let camJoltX = 0, camJoltY = 0, camJoltPitch = 0, camJoltRoll = 0;
+let dispScale = 0;
 
 const A = new THREE.Vector3(), B = new THREE.Vector3();
 
@@ -687,14 +650,37 @@ function loop() {
   const front = -26 + (t * 6) % 56;
   U.uTsuH.value = lerp(U.uTsuH.value, st.crestT, 0.1);
 
-  // ── UNDERWATER TSUNAMI CAM COLLISION & HYDRAULIC TURBULENCE ──────
+  // ── REALISTIC CINEMATIC TSUNAMI CAM HIT & HYDRODYNAMIC OPTICS ──────
   const camWaterY = Hj(cam.position.x, cam.position.z, t, S.tsu, front, S.amp);
   const submersionDepth = camWaterY - cam.position.y;
   const isUnderwater = submersionDepth > 0;
-  const targetUW = Math.max(0, Math.min(1.0, submersionDepth / 1.5));
+  const targetUW = Math.max(0, Math.min(1.0, submersionDepth / 1.6));
   
+  // Instant violent wave collision trigger (Water slam impact)
+  if (isUnderwater && !wasUnderwater && S.tsu > 0.05) {
+    impactShock = 1.0;
+    camJoltPitch = -0.13; // violent downward tilt impulse
+    camJoltRoll = (Math.random() > 0.5 ? 1 : -1) * 0.09;
+    camJoltY = -0.32;
+    camJoltX = (Math.random() - 0.5) * 0.25;
+  }
+  
+  // Decay impact shock & hydrodynamic impulses with physical exponential damping
+  impactShock = Math.max(0, impactShock - dt * 2.8);
+  camJoltPitch *= Math.exp(-dt * 4.5);
+  camJoltRoll *= Math.exp(-dt * 4.0);
+  camJoltY *= Math.exp(-dt * 5.5);
+  camJoltX *= Math.exp(-dt * 5.0);
+
+  // Resurfacing detection: realistic lens water sheeting
+  if (wasUnderwater && !isUnderwater && S.tsu > 0.05) {
+    wetLensVal = 1.0;
+  }
+  wasUnderwater = isUnderwater;
+  wetLensVal = Math.max(0, wetLensVal - dt * 0.55);
+
   // Smooth underwater transition factor
-  uwFactor += (targetUW - uwFactor) * (1 - Math.exp(-dt * (targetUW > uwFactor ? 18 : 6)));
+  uwFactor += (targetUW - uwFactor) * (1 - Math.exp(-dt * (targetUW > uwFactor ? 20 : 7)));
   if (Math.abs(uwFactor) < 0.001) uwFactor = 0;
   if (U.uUnderwater) {
     U.uUnderwater.value = uwFactor;
@@ -702,32 +688,47 @@ function loop() {
   
   if (stage) {
     stage.style.setProperty('--uw-depth', uwFactor.toFixed(3));
+    stage.style.setProperty('--uw-impact', impactShock.toFixed(3));
+    stage.style.setProperty('--wet-lens', wetLensVal.toFixed(3));
   }
   
-  // Resurfacing detection: water drips run down camera lens
-  if (wasUnderwater && !isUnderwater) {
-    triggerWetLensDrip();
+  // Optical liquid refraction displacement on canvas
+  const targetDisp = isUnderwater ? (14 + impactShock * 34) : (wetLensVal * 16);
+  dispScale += (targetDisp - dispScale) * Math.min(1.0, dt * 12);
+  const feDispEl = document.getElementById('uw-fe-disp');
+  const feTurbEl = document.getElementById('uw-fe-turb');
+  if (feDispEl) {
+    feDispEl.setAttribute('scale', dispScale.toFixed(1));
   }
-  wasUnderwater = isUnderwater;
-  
-  // Continuous cavitation bubbles when submerged in tsunami wave
-  if (isUnderwater && Math.random() < 0.55) {
-    spawnUnderwaterBubble();
-    if (Math.random() < 0.4) spawnUnderwaterBubble();
+  if (feTurbEl && isUnderwater) {
+    feTurbEl.setAttribute('seed', Math.floor((t * 24) % 100).toString());
   }
-  
-  // Powerful hydraulic camera shake when crashing into wave or submerged
+  const canvasEl = document.getElementById('gl');
+  if (canvasEl) {
+    if (dispScale > 0.6) {
+      canvasEl.style.filter = 'url(#waterRefractFilter)';
+    } else {
+      canvasEl.style.filter = 'none';
+    }
+  }
+
+  // Realistic hydrodynamic camera turbulence (violent fluid vorticity & cavitation)
   if (submersionDepth > -0.6 && S.tsu > 0.05) {
     const waveDist = Math.abs(cam.position.x - front);
     const waveProximity = Math.max(0, 1 - waveDist / 7.5);
-    const shakePower = Math.min(1.5, Math.max(uwFactor * 1.2, waveProximity * S.tsu * 1.4));
+    const shakePower = Math.min(1.6, Math.max(uwFactor * 1.35, waveProximity * S.tsu * 1.5));
     if (shakePower > 0.04) {
-      const shakeX = (Math.sin(t * 38.0) * 0.18 + Math.cos(t * 56.0) * 0.10) * shakePower;
-      const shakeY = (Math.cos(t * 46.0) * 0.20 + Math.sin(t * 64.0) * 0.11) * shakePower;
-      const shakeZ = Math.sin(t * 32.0) * 0.045 * shakePower;
-      cam.position.x += shakeX;
-      cam.position.y += shakeY;
-      cam.rotation.z += shakeZ;
+      // Cavitation micro-shudder (high frequency mechanical vibration)
+      const cavitation = (Math.sin(t * 82.0) * 0.038 + Math.cos(t * 120.0) * 0.024) * shakePower;
+      // Fluid vortex drag (macro swirling turbulence)
+      const fluidX = (Math.sin(t * 3.2) * 0.16 + Math.sin(t * 7.5) * 0.07) * shakePower;
+      const fluidY = (Math.cos(t * 3.8) * 0.18 + Math.cos(t * 8.6) * 0.08) * shakePower;
+      const fluidRoll = (Math.sin(t * 2.5) * 0.042 + Math.sin(t * 6.0) * 0.022) * shakePower;
+
+      cam.position.x += fluidX + camJoltX + cavitation * 0.5;
+      cam.position.y += fluidY + camJoltY;
+      cam.rotation.x += camJoltPitch;
+      cam.rotation.z += fluidRoll + camJoltRoll + cavitation * 0.35;
     }
   }
 
