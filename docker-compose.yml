@@ -7,4 +7,4 @@ services:
     container_name: web-samudra
     restart: unless-stopped
     ports:
-      - "3001:80"
+      - "${WEB_PORT:-3006}:80"
