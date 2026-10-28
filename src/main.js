@@ -10,7 +10,7 @@ import { renderArticles } from './components/Articles.js';
 import { renderMitigasi } from './components/Mitigasi.js';
 import { renderSimulation } from './components/Simulation.js';
 import { renderArticlePage } from './components/ArticlePage.js';
-import { renderAdminApp, setAdminToken, getMe } from './admin/index.js';
+import { renderAdminApp, setAdminToken, setAdminRefreshToken, getMe } from './admin/index.js';
 import { createScene } from './scene/threeScene.js';
 import * as THREE from 'three';
 
@@ -692,7 +692,7 @@ function showAdmin(updateHistory = true) {
     savedScrollY = window.scrollY;
   }
   if (updateHistory) {
-    const newUrl = `${window.location.pathname}?page=admin`;
+    const newUrl = '/?page=admin';
     window.history.pushState({ page: 'admin' }, '', newUrl);
   }
   homeView.style.display = 'none';
@@ -720,7 +720,7 @@ function showArticle(articleId, updateHistory = true) {
 
 function showHome(updateHistory = true) {
   if (updateHistory) {
-    window.history.pushState({}, '', window.location.pathname);
+    window.history.pushState({}, '', '/');
   }
   adminView.style.display = 'none';
   adminView.innerHTML = '';
@@ -755,18 +755,33 @@ window.addEventListener('popstate', () => {
   }
 });
 
-// Initial URL inspection on load (including Google OAuth callback token)
+// Initial URL inspection on load (including Google OAuth callback token from backend redirect)
 const urlParams = new URLSearchParams(window.location.search);
+const isCallbackPath = window.location.pathname.includes('/auth/callback');
 const oauthToken = urlParams.get('token') || urlParams.get('accessToken') || urlParams.get('access_token');
+const oauthRefreshToken = urlParams.get('refreshToken') || urlParams.get('refresh_token');
+const authError = urlParams.get('error') || urlParams.get('message');
 
 if (oauthToken) {
   setAdminToken(oauthToken);
+  if (oauthRefreshToken) {
+    setAdminRefreshToken(oauthRefreshToken);
+  }
+  // Clean URL to /?page=admin without leaving access tokens in address bar
+  window.history.replaceState({ page: 'admin' }, '', '/?page=admin');
+
   getMe().catch((e) => {
     console.warn('Gagal memuat profil OAuth:', e);
   }).finally(() => {
-    showAdmin(true);
+    showAdmin(false);
   });
-} else if (urlParams.get('page') === 'admin' || window.location.search.includes('admin')) {
+} else if (authError) {
+  window.history.replaceState({ page: 'admin' }, '', '/?page=admin');
+  showAdmin(false);
+} else if (isCallbackPath || urlParams.get('page') === 'admin' || window.location.search.includes('admin')) {
+  if (isCallbackPath) {
+    window.history.replaceState({ page: 'admin' }, '', '/?page=admin');
+  }
   showAdmin(false);
 } else if (urlParams.get('article')) {
   showArticle(urlParams.get('article'), false);

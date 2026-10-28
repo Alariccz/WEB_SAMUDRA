@@ -6,6 +6,7 @@
 
 const API_BASE = 'https://samudra.rizalzaky.cloud/api';
 const TOKEN_KEY = 'samudra_admin_token';
+const REFRESH_TOKEN_KEY = 'samudra_admin_refresh_token';
 const USER_KEY = 'samudra_admin_user';
 
 // --- AUTH TOKEN HELPERS ---
@@ -18,6 +19,18 @@ export function setAdminToken(token) {
     localStorage.setItem(TOKEN_KEY, token);
   } else {
     localStorage.removeItem(TOKEN_KEY);
+  }
+}
+
+export function getAdminRefreshToken() {
+  return localStorage.getItem(REFRESH_TOKEN_KEY) || '';
+}
+
+export function setAdminRefreshToken(refreshToken) {
+  if (refreshToken) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  } else {
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
   }
 }
 
@@ -40,6 +53,7 @@ export function setAdminUser(user) {
 
 export function logoutAdmin() {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
 }
 
@@ -47,9 +61,42 @@ export function isAdminLoggedIn() {
   return Boolean(getAdminToken());
 }
 
-// Request helper with automatic Bearer token
-async function authFetch(endpoint, options = {}) {
-  const token = getAdminToken();
+/**
+ * Memperbarui accessToken menggunakan refreshToken yang tersimpan
+ */
+export async function refreshAdminToken() {
+  const refreshToken = getAdminRefreshToken();
+  if (!refreshToken) {
+    logoutAdmin();
+    throw new Error('Tidak ada refresh token.');
+  }
+
+  const res = await fetch(`${API_BASE}/auth/refresh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken })
+  });
+
+  if (!res.ok) {
+    logoutAdmin();
+    throw new Error('Sesi login telah berakhir.');
+  }
+
+  const data = await res.json();
+  const newToken = data.accessToken || data.access_token || data.token;
+  if (newToken) {
+    setAdminToken(newToken);
+  }
+  const newRefreshToken = data.refreshToken || data.refresh_token;
+  if (newRefreshToken) {
+    setAdminRefreshToken(newRefreshToken);
+  }
+  return newToken;
+}
+
+// Request helper with automatic Bearer token and automatic token refresh retry
+async function authFetch(endpoint, options = {}, isRetry = false) {
+  let token = getAdminToken();
   const headers = {
     ...(options.headers || {})
   };
@@ -65,14 +112,26 @@ async function authFetch(endpoint, options = {}) {
     body = JSON.stringify(body);
   }
 
-  const res = await fetch(`${API_BASE}${endpoint}`, {
+  let res = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
     headers,
     body
   });
 
   if (res.status === 401) {
-    // Unauthorized / token expired
+    // Attempt token refresh if not already retried
+    if (!isRetry && getAdminRefreshToken()) {
+      try {
+        const refreshedToken = await refreshAdminToken();
+        if (refreshedToken) {
+          headers['Authorization'] = `Bearer ${refreshedToken}`;
+          return await authFetch(endpoint, { ...options, headers, body }, true);
+        }
+      } catch (refreshErr) {
+        console.warn('Auto refresh token gagal:', refreshErr);
+      }
+    }
+
     logoutAdmin();
     const error = new Error('Sesi telah berakhir atau kredensial salah. Silakan login kembali.');
     error.status = 401;
@@ -135,6 +194,11 @@ export async function loginAdmin(email, password) {
     setAdminToken(token);
   }
 
+  const refreshToken = data.refreshToken || data.refresh_token;
+  if (refreshToken) {
+    setAdminRefreshToken(refreshToken);
+  }
+
   const user = data.user || null;
   if (user) {
     setAdminUser(user);
@@ -175,6 +239,11 @@ export async function loginWithGoogleToken(idToken) {
   const token = data.accessToken || data.access_token || data.token;
   if (token) {
     setAdminToken(token);
+  }
+
+  const refreshToken = data.refreshToken || data.refresh_token;
+  if (refreshToken) {
+    setAdminRefreshToken(refreshToken);
   }
 
   const user = data.user || null;
