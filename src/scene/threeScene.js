@@ -250,7 +250,7 @@ export function createScene(canvas) {
   const waterGeo = new THREE.PlaneGeometry(280, 180, 200, 140);
   waterGeo.rotateX(-Math.PI / 2);
   const water = new THREE.Mesh(waterGeo, new THREE.ShaderMaterial({
-    uniforms: U, transparent: true, side: THREE.DoubleSide,
+    uniforms: U, transparent: true, depthWrite: true, side: THREE.DoubleSide,
     vertexShader: HF + 'varying vec3 vW;varying vec2 vP;void main(){vec3 p=position;vP=p.xz;p.y=H(vP);vW=(modelMatrix*vec4(p,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(vW,1.);}',
     fragmentShader: HF + SK + `
 uniform sampler2D uH;
@@ -275,12 +275,12 @@ float HD(vec2 p){
 }
 
 void main(){
+  // Never render inverted back-faces as underside ceiling when camera is above water
+  if (!gl_FrontFacing && uUnderwater < 0.05) discard;
+
   float h0 = HD(vP);
   float groundH = GR(vP);
   float depth = h0 - groundH;
-
-  // Discard dry land so water doesn't render inside the beach or mountain
-  if(depth < -0.02) discard;
 
   vec3 V = normalize(cameraPosition - vW);
   float dist = length(cameraPosition - vW);
@@ -382,8 +382,8 @@ void main(){
   c = mix(c, SKY(vec3(-V.x, .03, -V.z)), fg);
 
   // Soft shore alpha fade (eliminates hard polygonal z-fighting along shoreline)
-  float shoreFade = smoothstep(0.0, 0.20, depth);
-  float baseAlpha = mix(0.18, 0.88, smoothstep(0.0, 5.0, depth));
+  float shoreFade = smoothstep(0.0, 0.22, max(0.0, depth));
+  float baseAlpha = mix(0.20, 0.92, smoothstep(0.0, 4.0, max(0.0, depth)));
   float finalAlpha = clamp(baseAlpha * shoreFade, 0.0, 1.0);
 
   gl_FragColor = vec4(TM(c), max(finalAlpha, fr * shoreFade));
