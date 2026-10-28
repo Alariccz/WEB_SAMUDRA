@@ -621,32 +621,19 @@ function loop() {
   U.uRisk.value = lerp(U.uRisk.value, st.rk, 1 - Math.exp(-dt * 5));
   U.uTer.value = S.ter;
 
-  // Auto ping on scene 0
-  if (cur === 0 && t - lastPing > 3.6) {
-    lastPing = t;
-    ping();
-  }
-
-  // Ping wave (sonar radar pulse)
+  // Ping wave
   let pingT = threeCtx.getPingT();
   if (U.uPa.value > 0) {
     pingT += dt;
     threeCtx.setPingT(pingT);
-    const maxDur = 2.2;
-    const progress = Math.min(1, pingT / maxDur);
-    // Smooth quadratic ease-out: dissolves cleanly to 0 without pop or sudden end
-    const fade = Math.pow(1 - progress, 2);
-    U.uPr.value = progress * 16.0;
-    U.uPa.value = fade;
+    U.uPr.value = pingT * 8;
+    const k = Math.max(0, 1 - pingT / 1.9);
+    U.uPa.value = k < 0.01 ? 0 : k * k;
     U.uPc.value.set(4, 2);
-    if (progress >= 1) {
-      U.uPa.value = 0;
-      U.uPr.value = 0;
-    }
-  } else {
-    U.uPa.value = 0;
-    U.uPr.value = 0;
   }
+
+  // Auto ping on scene 0
+  if (cur === 0 && t - lastPing > 3.4) { lastPing = t; ping(); }
 
   // Buoy animation
   buoyGroup.visible = S.buoy > 0.05;
@@ -742,3 +729,4 @@ if (initialArticleId) {
 } else {
   showHome(false);
 }
+
