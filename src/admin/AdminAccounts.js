@@ -8,11 +8,13 @@ import {
   fetchAllUsers,
   updateUserRole,
   deleteUserAccount,
-  getAdminUser
+  getAdminUser,
+  isSuperAdmin,
+  isOwner
 } from './adminApi.js';
 import { showToast } from './adminToast.js';
 
-// Email pemilik sistem - hanya akun ini yg bisa mempromosikan super_admin
+// Email pemilik sistem - dipakai untuk tampilan label "Pemilik"
 const OWNER_EMAIL = 'rizalzaky2302@gmail.com';
 
 const ROLE_CONFIG = {
@@ -47,10 +49,10 @@ let searchQuery = '';
 
 export function renderAdminAccounts(container) {
   const me = getAdminUser();
-  const isOwner = me && me.email === OWNER_EMAIL;
-  const isSuperAdmin = me && (me.role === 'super_admin' || me.isSuperAdmin);
+  const isCurrentOwner = isOwner();
+  const isSuperAdminUser = isSuperAdmin(); // sudah termasuk owner bypass
 
-  if (!isSuperAdmin) {
+  if (!isSuperAdminUser) {
     container.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:16px;text-align:center;">
         <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--adm-rose)" stroke-width="1.5">
@@ -71,7 +73,7 @@ export function renderAdminAccounts(container) {
         <div class="adm-view-title-bar__left">
           <div class="adm-star-badge" style="margin-bottom:10px;">
             <span class="adm-star-badge__star">👑</span>
-            <span>${isOwner ? 'Pemilik Sistem · Akses Penuh' : 'Super Admin · Manajemen Akun'}</span>
+            <span>${isCurrentOwner ? 'Pemilik Sistem · Akses Penuh' : 'Super Admin · Manajemen Akun'}</span>
           </div>
           <h1>Manajemen Akun Admin</h1>
           <p>Kelola hak akses pengguna yang terdaftar di sistem SAMUDRA. Atur siapa yang bisa mengakses portal admin.</p>
@@ -100,7 +102,7 @@ export function renderAdminAccounts(container) {
             ${cfg.icon} ${cfg.label}
           </div>
         `).join('')}
-        ${isOwner ? `
+        ${isCurrentOwner ? `
           <div style="margin-left:auto;padding:6px 14px;border-radius:var(--adm-radius-full);background:rgba(245,158,11,0.08);border:1px dashed rgba(245,158,11,0.4);font-size:12px;color:var(--adm-amber);">
             ★ Anda adalah pemilik sistem — dapat mempromosikan Super Admin
           </div>
@@ -132,15 +134,15 @@ export function renderAdminAccounts(container) {
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       searchQuery = searchInput.value.toLowerCase().trim();
-      renderTable(tableWrap, isOwner, me);
+      renderTable(tableWrap, isCurrentOwner, me);
     });
   }
 
   if (refreshBtn) {
-    refreshBtn.onclick = () => loadUsers(tableWrap, statsEl, isOwner, me);
+    refreshBtn.onclick = () => loadUsers(tableWrap, statsEl, isCurrentOwner, me);
   }
 
-  loadUsers(tableWrap, statsEl, isOwner, me);
+  loadUsers(tableWrap, statsEl, isCurrentOwner, me);
 }
 
 async function loadUsers(tableWrap, statsEl, isOwner, me) {

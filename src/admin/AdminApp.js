@@ -14,7 +14,9 @@ import {
   logoutAdmin,
   getMe,
   isSuperAdmin,
-  isAdminOrAbove
+  isAdminOrAbove,
+  isOwner,
+  tryPromoteOwnerRole
 } from './adminApi.js';
 import { renderAdminLogin } from './AdminLogin.js';
 import { renderAdminDashboard } from './AdminDashboard.js';
@@ -76,13 +78,15 @@ export function renderAdminApp(container, onBackToWebsite) {
 
   const superAdmin = isSuperAdmin();
 
-  // --- Refresh profil di background ---
+  // --- Refresh profil di background & coba promosikan owner ---
   getMe().then(freshUser => {
     updateUserBadge(root);
     // Kalau role berubah (misal dicabut), re-render
     if (!isAdminOrAbove()) {
       renderAdminApp(container, onBackToWebsite);
     }
+    // Coba promosikan owner ke super_admin di backend (senyap jika gagal)
+    tryPromoteOwnerRole().catch(() => {});
   }).catch(err => {
     if (err.status === 401) {
       activeTab = 'dashboard';

