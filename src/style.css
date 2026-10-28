@@ -303,32 +303,6 @@ a { color: inherit; text-decoration: none; }
   100% { transform: translateY(calc(var(--drip-y, 60px) + 25px)) scaleY(0.9); opacity: 0; }
 }
 
-.underwater-fx__indicator {
-  position: absolute;
-  top: clamp(84px, 12vh, 120px);
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: var(--uw-depth, 0);
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.uw-badge {
-  background: rgba(3, 26, 40, 0.82);
-  border: 1px solid rgba(56, 189, 215, 0.65);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 24px rgba(56, 189, 215, 0.4);
-  backdrop-filter: blur(16px);
-  color: #ffffff;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  padding: 6px 18px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-shadow: 0 0 10px rgba(56, 189, 215, 0.6);
-}
 
 /* ===== HERO SCENES ===== */
 .scene {

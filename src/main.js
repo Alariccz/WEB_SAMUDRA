@@ -48,7 +48,6 @@ stage.innerHTML = `
       <div class="underwater-fx__bubbles" id="uw-bubbles"></div>
       <div class="underwater-fx__wetlens" id="uw-wetlens"></div>
       <div class="underwater-fx__vignette"></div>
-      <div class="underwater-fx__indicator"><span class="uw-badge">🌊 HANTAMAN TSUNAMI &bull; UNDERWATER</span></div>
     </div>
     <div class="vig"></div>
 
