@@ -135,6 +135,7 @@ function createFallbackScene(canvas) {
     tubeMesh: dummyMesh,
     landGroup: dummyGroup,
     shoreSplash: dummyMesh,
+    th: () => 0,
     renderer: {
       render: () => {},
       setSize: () => {}
@@ -426,8 +427,8 @@ void main(){
   }));
   stars.renderOrder = -0.5; stars.frustumCulled = false; scene.add(stars);
 
-  // ---- Land geometry (Optimized resolution, silky-smooth 60 FPS) ----
-  const tg = new THREE.PlaneGeometry(80, 80, 180, 150);
+  // ---- Land geometry (Ultra-smooth terrain resolution, silky-smooth 60 FPS) ----
+  const tg = new THREE.PlaneGeometry(80, 80, 240, 200);
   tg.rotateX(-Math.PI / 2);
   const tp = tg.attributes.position;
   for (let i = 0; i < tp.count; i++) {
@@ -710,20 +711,125 @@ void main(){
   const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.65, 16, 16), new THREE.MeshBasicMaterial({ color: 0x00d2ff, transparent: true, opacity: 0, depthTest: false }));
   beacon.renderOrder = 6; beacon.position.copy(curve.getPoint(1)); landGroup.add(beacon);
 
-  // ---- 1. Low-poly Conical Pines (Compact, proportioned classic pine trees) ----
-  // Base height ~2.1m with wide conical silhouette (not tall skinny needles)
-  const f1 = new THREE.ConeGeometry(1.20, 0.75, 7); f1.translate(0, 0.55, 0);
-  const f2 = new THREE.ConeGeometry(0.92, 0.65, 7); f2.translate(0, 1.05, 0);
-  const f3 = new THREE.ConeGeometry(0.64, 0.55, 7); f3.translate(0, 1.50, 0);
-  const f4 = new THREE.ConeGeometry(0.32, 0.45, 6); f4.translate(0, 1.88, 0);
-  const foliageGeo = BufferGeometryUtils.mergeGeometries([f1, f2, f3, f4]);
+  // Trail waymarker posts along the mountain evacuation route
+  const waymarkerGroup = new THREE.Group();
+  const wmPostGeo = new THREE.CylinderGeometry(0.045, 0.055, 0.85, 8);
+  wmPostGeo.translate(0, 0.425, 0);
+  const wmPostMat = new THREE.MeshStandardMaterial({ color: 0x3f2d21, roughness: 0.85, flatShading: false });
+  const wmRingGeo = new THREE.CylinderGeometry(0.058, 0.058, 0.16, 8);
+  wmRingGeo.translate(0, 0.72, 0);
+  const wmRingMat = new THREE.MeshStandardMaterial({ color: 0x00d2ff, emissive: 0x00d2ff, emissiveIntensity: 0.75 });
 
-  const trunkGeo = new THREE.CylinderGeometry(0.12, 0.18, 0.6, 6);
-  trunkGeo.translate(0, 0.3, 0);
+  const waymarkerPoints = [0.06, 0.14, 0.22, 0.30, 0.38, 0.46, 0.54, 0.62, 0.70, 0.78, 0.86, 0.94];
+  waymarkerPoints.forEach(u => {
+    const pt = curve.getPoint(u);
+    const tan = curve.getTangent(u);
+    const norm = new THREE.Vector3(-tan.z, 0, tan.x).normalize();
+    const pos = pt.clone().addScaledVector(norm, 0.75);
+    pos.y = th(pos.x, pos.z);
 
-  // FlatShading gives that premium faceted low-poly look
-  const foliageMat = new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0.02, flatShading: true });
-  const trunkMat   = new THREE.MeshStandardMaterial({ color: 0x1f1610, roughness: 0.95, metalness: 0.0, flatShading: true });
+    const post = new THREE.Mesh(wmPostGeo, wmPostMat);
+    const ring = new THREE.Mesh(wmRingGeo, wmRingMat);
+    post.position.copy(pos);
+    ring.position.copy(pos);
+    waymarkerGroup.add(post, ring);
+  });
+  landGroup.add(waymarkerGroup);
+
+  // ---- 1. Realistic Organic Mountain Conifers (Lush Volumetric Foliage & Branching Bark Trunks) ----
+  function createOrganicFoliage() {
+    const boughs = [];
+    function addClump(rad, px, py, pz, sx, sy, sz, seed) {
+      const g = new THREE.IcosahedronGeometry(rad, 1);
+      const pos = g.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+        const disp = 1.0 + Math.sin(x * 6.2 + seed) * 0.12 + Math.cos(z * 5.8 + seed * 1.6) * 0.10 + Math.sin(y * 4.4) * 0.08;
+        pos.setXYZ(i, x * sx * disp, y * sy * disp, z * sz * disp);
+      }
+      g.translate(px, py, pz);
+      boughs.push(g);
+    }
+
+    // Tier 1 - Lower skirt whorl (5 boughs)
+    for (let i = 0; i < 5; i++) {
+      const ang = (i / 5) * Math.PI * 2 + 0.2;
+      const r = 0.62;
+      addClump(0.44, Math.cos(ang) * r, 0.65, Math.sin(ang) * r, 1.25, 0.70, 1.25, i * 2.3);
+    }
+    // Tier 2 - Mid-lower whorl (5 boughs, staggered)
+    for (let i = 0; i < 5; i++) {
+      const ang = (i / 5) * Math.PI * 2 + 0.8;
+      const r = 0.48;
+      addClump(0.38, Math.cos(ang) * r, 1.05, Math.sin(ang) * r, 1.15, 0.72, 1.15, i * 3.1 + 5.0);
+    }
+    // Tier 3 - Mid canopy whorl (4 boughs)
+    for (let i = 0; i < 4; i++) {
+      const ang = (i / 4) * Math.PI * 2 + 0.4;
+      const r = 0.36;
+      addClump(0.32, Math.cos(ang) * r, 1.45, Math.sin(ang) * r, 1.05, 0.75, 1.05, i * 4.2 + 10.0);
+    }
+    // Tier 4 - Upper canopy (3 boughs)
+    for (let i = 0; i < 3; i++) {
+      const ang = (i / 3) * Math.PI * 2 + 0.9;
+      const r = 0.24;
+      addClump(0.26, Math.cos(ang) * r, 1.82, Math.sin(ang) * r, 0.95, 0.78, 0.95, i * 5.1 + 15.0);
+    }
+    // Tier 5 - Crown whorl (2 boughs)
+    addClump(0.20, 0.10, 2.15, 0.05, 0.90, 0.80, 0.90, 19.5);
+    addClump(0.20, -0.08, 2.18, -0.06, 0.90, 0.80, 0.90, 20.5);
+
+    // Spire tip / leader shoot at the top
+    addClump(0.18, 0, 2.42, 0, 0.75, 1.50, 0.75, 22.0);
+
+    const merged = BufferGeometryUtils.mergeGeometries(boughs);
+    merged.computeVertexNormals();
+    return merged;
+  }
+
+  function createRealisticTrunk() {
+    const parts = [];
+    // Main tapered trunk
+    const mainTrunk = new THREE.CylinderGeometry(0.06, 0.20, 2.3, 10);
+    mainTrunk.translate(0, 1.15, 0);
+    parts.push(mainTrunk);
+
+    // Base root flares
+    for (let i = 0; i < 4; i++) {
+      const ang = (i / 4) * Math.PI * 2 + 0.3;
+      const root = new THREE.CylinderGeometry(0.04, 0.12, 0.45, 6);
+      root.rotateZ(0.26);
+      root.rotateY(ang);
+      root.translate(Math.cos(ang) * 0.16, 0.18, Math.sin(ang) * 0.16);
+      parts.push(root);
+    }
+
+    // Structural branches radiating into the foliage whorls
+    for (let t = 0; t < 3; t++) {
+      const y = 0.70 + t * 0.40;
+      const numBranches = 4;
+      const len = 0.45 - t * 0.09;
+      for (let b = 0; b < numBranches; b++) {
+        const ang = (b / numBranches) * Math.PI * 2 + t * 0.75;
+        const branch = new THREE.CylinderGeometry(0.02, 0.04, len, 5);
+        branch.rotateZ(Math.PI / 2 - 0.22);
+        branch.rotateY(ang);
+        branch.translate(Math.cos(ang) * (len * 0.45), y, Math.sin(ang) * (len * 0.45));
+        parts.push(branch);
+      }
+    }
+
+    const merged = BufferGeometryUtils.mergeGeometries(parts);
+    merged.computeVertexNormals();
+    return merged;
+  }
+
+  const foliageGeo = createOrganicFoliage();
+  const trunkGeo   = createRealisticTrunk();
+
+  // Smooth PBR shading with organic diffuse response (no faceted cartoon look)
+  const foliageMat = new THREE.MeshStandardMaterial({ roughness: 0.65, metalness: 0.04, flatShading: false });
+  const trunkMat   = new THREE.MeshStandardMaterial({ color: 0x271a12, roughness: 0.90, metalness: 0.02, flatShading: false });
 
   const MAX_TREES = 2400;
   const foliageMesh = new THREE.InstancedMesh(foliageGeo, foliageMat, MAX_TREES);
@@ -733,16 +839,16 @@ void main(){
   const dummy = new THREE.Object3D();
   let treeCount = 0;
 
-  // Realistic deep evergreen, mountain fir, cedar, and spruce forest palette
+  // Rich organic evergreen, mountain fir, spruce, and cedar forest palette
   const pineColors = [
-    new THREE.Color(0x182f1b), // deep subalpine fir
-    new THREE.Color(0x1d3820), // montane spruce
-    new THREE.Color(0x152917), // dense shadowed conifer
-    new THREE.Color(0x233e24), // highland pine
-    new THREE.Color(0x192e1b), // dark hemlock
-    new THREE.Color(0x274528), // weathered cedar
-    new THREE.Color(0x132415), // deep crevice pine
-    new THREE.Color(0x1f3621), // coastal redwood
+    new THREE.Color(0x132a18), // deep mountain spruce
+    new THREE.Color(0x1a3a21), // rich subalpine fir
+    new THREE.Color(0x1f4626), // lush coastal conifer
+    new THREE.Color(0x15321c), // shadowed highland cedar
+    new THREE.Color(0x244f2d), // sun-dappled pine
+    new THREE.Color(0x1c3f25), // deep emerald fir
+    new THREE.Color(0x162f1b), // dark mountain hemlock
+    new THREE.Color(0x265532), // highland pine tips
   ];
 
   // Village centers distributed along the wider coastal bay
@@ -849,7 +955,8 @@ void main(){
   const hutGeo = BufferGeometryUtils.mergeGeometries([
     stiltLeg1, stiltLeg2, stiltLeg3, stiltLeg4, floorPlatform, hutBody, roofHut, verandaLadder
   ]);
-  const hutMat = new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0.03, flatShading: true });
+  hutGeo.computeVertexNormals();
+  const hutMat = new THREE.MeshStandardMaterial({ roughness: 0.85, metalness: 0.03, flatShading: false });
   const MAX_HUTS = 45;
   const hutMesh = new THREE.InstancedMesh(hutGeo, hutMat, MAX_HUTS);
 
@@ -1886,7 +1993,7 @@ void main(){
     rPos.setXYZ(i, bx * (1 + n), by * (0.75 + n * 0.3), bz * (1 + n));
   }
   rockGeo.computeVertexNormals();
-  const rockMat = new THREE.MeshStandardMaterial({ roughness: 0.90, metalness: 0.02, flatShading: true });
+  const rockMat = new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0.02, flatShading: false });
   const MAX_ROCKS = 60;
   const rockMesh = new THREE.InstancedMesh(rockGeo, rockMat, MAX_ROCKS);
 
@@ -1944,33 +2051,138 @@ void main(){
   if (rockMesh.instanceColor) rockMesh.instanceColor.needsUpdate = true;
   landGroup.add(rockMesh);
 
-  // ---- 4. Summit Shelter Pavilion ----
+  // ---- 4. Modern Highland Disaster Evacuation Shelter & Telemetry Station ----
   const shelterGroup = new THREE.Group();
   const sy = th(41.6, -8.6);
   shelterGroup.position.set(41.6, sy, -8.6);
 
-  const basePlat = new THREE.Mesh(
-    new THREE.CylinderGeometry(2.4, 2.6, 0.5, 6),
-    new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8, flatShading: true })
+  // A. Heavy Reinforced Concrete Foundation Slab
+  const deckMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(8.2, 0.55, 7.2),
+    new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.88, metalness: 0.05, flatShading: false })
   );
-  basePlat.position.y = 0.25;
+  deckMesh.position.y = 0.275;
 
-  const roof = new THREE.Mesh(
-    new THREE.ConeGeometry(3.0, 1.2, 6),
-    new THREE.MeshStandardMaterial({ color: 0x00d2ff, emissive: 0x001a33, emissiveIntensity: 0.3, roughness: 0.5, flatShading: true })
+  // Deck edge safety curb (dark charcoal perimeter)
+  const curbMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(8.35, 0.15, 7.35),
+    new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.70, flatShading: false })
   );
-  roof.position.y = 2.4;
+  curbMesh.position.y = 0.58;
 
-  for (let a = 0; a < 6; a++) {
-    const ang = a * Math.PI / 3;
-    const pillar = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.08, 0.08, 1.8, 6),
-      new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.5 })
-    );
-    pillar.position.set(Math.cos(ang) * 2.0, 1.15, Math.sin(ang) * 2.0);
-    shelterGroup.add(pillar);
+  // Access stairs leading up from the hiking trail arrival side (west edge)
+  const step1 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.18, 2.2), new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9 }));
+  step1.position.set(-4.5, 0.09, 0);
+  const step2 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.36, 2.2), new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9 }));
+  step2.position.set(-3.7, 0.18, 0);
+
+  // Safety Perimeter Railings (High-tensile steel guard rails)
+  const railingGroup = new THREE.Group();
+  const railMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.35, metalness: 0.75 });
+  const railPostGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.95, 8);
+  const railPosts = [
+    [-4.0, -3.5], [0.0, -3.5], [4.0, -3.5],
+    [4.0, 0.0], [4.0, 3.5],
+    [0.0, 3.5], [-4.0, 3.5],
+    [-4.0, 1.4], [-4.0, -1.4]
+  ];
+  railPosts.forEach(([rx, rz]) => {
+    const post = new THREE.Mesh(railPostGeo, railMat);
+    post.position.set(rx, 0.55 + 0.475, rz);
+    railingGroup.add(post);
+  });
+  function addHandrail(x1, z1, x2, z2) {
+    const len = Math.hypot(x2 - x1, z2 - z1);
+    const r = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, len, 8), railMat);
+    r.position.set((x1 + x2) / 2, 1.45, (z1 + z2) / 2);
+    r.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(x2 - x1, 0, z2 - z1).normalize());
+    railingGroup.add(r);
   }
-  shelterGroup.add(basePlat, roof);
+  addHandrail(-4.0, -3.5, 4.0, -3.5);
+  addHandrail(4.0, -3.5, 4.0, 3.5);
+  addHandrail(4.0, 3.5, -4.0, 3.5);
+  addHandrail(-4.0, 3.5, -4.0, 1.4);
+  addHandrail(-4.0, -1.4, -4.0, -3.5);
+
+  // B. Main Emergency Rescue Hall & Operations Center
+  const bldGroup = new THREE.Group();
+  const bldWall = new THREE.Mesh(
+    new THREE.BoxGeometry(4.8, 2.5, 3.8),
+    new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.65, metalness: 0.15, flatShading: false })
+  );
+  bldWall.position.set(0.4, 0.55 + 1.25, 0);
+
+  // Forward Panoramic Observation Windows (Warm amber illuminated interior)
+  const winMat = new THREE.MeshStandardMaterial({
+    color: 0xffedd5,
+    emissive: 0xf59e0b,
+    emissiveIntensity: 0.72,
+    roughness: 0.20,
+    metalness: 0.10,
+    transparent: true,
+    opacity: 0.88
+  });
+  const winMesh = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.15, 2.6), winMat);
+  winMesh.position.set(-2.02, 0.55 + 1.35, 0);
+
+  // Side Communications Window
+  const sideWin = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.85, 0.12), winMat);
+  sideWin.position.set(0.4, 0.55 + 1.45, 1.92);
+
+  // Overhang Storm Roof Canopy
+  const roofMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(5.4, 0.22, 4.4),
+    new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.50, metalness: 0.20 })
+  );
+  roofMesh.position.set(0.4, 0.55 + 2.55, 0);
+
+  // Rooftop Photovoltaic Solar Panels
+  const solarMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.15, metalness: 0.85, emissive: 0x001529, emissiveIntensity: 0.2 });
+  const solar1 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.08, 3.2), solarMat);
+  solar1.position.set(-0.6, 0.55 + 2.72, 0);
+  solar1.rotation.z = -0.08;
+  const solar2 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.08, 3.2), solarMat);
+  solar2.position.set(1.4, 0.55 + 2.72, 0);
+  solar2.rotation.z = -0.08;
+
+  // Green Emergency Evacuation Cross Emblem (+)
+  const crossMat = new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 0.85 });
+  const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.22, 0.06), crossMat);
+  const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.72, 0.06), crossMat);
+  crossH.position.set(-2.04, 0.55 + 2.22, 0);
+  crossV.position.set(-2.04, 0.55 + 2.22, 0);
+
+  // C. BMKG Telecommunication & Early Warning Lattice Mast
+  const mastGroup = new THREE.Group();
+  mastGroup.position.set(2.4, 0.55, 1.4);
+  const mastLegGeo = new THREE.CylinderGeometry(0.04, 0.05, 5.8, 6);
+  const mastMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.40, metalness: 0.75 });
+  const mastLegs = [[-0.3, -0.3], [0.3, -0.3], [0.3, 0.3], [-0.3, 0.3]];
+  mastLegs.forEach(([lx, lz]) => {
+    const leg = new THREE.Mesh(mastLegGeo, mastMat);
+    leg.position.set(lx, 2.9, lz);
+    mastGroup.add(leg);
+  });
+  for (let b = 1; b <= 4; b++) {
+    const brace = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.03, 0.68), mastMat);
+    brace.position.y = b * 1.15;
+    mastGroup.add(brace);
+  }
+  // Parabolic Satellite Telemetry Dish pointing seaward
+  const dish = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.55, 0.12, 0.22, 16),
+    new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3, metalness: 0.6 })
+  );
+  dish.rotation.x = Math.PI / 2 + 0.35;
+  dish.rotation.z = -0.55;
+  dish.position.set(-0.2, 4.6, -0.2);
+  mastGroup.add(dish);
+
+  // Position summit beacon at the apex of the communication mast
+  beacon.position.set(41.6 + 2.4, sy + 0.55 + 5.85, -8.6 + 1.4);
+
+  bldGroup.add(bldWall, winMesh, sideWin, roofMesh, solar1, solar2, crossH, crossV);
+  shelterGroup.add(deckMesh, curbMesh, step1, step2, railingGroup, bldGroup, mastGroup);
   landGroup.add(shelterGroup);
 
   // ---- 5. Crisp Shoreline Wave Splash (Lightweight, zero-lag 110 droplets) ----
@@ -2085,14 +2297,42 @@ void main(){
 
   function resize() {
     const s = canvas.parentNode;
-    renderer.setSize(s.clientWidth, s.clientHeight, false);
-    cam.aspect = s.clientWidth / s.clientHeight;
+    const w = s ? s.clientWidth : window.innerWidth;
+    const h = s ? s.clientHeight : window.innerHeight;
+    if (!w || !h) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.0);
+    renderer.setPixelRatio(dpr);
+    renderer.setSize(w, h, false);
+    if (U && U.uPx) U.uPx.value = dpr;
+
+    const aspect = w / h;
+    cam.aspect = aspect;
+
+    // Dynamic Responsive FOV:
+    // Landscape/desktop: natural 50° FOV
+    // Narrow portrait (mobile phones): expand vertical FOV progressively up to 68°
+    // so the horizontal field of view remains wide, spacious, and never cropped on small devices
+    if (aspect < 1.0) {
+      const mobT = Math.min(1.0, (1.0 - aspect) / 0.55);
+      cam.fov = 50 + mobT * 18;
+    } else {
+      cam.fov = 50;
+    }
     cam.updateProjectionMatrix();
   }
-  window.addEventListener('resize', resize); resize();
+
+  window.addEventListener('resize', resize, { passive: true });
+  window.addEventListener('orientationchange', () => { setTimeout(resize, 100); }, { passive: true });
+
+  if (typeof ResizeObserver !== 'undefined' && canvas.parentNode) {
+    const ro = new ResizeObserver(() => { resize(); });
+    ro.observe(canvas.parentNode);
+  }
+  resize();
 
   return {
-    U, S, K, cam, dome, stars, buoyGroup, lamp, pm, trail, trail2, dots, beacon, curve, land, tubeMesh, landGroup, shoreSplash,
+    U, S, K, cam, dome, stars, buoyGroup, lamp, pm, trail, trail2, dots, beacon, curve, land, tubeMesh, landGroup, shoreSplash, th,
     renderer, scene, world, ping, sun, amb,
     updateCoastalPhysics,
     getState: () => ({ pp, pt, cur, yaw, yawT, drag, lx, crestT, rk, mx, my }),

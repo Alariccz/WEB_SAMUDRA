@@ -489,7 +489,7 @@ homeView.appendChild(footer);
 // ===== INIT THREE.JS SCENE =====
 const canvas = document.getElementById('gl');
 const threeCtx = createScene(canvas);
-const { U, S, K, cam, dome, stars, buoyGroup, lamp, pm, trail, trail2, dots, beacon, curve, land, tubeMesh, landGroup, renderer, scene, lerp, ping, sun, amb } = threeCtx;
+const { U, S, K, cam, dome, stars, buoyGroup, lamp, pm, trail, trail2, dots, beacon, curve, land, tubeMesh, landGroup, renderer, scene, lerp, ping, sun, amb, th } = threeCtx;
 
 // ===== SCENE CONTROLS =====
 const scenes = Array.from(document.querySelectorAll('.scene'));
@@ -528,18 +528,53 @@ document.getElementById('risk').onclick = function () {
   this.setAttribute('aria-pressed', !!rk);
 };
 
-// Mouse parallax
+// Mouse parallax (active on mouse devices, smooth neutral on touch)
 window.addEventListener('pointermove', e => {
-  threeCtx.setState({ mx: e.clientX / window.innerWidth - 0.5, my: e.clientY / window.innerHeight - 0.5 });
+  if (e.pointerType === 'mouse') {
+    threeCtx.setState({
+      mx: e.clientX / window.innerWidth - 0.5,
+      my: e.clientY / window.innerHeight - 0.5
+    });
+  }
 });
 
-// Drag to yaw
-canvas.addEventListener('pointerdown', e => { threeCtx.setState({ drag: 1, lx: e.clientX }); });
-window.addEventListener('pointerup', () => { threeCtx.setState({ drag: 0 }); });
+// Drag to yaw (mouse & touch-drag with vertical scroll preservation)
+let dragStartX = 0, dragStartY = 0, isHorizontalDrag = false;
+canvas.addEventListener('pointerdown', e => {
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+  isHorizontalDrag = false;
+  threeCtx.setState({ drag: 1, lx: e.clientX });
+});
+window.addEventListener('pointerup', () => {
+  threeCtx.setState({ drag: 0 });
+  isHorizontalDrag = false;
+});
+window.addEventListener('pointercancel', () => {
+  threeCtx.setState({ drag: 0 });
+  isHorizontalDrag = false;
+});
 window.addEventListener('pointermove', e => {
   const st = threeCtx.getState();
   if (st.drag) {
-    threeCtx.setState({ yawT: Math.max(-1, Math.min(1, st.yawT + (e.clientX - st.lx) * 0.005)), lx: e.clientX });
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+    if (e.pointerType === 'touch') {
+      if (!isHorizontalDrag && Math.abs(dx) > Math.abs(dy) * 1.5 && Math.abs(dx) > 8) {
+        isHorizontalDrag = true;
+      }
+      if (isHorizontalDrag) {
+        threeCtx.setState({
+          yawT: Math.max(-1, Math.min(1, st.yawT + (e.clientX - st.lx) * 0.0035)),
+          lx: e.clientX
+        });
+      }
+    } else {
+      threeCtx.setState({
+        yawT: Math.max(-1, Math.min(1, st.yawT + (e.clientX - st.lx) * 0.005)),
+        lx: e.clientX
+      });
+    }
   }
 });
 
@@ -555,10 +590,12 @@ function fromScroll() {
   const s = document.querySelector('.stage');
   if (!s || s.offsetParent === null) return;
   const r = s.getBoundingClientRect();
-  const q = -r.top / (r.height - window.innerHeight);
+  const vh = window.innerHeight || document.documentElement.clientHeight;
+  const q = -r.top / Math.max(1, (r.height - vh));
   threeCtx.setState({ pt: isFinite(q) ? Math.max(0, Math.min(1, q)) : 0 });
 }
 window.addEventListener('scroll', fromScroll, { passive: true });
+window.addEventListener('resize', fromScroll, { passive: true });
 
 // ===== ANIMATION LOOP =====
 const clock = new THREE.Clock();
@@ -586,6 +623,34 @@ let dispScale = 0;
 
 const A = new THREE.Vector3(), B = new THREE.Vector3();
 
+// ===== EVACUATION ROUTE FIRST-PERSON WALKING POV =====
+function getEvacWalkPose(u) {
+  if (!curve) return null;
+  const clampedU = Math.max(0.005, Math.min(0.96, u));
+  const p = curve.getPoint(clampedU);
+  const groundY = th ? th(p.x, p.z) : p.y;
+
+  // Eye position: ~1.80m above ground surface
+  const eyePos = new THREE.Vector3(p.x, groundY + 1.80, p.z);
+
+  // Look target ahead along the curve
+  const lookDistU = Math.min(0.995, clampedU + 0.065);
+  const lookP = curve.getPoint(lookDistU);
+  const lookGroundY = th ? th(lookP.x, lookP.z) : lookP.y;
+
+  // Forward look point with slight uphill gaze angle (+0.45m above eye level)
+  const lookTarget = new THREE.Vector3(lookP.x, lookGroundY + 2.25, lookP.z);
+
+  // When approaching summit shelter, gaze up at the summit shelter beacon
+  if (clampedU > 0.75) {
+    const shelterTarget = new THREE.Vector3(41.6, (th ? th(41.6, -8.6) : 15.5) + 3.2, -8.6);
+    const topBlend = Math.min(1.0, (clampedU - 0.75) / 0.20);
+    lookTarget.lerp(shelterTarget, topBlend * 0.75);
+  }
+
+  return { eyePos, lookTarget };
+}
+
 function loop() {
   requestAnimationFrame(loop);
 
@@ -594,13 +659,13 @@ function loop() {
   const st = threeCtx.getState();
 
   // Smooth scroll progress
-  let pp = st.pp + (st.pt - st.pp) * (1 - Math.exp(-dt * 3.5));
+  let pp = st.pp + (st.pt - st.pp) * (1 - Math.exp(-dt * 4.5));
   if (!isFinite(pp)) pp = 0;
   threeCtx.setState({ pp });
 
   const x3 = pp * 3;
   const i0 = Math.min(2, Math.floor(x3));
-  let f = Math.max(0, Math.min(1, (x3 - i0 - 0.55) / 0.45));
+  let f = Math.max(0, Math.min(1, (x3 - i0 - 0.45) / 0.55));
   f = f * f * f * (f * (f * 6 - 15) + 10);
   if (i0 === 2) f = 0;
   const vv = i0 + f;
@@ -628,13 +693,74 @@ function loop() {
     el.classList.toggle('scene--active', o > 0.5);
   });
 
-  // Camera
+  // Camera Controller: Orbit Camera (Scene 0 & 1) vs First-Person Walk POV (Scene 2)
   let yaw = st.yaw + (st.yawT - st.yaw) * (1 - Math.exp(-dt * 6));
   threeCtx.setState({ yaw });
-  const cx = S.cp.x + st.mx * 3 - S.lk.x, cz = S.cp.z + (nar ? 10 : 0) - S.lk.z;
+
+  // Responsive camera framing: smooth interpolation across device aspect ratios
+  const aspect = cam.aspect || (window.innerWidth / window.innerHeight);
+  const narrowFactor = Math.max(0, Math.min(1.0, (1.10 - aspect) / 0.60));
+  const mobBackDist = narrowFactor * 8.0;
+  const mobLift = narrowFactor * 2.2;
+  const mobLookShiftX = narrowFactor * -1.2;
+  const mobLookShiftY = narrowFactor * -0.5;
+
+  const cx = S.cp.x + st.mx * (narrowFactor > 0.5 ? 1.8 : 3.0) - S.lk.x;
+  const cz = S.cp.z + mobBackDist - S.lk.z;
   const co = Math.cos(yaw), si = Math.sin(yaw);
-  cam.position.set(S.lk.x + cx * co + cz * si, S.cp.y - st.my * 1.5 + (nar ? 5 : 0), S.lk.z - cx * si + cz * co);
-  cam.lookAt(nar ? S.lk.x - 2 : S.lk.x, S.lk.y, S.lk.z);
+  const orbitCamPos = new THREE.Vector3(
+    S.lk.x + cx * co + cz * si,
+    S.cp.y + mobLift - st.my * 1.5,
+    S.lk.z - cx * si + cz * co
+  );
+  const orbitLookTarget = new THREE.Vector3(
+    S.lk.x + mobLookShiftX,
+    S.lk.y + mobLookShiftY,
+    S.lk.z
+  );
+
+  // Transition factor into first-person path walking POV in Scene 2 (x3 > 1.5)
+  const blendToWalk = Math.max(0, Math.min(1.0, (x3 - 1.50) / 0.45));
+  const smoothBlend = blendToWalk * blendToWalk * (3 - 2 * blendToWalk);
+
+  if (smoothBlend > 0) {
+    // Walking progress along the curve (starts at beach x3=1.65 up to shelter at x3=2.95)
+    const walkProg = Math.max(0, Math.min(1.0, (x3 - 1.65) / 1.30));
+    const walkU = 0.02 + walkProg * 0.92;
+    const walkPose = getEvacWalkPose(walkU);
+
+    if (walkPose) {
+      // Natural walking footsteps head-bob
+      const walkFreq = walkU * 75.0;
+      const stepBob = Math.abs(Math.sin(walkFreq)) * 0.035 * smoothBlend;
+      const stepRoll = Math.sin(walkFreq * 0.5) * 0.012 * smoothBlend;
+
+      const walkCamPos = walkPose.eyePos.clone();
+      walkCamPos.y += stepBob;
+
+      // First-person head-look with mouse / touch
+      const walkLookTarget = walkPose.lookTarget.clone();
+      walkLookTarget.x += st.mx * (narrowFactor > 0.5 ? 2.0 : 4.0);
+      walkLookTarget.y -= st.my * 2.5;
+
+      // On narrow mobile portrait screens, elevate look target slightly so summit shelter station is clearly framed
+      if (narrowFactor > 0) {
+        walkLookTarget.y += narrowFactor * 0.40;
+      }
+
+      // Smoothly blend camera position and lookTarget from orbit to walk POV
+      cam.position.copy(orbitCamPos).lerp(walkCamPos, smoothBlend);
+      const finalLook = orbitLookTarget.clone().lerp(walkLookTarget, smoothBlend);
+      cam.lookAt(finalLook);
+      cam.rotation.z += stepRoll;
+    } else {
+      cam.position.copy(orbitCamPos);
+      cam.lookAt(orbitLookTarget);
+    }
+  } else {
+    cam.position.copy(orbitCamPos);
+    cam.lookAt(orbitLookTarget);
+  }
   dome.position.copy(cam.position);
   stars.position.copy(cam.position);
 
@@ -792,21 +918,22 @@ function loop() {
     threeCtx.updateCoastalPhysics(dt, t, S.tsu, front, U.uTsuH.value, S.amp);
   }
 
-  // Evac path (only visible when in Scene 3 / evacuation route)
-  const showPath = S.path > 0.02;
+  // Evac path (visible when transitioning into Scene 2 / evacuation route)
+  const pathFactor = Math.max(S.path, Math.min(1.0, (x3 - 1.05) / 0.5));
+  const showPath = pathFactor > 0.02;
   if (tubeMesh) tubeMesh.visible = showPath;
   trail.visible = showPath;
   trail2.visible = showPath;
   beacon.visible = showPath;
   dots.forEach(d => { d.visible = showPath; });
 
-  pm.opacity = S.path * 0.5;
-  trail.material.opacity = S.path * 0.35;
-  trail2.material.opacity = S.path * 0.95;
-  beacon.material.opacity = S.path;
+  pm.opacity = pathFactor * 0.55;
+  trail.material.opacity = pathFactor * 0.40;
+  trail2.material.opacity = pathFactor * 0.95;
+  beacon.material.opacity = pathFactor;
   beacon.scale.setScalar(1 + 0.25 * Math.sin(t * 4));
   dots.forEach((d, j) => {
-    d.material.opacity = S.path;
+    d.material.opacity = pathFactor;
     d.position.copy(curve.getPoint((t * 0.18 + j / dots.length) % 1));
   });
 

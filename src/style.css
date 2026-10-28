@@ -183,6 +183,7 @@ a { color: inherit; text-decoration: none; }
   height: 100%;
   display: block;
   background: var(--bg);
+  touch-action: pan-y;
 }
 
 .vig {
@@ -300,12 +301,15 @@ a { color: inherit; text-decoration: none; }
   opacity: 0;
   pointer-events: none;
   will-change: opacity, transform;
-  transition: opacity .3s;
 }
 
 .scene--active {
   opacity: 1;
   pointer-events: auto;
+}
+
+.scene h1, .scene__eyebrow, .scene__lede, .scene__stats {
+  text-shadow: 0 2px 12px rgba(2, 5, 18, 0.85), 0 1px 3px rgba(0, 0, 0, 0.95);
 }
 
 .scene__eyebrow {
@@ -2254,14 +2258,40 @@ footer {
   .nav__links, .stage__label { display: none; }
   nav { grid-template-columns: 1fr auto; }
   .scene-nav { display: none; }
-  .vig { background: linear-gradient(#020512e0, #02051266 70%); }
+  .vig {
+    background: linear-gradient(180deg, rgba(2, 5, 18, 0.90) 0%, rgba(2, 5, 18, 0.40) 50%, transparent 100%);
+  }
   .flow-grid, .features-bento { grid-template-columns: 1fr; }
   .sim { grid-template-columns: 1fr; }
   .sim__outputs { grid-template-columns: 1fr; }
   .cta-banner { padding: 32px 20px; }
   .cta-banner__actions { flex-direction: column; }
-  .scene { top: 42%; width: calc(100% - 40px); }
-  .scene h1 { font-size: clamp(32px, 9vw, 44px); }
+  .scene {
+    top: 36%;
+    left: clamp(16px, 4vw, 24px);
+    width: calc(100% - clamp(32px, 8vw, 48px));
+    max-height: calc(100svh - 120px);
+  }
+  .scene h1 {
+    font-size: clamp(26px, 7.5vw, 38px);
+    margin: 10px 0 8px;
+  }
+  .scene__lede {
+    font-size: 13.5px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .scene__stats {
+    margin-bottom: 14px;
+    gap: 16px;
+  }
+  .scene__stats b {
+    font-size: 24px;
+  }
+  .scene__mag-control {
+    padding: 10px 14px;
+    margin-bottom: 12px;
+  }
   .hud { gap: 14px; }
 }
 
