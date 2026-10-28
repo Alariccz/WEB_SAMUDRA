@@ -431,3 +431,73 @@ export async function deletePeralatan(id) {
     method: 'DELETE'
   });
 }
+
+// --- USER / ACCOUNT MANAGEMENT (Super Admin only) ---
+
+/**
+ * Ambil semua pengguna terdaftar
+ */
+export async function fetchAllUsers() {
+  try {
+    return await authFetch('/users');
+  } catch (err) {
+    // fallback path kalau backend pakai /auth/users
+    try {
+      return await authFetch('/auth/users');
+    } catch {
+      throw err;
+    }
+  }
+}
+
+/**
+ * Ubah role pengguna
+ * @param {string} userId
+ * @param {'user'|'admin'|'super_admin'} role
+ */
+export async function updateUserRole(userId, role) {
+  // Coba PATCH /users/:id/role, fallback ke PATCH /users/:id
+  try {
+    return await authFetch(`/users/${encodeURIComponent(userId)}/role`, {
+      method: 'PATCH',
+      body: { role }
+    });
+  } catch (err) {
+    if (err.status === 404) {
+      return await authFetch(`/users/${encodeURIComponent(userId)}`, {
+        method: 'PATCH',
+        body: { role }
+      });
+    }
+    throw err;
+  }
+}
+
+/**
+ * Hapus akun pengguna
+ * @param {string} userId
+ */
+export async function deleteUserAccount(userId) {
+  return await authFetch(`/users/${encodeURIComponent(userId)}`, {
+    method: 'DELETE'
+  });
+}
+
+/**
+ * Cek apakah user yang sedang login adalah admin atau super_admin
+ */
+export function isAdminOrAbove() {
+  const user = getAdminUser();
+  if (!user) return false;
+  return user.role === 'admin' || user.role === 'super_admin' || user.isSuperAdmin === true;
+}
+
+/**
+ * Cek apakah user yang sedang login adalah super_admin
+ */
+export function isSuperAdmin() {
+  const user = getAdminUser();
+  if (!user) return false;
+  return user.role === 'super_admin' || user.isSuperAdmin === true;
+}
+

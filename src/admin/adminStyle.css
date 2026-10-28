@@ -1267,3 +1267,45 @@
     font-size: 12px;
   }
 }
+
+/* ===== ACCOUNT MANAGEMENT TABLE ===== */
+.adm-table-wrap {
+  border-radius: var(--adm-radius-md);
+  overflow: hidden;
+}
+
+.adm-accounts-table th,
+.adm-accounts-table td {
+  white-space: nowrap;
+}
+
+.adm-accounts-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.adm-accounts-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+/* Search box focus ring */
+#adm-accounts-search:focus {
+  border-color: var(--adm-border-hover) !important;
+  box-shadow: 0 0 0 3px var(--adm-cyan-glow);
+}
+
+/* Nav badge for super admin tab */
+.adm-nav-btn[data-tab="accounts"] {
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.adm-nav-btn[data-tab="accounts"]:hover,
+.adm-nav-btn[data-tab="accounts"].adm-nav-btn--active {
+  border-color: rgba(245, 158, 11, 0.5);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.adm-nav-btn[data-tab="accounts"].adm-nav-btn--active {
+  color: var(--adm-amber);
+  background: rgba(245, 158, 11, 0.12);
+}
+

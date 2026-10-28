@@ -1,19 +1,31 @@
 /**
  * SAMUDRA Master Admin Portal Application
- * Orchestrates views (Login, Dashboard, Articles, Mitigasi, Peralatan)
- * Implements WoodNest dark moody glassmorphism aesthetics
+ * Orchestrates views (Login, Dashboard, Articles, Mitigasi, Peralatan, Accounts)
+ * Role access:
+ *   - admin: Dashboard, Artikel, Mitigasi, Peralatan (CRUD penuh)
+ *   - super_admin: semua di atas + Manajemen Akun
+ *   - Hanya rizalzaky2302@gmail.com (owner) yang bisa promote ke super_admin
  */
 
 import './adminStyle.css';
-import { isAdminLoggedIn, getAdminUser, logoutAdmin, getMe } from './adminApi.js';
+import {
+  isAdminLoggedIn,
+  getAdminUser,
+  logoutAdmin,
+  getMe,
+  isSuperAdmin,
+  isAdminOrAbove
+} from './adminApi.js';
 import { renderAdminLogin } from './AdminLogin.js';
 import { renderAdminDashboard } from './AdminDashboard.js';
 import { renderAdminArticles, openCreateArticleModalDirectly } from './AdminArticles.js';
 import { renderAdminMitigasi, openCreateMitigasiModalDirectly } from './AdminMitigasi.js';
 import { renderAdminPeralatan } from './AdminPeralatan.js';
+import { renderAdminAccounts } from './AdminAccounts.js';
 import { showToast } from './adminToast.js';
 
-let activeTab = 'dashboard'; // 'dashboard' | 'articles' | 'mitigasi' | 'peralatan'
+// Reset tab ke 'dashboard' setiap app di-mount ulang agar tidak nyangkut di tab yang tidak diizinkan
+let activeTab = 'dashboard';
 
 export function renderAdminApp(container, onBackToWebsite) {
   container.innerHTML = '';
@@ -21,26 +33,66 @@ export function renderAdminApp(container, onBackToWebsite) {
   root.className = 'adm-app';
   container.appendChild(root);
 
-  // Check authentication
+  // --- Cek autentikasi ---
   if (!isAdminLoggedIn()) {
+    activeTab = 'dashboard';
     renderAdminLogin(root, () => {
       renderAdminApp(container, onBackToWebsite);
     }, onBackToWebsite);
     return;
   }
 
-  // Attempt to refresh profile in background
-  getMe().then(() => {
+  // --- Cek apakah user punya minimal role admin ---
+  const user = getAdminUser();
+  if (user && !isAdminOrAbove()) {
+    // User terdaftar tapi belum diberi role admin
+    root.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:20px;text-align:center;padding:40px;">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--adm-amber)" stroke-width="1.5">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <h2 style="color:var(--adm-text);margin:0;font-size:22px;">Akses Belum Diizinkan</h2>
+        <p style="color:var(--adm-text-dim);max-width:400px;margin:0;line-height:1.6;">
+          Akun <b style="color:var(--adm-text);">${user.email || ''}</b> belum memiliki hak akses admin.<br>
+          Hubungi Super Admin untuk mendapatkan izin akses.
+        </p>
+        <button class="adm-btn adm-btn--glass" onclick="window.__navigateToAdmin && window.__navigateToAdmin()" style="margin-top:8px;" onclick="location.reload()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Coba Lagi
+        </button>
+        <button class="adm-btn adm-btn--danger adm-btn--sm" id="adm-unauth-logout">Keluar</button>
+      </div>
+    `;
+    const logoutBtn = root.querySelector('#adm-unauth-logout');
+    if (logoutBtn) {
+      logoutBtn.onclick = () => {
+        logoutAdmin();
+        renderAdminApp(container, onBackToWebsite);
+      };
+    }
+    return;
+  }
+
+  const superAdmin = isSuperAdmin();
+
+  // --- Refresh profil di background ---
+  getMe().then(freshUser => {
     updateUserBadge(root);
+    // Kalau role berubah (misal dicabut), re-render
+    if (!isAdminOrAbove()) {
+      renderAdminApp(container, onBackToWebsite);
+    }
   }).catch(err => {
     if (err.status === 401) {
+      activeTab = 'dashboard';
       renderAdminLogin(root, () => {
         renderAdminApp(container, onBackToWebsite);
       }, onBackToWebsite);
     }
   });
 
-  // Render Admin Navigation & Main View Container
+  // --- Render Shell Header + Main View ---
   root.innerHTML = `
     <!-- Top Command Navigation Header -->
     <header class="adm-header">
@@ -50,7 +102,7 @@ export function renderAdminApp(container, onBackToWebsite) {
         </div>
         <div>
           <span class="adm-header__logo-title">SAMUDRA</span>
-          <span class="adm-header__badge">PORTAL ADMIN</span>
+          <span class="adm-header__badge">${superAdmin ? 'SUPER ADMIN' : 'PORTAL ADMIN'}</span>
         </div>
       </div>
 
@@ -75,6 +127,14 @@ export function renderAdminApp(container, onBackToWebsite) {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
           <span>Peralatan</span>
         </button>
+
+        ${superAdmin ? `
+        <button class="adm-nav-btn ${activeTab === 'accounts' ? 'adm-nav-btn--active' : ''}" data-tab="accounts" style="${activeTab === 'accounts' ? '' : 'border-color:rgba(245,158,11,0.25);'}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Akun</span>
+          <span style="display:inline-flex;align-items:center;margin-left:4px;padding:1px 6px;border-radius:9999px;background:rgba(245,158,11,0.18);color:var(--adm-amber);font-size:9px;font-weight:700;letter-spacing:0.05em;">SA</span>
+        </button>
+        ` : ''}
       </nav>
 
       <!-- User Profile & Action Controls -->
@@ -83,7 +143,7 @@ export function renderAdminApp(container, onBackToWebsite) {
           <div class="adm-user-avatar" id="adm-user-avatar">A</div>
           <div class="adm-user-info">
             <span class="adm-user-name" id="adm-user-name">Admin</span>
-            <span class="adm-user-role" id="adm-user-role">Administrator</span>
+            <span class="adm-user-role" id="adm-user-role">${superAdmin ? 'Super Admin' : 'Administrator'}</span>
           </div>
         </div>
 
@@ -112,6 +172,9 @@ export function renderAdminApp(container, onBackToWebsite) {
 
   // Tab switching handler
   const switchTab = (tab) => {
+    // Cegah akses ke tab 'accounts' kalau bukan super_admin
+    if (tab === 'accounts' && !isSuperAdmin()) return;
+
     activeTab = tab;
     navBtns.forEach(btn => {
       if (btn.getAttribute('data-tab') === tab) {
@@ -145,6 +208,7 @@ export function renderAdminApp(container, onBackToWebsite) {
     logoutBtn.onclick = () => {
       if (confirm('Keluar dari sesi administrator SAMUDRA?')) {
         logoutAdmin();
+        activeTab = 'dashboard';
         showToast('Anda telah keluar dari sesi admin.', 'success');
         renderAdminApp(container, onBackToWebsite);
       }
@@ -180,6 +244,9 @@ function renderCurrentView(mainView, switchTab) {
     case 'peralatan':
       renderAdminPeralatan(mainView);
       break;
+    case 'accounts':
+      renderAdminAccounts(mainView);
+      break;
     default:
       renderAdminDashboard(mainView, switchTab);
   }
@@ -194,10 +261,13 @@ function updateUserBadge(root) {
   if (!user) return;
 
   if (nameEl && user.name) {
-    nameEl.textContent = user.name.split('_').pop();
+    nameEl.textContent = user.name.split(' ')[0] || user.name;
   }
   if (roleEl) {
-    roleEl.textContent = (user.role || 'Admin').replace('_', ' ');
+    const roleLabel = user.role === 'super_admin' ? 'Super Admin'
+      : user.role === 'admin' ? 'Administrator'
+      : (user.role || 'Admin');
+    roleEl.textContent = roleLabel;
   }
   if (avatarEl) {
     if (user.avatarUrl) {
