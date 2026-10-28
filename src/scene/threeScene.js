@@ -1023,68 +1023,54 @@ void main(){
   const pierBeams = [];
   const pierBollards = [];
 
-  const mainPierStartX = 10.4;
+  const mainPierStartX = 12.2;
   const mainPierEndX = 4.8;
   const mainPierZ = 2.2;
   const pierDeckY = 1.05;
 
   // Longitudinal support beams under deck
-  const beamLeft = new THREE.BoxGeometry(mainPierStartX - mainPierEndX + 0.2, 0.12, 0.12);
+  const beamLength = mainPierStartX - mainPierEndX + 0.2;
+  const beamLeft = new THREE.BoxGeometry(beamLength, 0.12, 0.12);
   beamLeft.translate((mainPierStartX + mainPierEndX) * 0.5, pierDeckY - 0.08, mainPierZ - 0.55);
-  const beamRight = new THREE.BoxGeometry(mainPierStartX - mainPierEndX + 0.2, 0.12, 0.12);
+  const beamRight = new THREE.BoxGeometry(beamLength, 0.12, 0.12);
   beamRight.translate((mainPierStartX + mainPierEndX) * 0.5, pierDeckY - 0.08, mainPierZ + 0.55);
   pierBeams.push(beamLeft, beamRight);
 
-  // Dynamic outer pilings (can tilt/collapse under wave force)
+  // Pilings supporting the pier
   const dynamicPilings = [];
-  for (let px = mainPierEndX + 0.3; px <= mainPierStartX - 0.2; px += 1.05) {
+  for (let px = mainPierEndX + 0.3; px <= mainPierStartX - 0.1; px += 1.05) {
     const bedY = th(px, mainPierZ);
-    const pileHeight = pierDeckY - bedY + 0.4;
+    const pileHeight = Math.max(0.4, pierDeckY - bedY + 0.35);
 
-    if (px < 7.2) {
-      // Outer breakable pilings
-      const pMeshL = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.10, pileHeight, 6), woodPostMat);
-      pMeshL.position.set(px, pierDeckY - pileHeight * 0.5 + 0.02, mainPierZ - 0.55);
-      const pMeshR = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.10, pileHeight, 6), woodPostMat);
-      pMeshR.position.set(px, pierDeckY - pileHeight * 0.5 + 0.02, mainPierZ + 0.55);
-      landGroup.add(pMeshL, pMeshR);
-
-      dynamicPilings.push({
-        meshL: pMeshL,
-        meshR: pMeshR,
-        baseX: px,
-        baseY: pierDeckY - pileHeight * 0.5 + 0.02,
-        tiltZ: 0
-      });
-    } else {
-      // Fixed shoreward pilings
-      const pileL = new THREE.CylinderGeometry(0.09, 0.10, pileHeight, 6);
-      pileL.translate(px, pierDeckY - pileHeight * 0.5 + 0.02, mainPierZ - 0.55);
-      const pileR = new THREE.CylinderGeometry(0.09, 0.10, pileHeight, 6);
-      pileR.translate(px, pierDeckY - pileHeight * 0.5 + 0.02, mainPierZ + 0.55);
-      pierPiles.push(pileL, pileR);
-    }
+    const pileL = new THREE.CylinderGeometry(0.09, 0.10, pileHeight, 6);
+    pileL.translate(px, pierDeckY - pileHeight * 0.5 + 0.02, mainPierZ - 0.55);
+    const pileR = new THREE.CylinderGeometry(0.09, 0.10, pileHeight, 6);
+    pileR.translate(px, pierDeckY - pileHeight * 0.5 + 0.02, mainPierZ + 0.55);
+    pierPiles.push(pileL, pileR);
 
     const crossT = new THREE.BoxGeometry(0.10, 0.10, 1.28);
     crossT.translate(px, pierDeckY - 0.16, mainPierZ);
     pierBeams.push(crossT);
   }
 
-  // Deck planks: outer planks (px < 7.6) are dynamic and fly when wave hits; inner planks stay fixed
-  const dynamicPlankDefs = [];
-  for (let px = mainPierEndX; px <= mainPierStartX + 0.1; px += 0.26) {
-    if (px >= 7.6) {
-      const plank = new THREE.BoxGeometry(0.22, 0.07, 1.48);
-      plank.translate(px, pierDeckY, mainPierZ + (Math.random() - 0.5) * 0.03);
-      staticPierDeckPlanks.push(plank);
-    } else {
-      dynamicPlankDefs.push({
-        px,
-        pz: mainPierZ + (Math.random() - 0.5) * 0.03,
-        py: pierDeckY
-      });
-    }
+  // Deck planks: continuous solid walkway across the entire pier length so no section is ever empty or missing floor
+  for (let px = mainPierEndX; px <= mainPierStartX + 0.05; px += 0.26) {
+    const plank = new THREE.BoxGeometry(0.24, 0.07, 1.48);
+    plank.translate(px, pierDeckY, mainPierZ + (Math.sin(px * 13.7) * 0.02));
+    staticPierDeckPlanks.push(plank);
   }
+
+  // Shore connection ramp: subtle step planks leading down onto the sandy beach
+  const rampSteps = [
+    { x: mainPierStartX + 0.28, y: pierDeckY - 0.12 },
+    { x: mainPierStartX + 0.54, y: pierDeckY - 0.26 },
+    { x: mainPierStartX + 0.80, y: pierDeckY - 0.40 }
+  ];
+  rampSteps.forEach(step => {
+    const stepPlank = new THREE.BoxGeometry(0.24, 0.07, 1.48);
+    stepPlank.translate(step.x, Math.max(th(step.x, mainPierZ) + 0.04, step.y), mainPierZ);
+    staticPierDeckPlanks.push(stepPlank);
+  });
 
   // Mooring bollards
   const bollardPositions = [
@@ -1287,29 +1273,6 @@ void main(){
     });
   });
 
-  // Register dynamic breakable pier head deck planks
-  dynamicPlankDefs.forEach((dp) => {
-    const plankMesh = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.07, 1.48), woodPlankMat);
-    plankMesh.position.set(dp.px, dp.py, dp.pz);
-    landGroup.add(plankMesh);
-
-    dynamicBoats.push({
-      idx: dynamicBoats.length,
-      type: 'plank',
-      mesh: plankMesh,
-      basePos: new THREE.Vector3(dp.px, dp.py, dp.pz),
-      baseRot: new THREE.Euler(0, 0, 0),
-      pos: new THREE.Vector3(dp.px, dp.py, dp.pz),
-      rot: new THREE.Euler(0, 0, 0),
-      vel: new THREE.Vector3(0, 0, 0),
-      angVel: new THREE.Vector3(0, 0, 0),
-      isWater: false,
-      isPier: true,
-      launched: false,
-      inAir: false,
-      settled: false
-    });
-  });
 
   // Register dynamic pier lantern
   dynamicBoats.push({
