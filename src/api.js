@@ -32,3 +32,6 @@ export async function fetchPeralatan() {
   if (!res.ok) throw new Error('Gagal memuat data peralatan');
   return res.json();
 }
+
+// Re-export Admin API functions
+export * from './admin/adminApi.js';

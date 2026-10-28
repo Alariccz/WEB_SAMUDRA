@@ -11,6 +11,13 @@ export function renderNavbar(container) {
       <a class="nav__link" href="#artikel" data-target="artikel">Berita</a>
     </div>
     <div class="nav__actions">
+      <a class="nav__btn-admin" href="?page=admin" id="nav-btn-admin" title="Masuk ke Pusat Kendali Admin SAMUDRA">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span>Admin</span>
+      </a>
       <a class="nav__btn-apk" href="#unduh-apk" title="Unduh File APK Android">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -22,6 +29,16 @@ export function renderNavbar(container) {
     </div>
   `;
   container.appendChild(nav);
+
+  const adminBtn = nav.querySelector('#nav-btn-admin');
+  if (adminBtn) {
+    adminBtn.onclick = (e) => {
+      if (typeof window.__navigateToAdmin === 'function') {
+        e.preventDefault();
+        window.__navigateToAdmin();
+      }
+    };
+  }
 
   initScrollSpy(nav);
 }

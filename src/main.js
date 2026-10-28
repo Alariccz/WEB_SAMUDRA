@@ -10,6 +10,7 @@ import { renderArticles } from './components/Articles.js';
 import { renderMitigasi } from './components/Mitigasi.js';
 import { renderSimulation } from './components/Simulation.js';
 import { renderArticlePage } from './components/ArticlePage.js';
+import { renderAdminApp, setAdminToken, getMe } from './admin/index.js';
 import { createScene } from './scene/threeScene.js';
 import * as THREE from 'three';
 
@@ -23,8 +24,13 @@ const articleView = document.createElement('div');
 articleView.id = 'article-view';
 articleView.style.display = 'none';
 
+const adminView = document.createElement('div');
+adminView.id = 'admin-view';
+adminView.style.display = 'none';
+
 app.appendChild(homeView);
 app.appendChild(articleView);
+app.appendChild(adminView);
 
 // Navbar (for home page)
 renderNavbar(homeView);
@@ -678,8 +684,24 @@ function loop() {
 loop();
 fromScroll();
 
-// ===== ARTICLE PAGE SPA ROUTER =====
+// ===== SPA ROUTER (Home, Article Detail, & Admin Portal) =====
 let savedScrollY = 0;
+
+function showAdmin(updateHistory = true) {
+  if (homeView.style.display !== 'none') {
+    savedScrollY = window.scrollY;
+  }
+  if (updateHistory) {
+    const newUrl = `${window.location.pathname}?page=admin`;
+    window.history.pushState({ page: 'admin' }, '', newUrl);
+  }
+  homeView.style.display = 'none';
+  articleView.style.display = 'none';
+  articleView.innerHTML = '';
+  adminView.style.display = 'block';
+  renderAdminApp(adminView, () => showHome(true));
+  window.scrollTo(0, 0);
+}
 
 function showArticle(articleId, updateHistory = true) {
   if (homeView.style.display !== 'none') {
@@ -689,6 +711,8 @@ function showArticle(articleId, updateHistory = true) {
     const newUrl = `${window.location.pathname}?article=${encodeURIComponent(articleId)}`;
     window.history.pushState({ articleId }, '', newUrl);
   }
+  adminView.style.display = 'none';
+  adminView.innerHTML = '';
   homeView.style.display = 'none';
   articleView.style.display = 'block';
   renderArticlePage(articleView, articleId, () => showHome(true));
@@ -698,6 +722,8 @@ function showHome(updateHistory = true) {
   if (updateHistory) {
     window.history.pushState({}, '', window.location.pathname);
   }
+  adminView.style.display = 'none';
+  adminView.innerHTML = '';
   articleView.style.display = 'none';
   articleView.innerHTML = '';
   homeView.style.display = 'block';
@@ -706,27 +732,73 @@ function showHome(updateHistory = true) {
   fromScroll();
 }
 
-// Global hook for card clicks
+// Global hooks
 window.__navigateToArticle = function (id) {
   showArticle(id, true);
+};
+
+window.__navigateToAdmin = function () {
+  showAdmin(true);
 };
 
 // Handle Browser Back & Forward buttons
 window.addEventListener('popstate', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const articleId = urlParams.get('article');
-  if (articleId) {
+  const page = urlParams.get('page');
+  if (page === 'admin' || window.location.search.includes('admin')) {
+    showAdmin(false);
+  } else if (articleId) {
     showArticle(articleId, false);
   } else {
     showHome(false);
   }
 });
 
-// Initial URL inspection on load (e.g. if loaded in new tab with ?article=...)
-const initialArticleId = new URLSearchParams(window.location.search).get('article');
-if (initialArticleId) {
-  showArticle(initialArticleId, false);
+// Initial URL inspection on load (including Google OAuth callback token)
+const urlParams = new URLSearchParams(window.location.search);
+const oauthToken = urlParams.get('token') || urlParams.get('accessToken') || urlParams.get('access_token');
+
+if (oauthToken) {
+  setAdminToken(oauthToken);
+  getMe().catch((e) => {
+    console.warn('Gagal memuat profil OAuth:', e);
+  }).finally(() => {
+    showAdmin(true);
+  });
+} else if (urlParams.get('page') === 'admin' || window.location.search.includes('admin')) {
+  showAdmin(false);
+} else if (urlParams.get('article')) {
+  showArticle(urlParams.get('article'), false);
 } else {
   showHome(false);
 }
+
+// Listen for live admin updates to refresh public views
+window.addEventListener('samudra:content-updated', (e) => {
+  const detail = e.detail || {};
+  if (detail.type === 'mitigasi') {
+    const existing = document.getElementById('mitigasi');
+    if (existing && existing.parentNode) {
+      const parent = existing.parentNode;
+      const next = existing.nextSibling;
+      existing.remove();
+      const tempWrapper = document.createElement('div');
+      renderMitigasi(tempWrapper);
+      const newEl = tempWrapper.firstElementChild;
+      if (newEl) parent.insertBefore(newEl, next);
+    }
+  } else if (detail.type === 'articles') {
+    const existing = document.getElementById('artikel');
+    if (existing && existing.parentNode) {
+      const parent = existing.parentNode;
+      const next = existing.nextSibling;
+      existing.remove();
+      const tempWrapper = document.createElement('div');
+      renderArticles(tempWrapper);
+      const newEl = tempWrapper.firstElementChild;
+      if (newEl) parent.insertBefore(newEl, next);
+    }
+  }
+});
 
