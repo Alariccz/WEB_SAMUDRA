@@ -529,7 +529,10 @@ window.addEventListener('pointermove', e => {
 });
 
 // Click on canvas to trigger ping
-canvas.addEventListener('click', ping);
+canvas.addEventListener('click', () => {
+  lastPing = U.uT.value;
+  ping();
+});
 
 // ===== SCROLL PROGRESS =====
 function fromScroll() {
@@ -638,13 +641,29 @@ function loop() {
   if (U.uPa.value > 0) {
     pingT += dt;
     threeCtx.setPingT(pingT);
-    U.uPr.value = pingT * 8;
-    U.uPa.value = Math.max(0, 1 - pingT / 1.9);
+    const duration = 2.4;
+    const progress = pingT / duration;
+    if (progress >= 1.0) {
+      U.uPa.value = 0;
+      U.uPr.value = 0;
+      threeCtx.setPingT(99);
+    } else {
+      U.uPr.value = pingT * 7.5;
+      const fade = 1.0 - progress;
+      // Smooth cubic ease-out fade: vanishes completely with zero pop/glitch
+      U.uPa.value = fade * fade * fade;
+    }
     U.uPc.value.set(4, 2);
+  } else {
+    U.uPa.value = 0;
+    U.uPr.value = 0;
   }
 
-  // Auto ping on scene 0
-  if (cur === 0 && t - lastPing > 3.4) { lastPing = t; ping(); }
+  // Auto ping on scene 0 (fires only after previous ping has completely vanished, with 3.1s of calm water)
+  if (cur === 0 && U.uPa.value <= 0 && t - lastPing > 5.5) {
+    lastPing = t;
+    ping();
+  }
 
   // Buoy animation with smooth wave slope pitch and roll
   buoyGroup.visible = S.buoy > 0.05;
