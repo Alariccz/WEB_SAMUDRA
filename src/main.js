@@ -42,6 +42,14 @@ stage.id = 'top';
 stage.innerHTML = `
   <div class="stage__sticky">
     <canvas id="gl" aria-label="Visualisasi 3D pesisir: pemantauan, hantaman gelombang, evakuasi"></canvas>
+    <div class="underwater-fx" id="underwater-fx" aria-hidden="true">
+      <div class="underwater-fx__abyss"></div>
+      <div class="underwater-fx__caustics"></div>
+      <div class="underwater-fx__bubbles" id="uw-bubbles"></div>
+      <div class="underwater-fx__wetlens" id="uw-wetlens"></div>
+      <div class="underwater-fx__vignette"></div>
+      <div class="underwater-fx__indicator"><span class="uw-badge">🌊 HANTAMAN TSUNAMI &bull; UNDERWATER</span></div>
+    </div>
     <div class="vig"></div>
 
     <div class="scene scene--active" id="s0">
@@ -561,6 +569,59 @@ function Hj(x, z, t, tsu, fr, amp) {
   return h + tsu * U.uTsuH.value * Math.exp(-d * d);
 }
 
+// ===== UNDERWATER TSUNAMI CAM FX =====
+const uwBubblesEl = stage.querySelector('#uw-bubbles');
+const uwWetlensEl = stage.querySelector('#uw-wetlens');
+
+let wasUnderwater = false;
+let uwFactor = 0;
+let wetLensTimer = null;
+
+function spawnUnderwaterBubble() {
+  if (!uwBubblesEl) return;
+  if (uwBubblesEl.children.length > 30) return;
+  const b = document.createElement('div');
+  b.className = 'uw-bubble';
+  const size = 5 + Math.random() * 22;
+  const left = Math.random() * 100;
+  const dur = 0.8 + Math.random() * 1.5;
+  const wobble = (Math.random() - 0.5) * 60;
+  b.style.width = `${size}px`;
+  b.style.height = `${size}px`;
+  b.style.left = `${left}%`;
+  b.style.animationDuration = `${dur}s`;
+  b.style.setProperty('--wobble', `${wobble}px`);
+  uwBubblesEl.appendChild(b);
+  setTimeout(() => b.remove(), dur * 1000);
+}
+
+function triggerWetLensDrip() {
+  if (!stage) return;
+  stage.style.setProperty('--wet-lens', '1');
+  if (uwWetlensEl) {
+    uwWetlensEl.innerHTML = '';
+    for (let i = 0; i < 18; i++) {
+      const d = document.createElement('div');
+      d.className = 'uw-droplet';
+      const size = 7 + Math.random() * 24;
+      const x = 4 + Math.random() * 92;
+      const y = 6 + Math.random() * 70;
+      const dripY = 35 + Math.random() * 95;
+      d.style.width = `${size}px`;
+      d.style.height = `${size * (1 + Math.random() * 0.45)}px`;
+      d.style.left = `${x}%`;
+      d.style.top = `${y}%`;
+      d.style.setProperty('--drip-y', `${dripY}px`);
+      uwWetlensEl.appendChild(d);
+    }
+  }
+  clearTimeout(wetLensTimer);
+  wetLensTimer = setTimeout(() => {
+    stage.style.setProperty('--wet-lens', '0');
+    setTimeout(() => { if (uwWetlensEl) uwWetlensEl.innerHTML = ''; }, 650);
+  }, 2400);
+}
+
 const A = new THREE.Vector3(), B = new THREE.Vector3();
 
 function loop() {
@@ -626,6 +687,50 @@ function loop() {
   // Tsunami wave
   const front = -26 + (t * 6) % 56;
   U.uTsuH.value = lerp(U.uTsuH.value, st.crestT, 0.1);
+
+  // ── UNDERWATER TSUNAMI CAM COLLISION & HYDRAULIC TURBULENCE ──────
+  const camWaterY = Hj(cam.position.x, cam.position.z, t, S.tsu, front, S.amp);
+  const submersionDepth = camWaterY - cam.position.y;
+  const isUnderwater = submersionDepth > 0;
+  const targetUW = Math.max(0, Math.min(1.0, submersionDepth / 1.5));
+  
+  // Smooth underwater transition factor
+  uwFactor += (targetUW - uwFactor) * (1 - Math.exp(-dt * (targetUW > uwFactor ? 18 : 6)));
+  if (Math.abs(uwFactor) < 0.001) uwFactor = 0;
+  if (U.uUnderwater) {
+    U.uUnderwater.value = uwFactor;
+  }
+  
+  if (stage) {
+    stage.style.setProperty('--uw-depth', uwFactor.toFixed(3));
+  }
+  
+  // Resurfacing detection: water drips run down camera lens
+  if (wasUnderwater && !isUnderwater) {
+    triggerWetLensDrip();
+  }
+  wasUnderwater = isUnderwater;
+  
+  // Continuous cavitation bubbles when submerged in tsunami wave
+  if (isUnderwater && Math.random() < 0.55) {
+    spawnUnderwaterBubble();
+    if (Math.random() < 0.4) spawnUnderwaterBubble();
+  }
+  
+  // Powerful hydraulic camera shake when crashing into wave or submerged
+  if (submersionDepth > -0.6 && S.tsu > 0.05) {
+    const waveDist = Math.abs(cam.position.x - front);
+    const waveProximity = Math.max(0, 1 - waveDist / 7.5);
+    const shakePower = Math.min(1.5, Math.max(uwFactor * 1.2, waveProximity * S.tsu * 1.4));
+    if (shakePower > 0.04) {
+      const shakeX = (Math.sin(t * 38.0) * 0.18 + Math.cos(t * 56.0) * 0.10) * shakePower;
+      const shakeY = (Math.cos(t * 46.0) * 0.20 + Math.sin(t * 64.0) * 0.11) * shakePower;
+      const shakeZ = Math.sin(t * 32.0) * 0.045 * shakePower;
+      cam.position.x += shakeX;
+      cam.position.y += shakeY;
+      cam.rotation.z += shakeZ;
+    }
+  }
 
   // Update uniforms
   U.uT.value = t;

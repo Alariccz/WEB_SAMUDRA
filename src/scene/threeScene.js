@@ -104,7 +104,7 @@ function createFallbackScene(canvas) {
     uPc: { value: new THREE.Vector2(4, 2) }, uPr: { value: 0 }, uPa: { value: 0 },
     uBu: { value: new THREE.Vector2(4, 2) }, uBv: { value: 1 }, uTsuH: { value: 4 },
     uTod: { value: 0.5 }, uPx: { value: 1 },
-    uTer: { value: 0 }, uRisk: { value: 1 }
+    uTer: { value: 0 }, uRisk: { value: 1 }, uUnderwater: { value: 0 }
   };
 
   const K = [
@@ -243,19 +243,20 @@ export function createScene(canvas) {
     uPc: { value: new THREE.Vector2(4, 2) }, uPr: { value: 0 }, uPa: { value: 0 },
     uBu: { value: new THREE.Vector2(4, 2) }, uBv: { value: 1 }, uTsuH: { value: 4 },
     uTod: { value: 0.5 }, uPx: { value: Math.min(window.devicePixelRatio || 1, 1.5) },
-    uTer: { value: 0 }, uRisk: { value: 1 }, uH: { value: htex }
+    uTer: { value: 0 }, uRisk: { value: 1 }, uH: { value: htex }, uUnderwater: { value: 0 }
   };
 
   // ---- Water (Optimized resolution for locked 60 FPS) ----
   const waterGeo = new THREE.PlaneGeometry(280, 180, 200, 140);
   waterGeo.rotateX(-Math.PI / 2);
   const water = new THREE.Mesh(waterGeo, new THREE.ShaderMaterial({
-    uniforms: U, transparent: true,
+    uniforms: U, transparent: true, side: THREE.DoubleSide,
     vertexShader: HF + 'varying vec3 vW;varying vec2 vP;void main(){vec3 p=position;vP=p.xz;p.y=H(vP);vW=(modelMatrix*vec4(p,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(vW,1.);}',
     fragmentShader: HF + SK + `
 uniform sampler2D uH;
 uniform float uTer;
 uniform float uRisk;
+uniform float uUnderwater;
 varying vec3 vW;
 varying vec2 vP;
 
@@ -286,6 +287,9 @@ void main(){
   float e = 0.16 + dist * 0.005;
   float hx = HD(vP + vec2(e, 0.)), hy = HD(vP + vec2(0., e));
   vec3 n = normalize(vec3((h0 - hx)/e, 1.35, (h0 - hy)/e));
+  if (!gl_FrontFacing) {
+    n = normalize(vec3((hx - h0)/e, -1.35, (hy - h0)/e));
+  }
   n = normalize(mix(n, vec3(0., 1., 0.), smoothstep(20., 90., dist)));
 
   float fr = .02 + .98 * pow(1. - max(dot(n, V), 0.), 5.);
@@ -317,11 +321,19 @@ void main(){
   // Fresnel blend with sky
   vec3 c = mix(col, sky, fr);
 
-  // Soft, silky sun specular highlight and golden wave sheen (free of harsh speckling noise)
-  float specSharp = pow(max(dot(r, sd), 0.), 220.);
-  float specBroad = pow(max(dot(r, sd), 0.), 26.);
-  vec3 sunCol = vec3(1.0, 0.94, 0.82);
-  c += sunCol * (specSharp * 3.4 + specBroad * 0.60) * smoothstep(0., 0.15, sd.y);
+  // Underwater view looking up at water ceiling: Snell's window + total internal reflection
+  if (!gl_FrontFacing) {
+    float underFr = .06 + .94 * pow(1. - max(dot(-n, V), 0.), 3.);
+    vec3 underCol = mix(vec3(0.02, 0.28, 0.42), sky * 0.70, 1. - underFr);
+    c = mix(underCol, vec3(0.008, 0.09, 0.18), underFr * 0.85);
+    c += vec3(0.3, 0.85, 0.98) * pow(max(dot(V, sd), 0.), 14.) * 1.6;
+  } else {
+    // Soft, silky sun specular highlight and golden wave sheen (free of harsh speckling noise)
+    float specSharp = pow(max(dot(r, sd), 0.), 220.);
+    float specBroad = pow(max(dot(r, sd), 0.), 26.);
+    vec3 sunCol = vec3(1.0, 0.94, 0.82);
+    c += sunCol * (specSharp * 3.4 + specBroad * 0.60) * smoothstep(0., 0.15, sd.y);
+  }
 
   // ── BREAKING SURF & CRASHING WAVE FOAM ────────────────────────────
   float steep = length(vec2(h0 - hx, h0 - hy)) / e;
@@ -357,6 +369,12 @@ void main(){
     float wHz = smoothstep(-1.8, 0.2, groundH) * (1.0 - smoothstep(1.2, 3.2, groundH)) * smoothstep(0.02, 1.4, depth);
     vec3 hzWaterCol = vec3(0.98, 0.16, 0.42);
     c = mix(c, hzWaterCol * 1.15, wHz * 0.48 * uRisk);
+  }
+
+  // Volumetric underwater fog tint when camera is submerged
+  if (uUnderwater > 0.01) {
+    vec3 underAbyss = vec3(0.005, 0.08, 0.16) * (1. - uTod * .5);
+    c = mix(c, underAbyss, smoothstep(4., 55., dist) * uUnderwater * 0.88);
   }
 
   // Fog
