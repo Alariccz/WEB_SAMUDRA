@@ -547,7 +547,13 @@ const clock = new THREE.Clock();
 let lastPing = 0;
 
 function Hj(x, z, t, tsu, fr, amp) {
-  const h = (Math.sin((x * 0.9 + z * 0.4) * 0.55 + t * 1.1) * 0.5 + Math.sin((-x * 0.3 + z) * 0.8 + t * 1.4) * 0.32 + Math.sin((x * 0.7 - z * 0.7) * 1.5 + t * 1.9) * 0.16) * amp;
+  const wv = (v) => Math.sin(v) - 0.12 * Math.cos(2 * v);
+  const h = (
+    wv((x * 0.88 + z * 0.42) * 0.40 + t * 0.95) * 0.50 +
+    wv((-x * 0.35 + z * 0.93) * 0.62 + t * 1.15) * 0.26 +
+    wv((x * 0.65 - z * 0.72) * 1.10 + t * 1.40) * 0.12 +
+    wv((x * 0.25 + z * 0.96) * 1.95 + t * 1.75) * 0.05
+  ) * amp;
   const d = (x - fr) / 3.6;
   return h + tsu * U.uTsuH.value * Math.exp(-d * d);
 }
@@ -633,20 +639,22 @@ function loop() {
     pingT += dt;
     threeCtx.setPingT(pingT);
     U.uPr.value = pingT * 8;
-    const k = Math.max(0, 1 - pingT / 1.9);
-    U.uPa.value = k < 0.01 ? 0 : k * k;
+    U.uPa.value = Math.max(0, 1 - pingT / 1.9);
     U.uPc.value.set(4, 2);
   }
 
   // Auto ping on scene 0
   if (cur === 0 && t - lastPing > 3.4) { lastPing = t; ping(); }
 
-  // Buoy animation
+  // Buoy animation with smooth wave slope pitch and roll
   buoyGroup.visible = S.buoy > 0.05;
   buoyGroup.scale.setScalar(0.5 + S.buoy * 0.5);
   buoyGroup.position.y = Hj(4, 2, t, S.tsu, front, S.amp);
-  buoyGroup.rotation.z = Math.sin(t * 1.3) * 0.07;
-  buoyGroup.rotation.y = t * 0.2;
+  const slopeX = (Hj(4.15, 2, t, S.tsu, front, S.amp) - Hj(3.85, 2, t, S.tsu, front, S.amp)) / 0.3;
+  const slopeZ = (Hj(4, 2.15, t, S.tsu, front, S.amp) - Hj(4, 1.85, t, S.tsu, front, S.amp)) / 0.3;
+  buoyGroup.rotation.z = -slopeX * 0.75 + Math.sin(t * 1.1) * 0.03;
+  buoyGroup.rotation.x = slopeZ * 0.75;
+  buoyGroup.rotation.y = t * 0.15;
   lamp.material.color.setHex(Math.sin(t * 4) > 0 ? 0x00d2ff : 0x032247);
 
   // Land and island group visibility

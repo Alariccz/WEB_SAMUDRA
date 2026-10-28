@@ -68,7 +68,7 @@ const calm = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.25 : 1;
 // ---- Shared GLSL chunks ----
 const SK = `float hs(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float nz(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hs(i),hs(i+vec2(1.,0.)),f.x),mix(hs(i+vec2(0.,1.)),hs(i+vec2(1.)),f.x),f.y);}float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*nz(p);p*=2.03;a*=.5;}return s;}float fbm3(vec2 p){float a=.5,s=0.;for(int i=0;i<3;i++){s+=a*nz(p);p*=2.03;a*=.5;}return s/.875;}vec3 SUN(){return normalize(vec3(-.5,.55-.51*min(uTod*2.,1.)-max(uTod-.5,0.)*.6,-.8));}vec3 TM(vec3 c){c*=1.15;c=(c*(2.51*c+.03))/(c*(2.43*c+.59)+.14);return pow(clamp(c,0.,1.),vec3(.4545));}vec3 h3(vec3 p){p=fract(p*vec3(.1031,.103,.0973));p+=dot(p,p.yxz+33.33);return fract((p.xxy+p.yxx)*p.zyx);}vec3 STARS(vec3 d){vec3 col=vec3(0.);for(int l=0;l<2;l++){float sc=l==0?70.:170.;float th=l==0?.93:.86;vec3 p=d*sc,id=floor(p),f=fract(p),h=h3(id);vec3 pos=.2+.6*h;float dist=length(f-pos);float mg=pow(h3(id+7.).x,5.);float pr=step(th,h3(id+3.).y);float sz=.06+.2*mg;float core=1.-smoothstep(0.,sz,dist);float tw=.55+.45*sin(uT*(3.+3.*h.z)+h.x*40.)*(.8+.2*sin(uT*11.+h.y*60.));float glow=(exp(-dist*dist/(sz*sz*18.))*.6+exp(-dist/(sz*5.))*.14*step(.12,mg))*(.7+.3*tw);vec3 tc=mix(vec3(.65,.78,1.),vec3(1.,.82,.62),h3(id+11.).z);col+=tc*(core*core*tw+glow)*(.35+3.2*mg)*pr*(l==0?1.:.5);}return col;}vec3 SKY(vec3 d){float k=uTod;float cvr=0.;vec3 zen,hor;if(k<.5){float q=k*2.;zen=mix(vec3(.06,.2,.55),vec3(.04,.08,.22),q);hor=mix(vec3(.55,.75,.9),vec3(1.,.45,.2),q);}else{float q=(k-.5)*2.;zen=mix(vec3(.04,.08,.22),vec3(.004,.01,.04),q);hor=mix(vec3(1.,.45,.2),vec3(.04,.09,.18),q);}float y=max(d.y,0.);vec3 c=mix(hor,zen,pow(y,.5));vec3 sd=SUN();float sp=max(dot(d,sd),0.);vec3 sc=mix(vec3(1.,.85,.6),vec3(1.,.5,.25),(1.-smoothstep(0.,.5,sd.y)));c+=sc*(pow(sp,900.)*6.+pow(sp,16.)*.5+pow(sp,3.)*.12)*(1.-k*.8);if(d.y>0.){vec2 cp=d.xz/(d.y+.12)*1.3+vec2(uT*.02,uT*.008);float n1=fbm(cp),n2=fbm(cp+sd.xz*.15);float cl=smoothstep(.45,.72,n1)*smoothstep(0.,.15,d.y);cvr=cl;float lit=clamp(.5+(n1-n2)*5.,0.,1.);vec3 top=(mix(vec3(1.),hor*1.4,.35))*(1.-k*.9)+.012,base=mix(hor*.5,vec3(.4,.45,.55),.4)*(1.-k*.85)+.008;c=mix(c,mix(base,top,lit),cl*.92);}float nt=smoothstep(.55,.95,k)*smoothstep(0.,.2,d.y)*(1.-cvr);if(nt<.002)return c;vec3 ax=normalize(vec3(.5,.6,-.6));float mb=exp(-pow(dot(d,ax)*3.5,2.));float cd=fbm(vec2(dot(d,vec3(.8,-.2,.55)),dot(d,vec3(0.,.95,.3)))*7.);return c+(vec3(.3,.36,.55)*mb*(.12+.9*cd*cd)*.45)*nt;}`;
 
-const HF = `uniform float uT,uAmp,uTsu,uFront,uPr,uPa,uBv,uTsuH,uTod;uniform vec2 uPc,uBu;float WV(float x){float s=.5+.5*sin(x);return s*s*2.-.75;}float H(vec2 p){float h=WV(dot(p,vec2(.9,.4))*.55+uT*1.1)*.5+WV(dot(p,vec2(-.3,1.))*.8+uT*1.4)*.32+WV(dot(p,vec2(.7,-.7))*1.5+uT*1.9)*.16+WV(dot(p,vec2(.2,.95))*2.7+uT*2.6)*.08+WV(dot(p,vec2(-.8,-.5))*4.1+uT*3.1)*.04;h*=uAmp;float d=(p.x-uFront)/3.6;h+=uTsu*uTsuH*exp(-d*d)*(1.+.12*sin(p.y*.5));float r=length(p-uPc);h+=uPa*.2*exp(-pow((r-uPr)*1.5,2.));float b=length(p-uBu);h+=.07*sin(b*3.-uT*3.)*exp(-b*.35)*uBv;return h;}`;
+const HF = `uniform float uT,uAmp,uTsu,uFront,uPr,uPa,uBv,uTsuH,uTod;uniform vec2 uPc,uBu;float WV(float x){return sin(x)-0.12*cos(2.0*x);}float H(vec2 p){float h=WV(dot(p,vec2(0.88,0.42))*0.40+uT*0.95)*0.50+WV(dot(p,vec2(-0.35,0.93))*0.62+uT*1.15)*0.26+WV(dot(p,vec2(0.65,-0.72))*1.10+uT*1.40)*0.12+WV(dot(p,vec2(0.25,0.96))*1.95+uT*1.75)*0.05;h*=uAmp;float d=(p.x-uFront)/3.6;h+=uTsu*uTsuH*exp(-d*d)*(1.+.12*sin(p.y*.5));float r=length(p-uPc);h+=uPa*.2*exp(-pow((r-uPr)*1.5,2.));float b=length(p-uBu);h+=.06*sin(b*2.8-uT*2.8)*exp(-b*.35)*uBv;return h;}`;
 
 function createFallbackScene(canvas) {
   const stageEl = canvas.closest('.stage__sticky') || canvas.parentElement;
@@ -141,7 +141,7 @@ function createFallbackScene(canvas) {
     },
     scene: {},
     world: dummyGroup,
-    ping: () => { pingT = 0; U.uPr.value = 0; U.uPa.value = 1; },
+    ping: () => { pingT = 0; U.uPa.value = 1; },
     sun: { position: dummyVec, intensity: 1 },
     amb: { intensity: 1 },
     getState: () => ({ pp, pt, cur, yaw, yawT, drag, lx, crestT, rk, mx, my }),
@@ -266,9 +266,11 @@ float GR(vec2 p){
   return mix(-8., h, uTer);
 }
 
-// Optimized wave micro-displacement: silky 60 FPS with crisp ripple details
+// Silky smooth harmonic micro-ripples (continuous C-infinity harmonics, never jagged or crumpled)
 float HD(vec2 p){
-  return H(p) + (nz(p * 1.8 + vec2(uT * .2, uT * .13)) - .5) * .07 * (.4 + uAmp) + (nz(p * 4.2 - vec2(uT * .3, uT * .25)) - .5) * .03;
+  float r1 = sin(p.x * 1.5 + p.y * 1.1 + uT * 1.05) * cos(p.x * 1.0 - p.y * 1.4 + uT * 0.85) * 0.020;
+  float r2 = sin(dot(p, vec2(-0.7, 0.7)) * 2.5 + uT * 1.35) * 0.009;
+  return H(p) + (r1 + r2) * clamp(0.35 + uAmp * 0.65, 0.2, 1.0);
 }
 
 void main(){
@@ -281,10 +283,10 @@ void main(){
 
   vec3 V = normalize(cameraPosition - vW);
   float dist = length(cameraPosition - vW);
-  float e = .06 + dist * .003;
+  float e = 0.16 + dist * 0.005;
   float hx = HD(vP + vec2(e, 0.)), hy = HD(vP + vec2(0., e));
-  vec3 n = normalize(vec3((h0 - hx)/e, 1., (h0 - hy)/e));
-  n = normalize(mix(n, vec3(0., 1., 0.), smoothstep(22., 100., dist)));
+  vec3 n = normalize(vec3((h0 - hx)/e, 1.35, (h0 - hy)/e));
+  n = normalize(mix(n, vec3(0., 1., 0.), smoothstep(20., 90., dist)));
 
   float fr = .02 + .98 * pow(1. - max(dot(n, V), 0.), 5.);
   vec3 r = reflect(-V, n);
@@ -296,8 +298,8 @@ void main(){
   // Depth color gradient: pristine tropical turquoise shallows to deep navy ocean
   vec3 shallowShore = vec3(0.12, 0.74, 0.70);
   vec3 lagoon = vec3(0.04, 0.44, 0.50);
-  vec3 midOcean = vec3(0.01, 0.16, 0.28);
-  vec3 deepOcean = vec3(0.003, 0.025, 0.06);
+  vec3 midOcean = vec3(0.015, 0.18, 0.30);
+  vec3 deepOcean = vec3(0.004, 0.028, 0.065);
 
   float d1 = smoothstep(0.0, 0.8, depth);
   float d2 = smoothstep(0.8, 3.5, depth);
@@ -315,16 +317,18 @@ void main(){
   // Fresnel blend with sky
   vec3 c = mix(col, sky, fr);
 
-  // Sun specular highlights
-  c += vec3(1., .9, .7) * pow(max(dot(r, sd), 0.), 350.) * 4. * smoothstep(0., .15, sd.y);
-  c += vec3(1., .92, .75) * pow(max(dot(r, sd), 0.), 40.) * smoothstep(.7, .95, nz(vP*11. + uT*.8)) * 1.8 * smoothstep(0., .15, sd.y);
+  // Soft, silky sun specular highlight and golden wave sheen (free of harsh speckling noise)
+  float specSharp = pow(max(dot(r, sd), 0.), 220.);
+  float specBroad = pow(max(dot(r, sd), 0.), 26.);
+  vec3 sunCol = vec3(1.0, 0.94, 0.82);
+  c += sunCol * (specSharp * 3.4 + specBroad * 0.60) * smoothstep(0., 0.15, sd.y);
 
   // ── BREAKING SURF & CRASHING WAVE FOAM ────────────────────────────
   float steep = length(vec2(h0 - hx, h0 - hy)) / e;
   float fn = smoothstep(.38, .7, nz(vP * 3. + uT * .1));
 
-  // Wave phase matches the actual wave propagation vector vec2(0.9, 0.4)
-  float wavePhase = dot(vP, vec2(.9, .4)) * .55 + uT * 1.1;
+  // Wave phase matches the actual wave propagation vector
+  float wavePhase = dot(vP, vec2(0.88, 0.42)) * 0.40 + uT * 0.95;
   float waveCrest = sin(wavePhase);
 
   // Shoreline breaking foam: triggers cleanly and boldly when wave crest hits the shallow beach
@@ -2090,7 +2094,7 @@ void main(){
   const S = { cp: new THREE.Vector3(), lk: new THREE.Vector3(), amp: 0, tsu: 0, ter: 0, buoy: 1, path: 0 };
 
   let pingT = 99;
-  function ping() { pingT = 0; U.uPr.value = 0; U.uPa.value = 1; }
+  function ping() { pingT = 0; U.uPa.value = 1; }
 
   // Scroll-based scene progress
   let pp = 0, pt = 0, cur = -1, yaw = 0, yawT = 0, drag = 0, lx = 0, crestT = 4, rk = 1;
