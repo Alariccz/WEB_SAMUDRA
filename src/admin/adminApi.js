@@ -37,7 +37,30 @@ export function setAdminRefreshToken(refreshToken) {
 export function getAdminUser() {
   try {
     const raw = localStorage.getItem(USER_KEY);
-    return raw ? JSON.parse(raw) : null;
+    let parsed = raw ? JSON.parse(raw) : null;
+    if (parsed && parsed.user) {
+      parsed = parsed.user;
+    }
+    // Safe decode fallback from JWT if role/email is missing
+    if ((!parsed || !parsed.email || !parsed.role) && getAdminToken()) {
+      try {
+        const token = getAdminToken();
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+          if (payload && (payload.email || payload.sub)) {
+            parsed = {
+              id: payload.sub || payload.id || parsed?.id,
+              email: payload.email || parsed?.email,
+              role: payload.role || parsed?.role || 'super_admin',
+              name: payload.name || parsed?.name || (payload.email ? payload.email.split('@')[0] : 'Admin')
+            };
+            localStorage.setItem(USER_KEY, JSON.stringify(parsed));
+          }
+        }
+      } catch {}
+    }
+    return parsed;
   } catch (e) {
     return null;
   }
@@ -45,7 +68,8 @@ export function getAdminUser() {
 
 export function setAdminUser(user) {
   if (user) {
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    const cleanUser = user.user ? user.user : user;
+    localStorage.setItem(USER_KEY, JSON.stringify(cleanUser));
   } else {
     localStorage.removeItem(USER_KEY);
   }
@@ -265,14 +289,17 @@ export async function loginWithGoogleToken(idToken) {
  * Membuka Google OAuth backend
  */
 export function redirectToGoogleOAuth() {
-  window.location.href = `${API_BASE}/auth/google`;
+  const origin = window.location.origin;
+  const returnUrl = encodeURIComponent(`${origin}/auth/callback`);
+  window.location.href = `${API_BASE}/auth/google?state=${returnUrl}`;
 }
 
 /**
  * Ambil data user yang sedang login
  */
 export async function getMe() {
-  const user = await authFetch('/auth/me');
+  const data = await authFetch('/auth/me');
+  const user = (data && data.user) ? data.user : data;
   setAdminUser(user);
   return user;
 }

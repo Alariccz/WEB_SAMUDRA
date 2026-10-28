@@ -10,7 +10,7 @@ import { renderArticles } from './components/Articles.js';
 import { renderMitigasi } from './components/Mitigasi.js';
 import { renderSimulation } from './components/Simulation.js';
 import { renderArticlePage } from './components/ArticlePage.js';
-import { renderAdminApp, setAdminToken, setAdminRefreshToken, getMe } from './admin/index.js';
+import { renderAdminApp, setAdminToken, setAdminRefreshToken, getMe, getAdminUser } from './admin/index.js';
 import { createScene } from './scene/threeScene.js';
 import * as THREE from 'three';
 
@@ -794,6 +794,9 @@ if (oauthToken) {
   if (oauthRefreshToken) {
     setAdminRefreshToken(oauthRefreshToken);
   }
+  // Immediately decode user so getAdminUser() is ready immediately
+  getAdminUser();
+
   // Clean URL to /?page=admin without leaving access tokens in address bar
   window.history.replaceState({ page: 'admin' }, '', '/?page=admin');
 
