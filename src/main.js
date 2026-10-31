@@ -9,6 +9,7 @@ import { renderEarthquakeBanner } from './components/EarthquakeBanner.js';
 import { renderArticles } from './components/Articles.js';
 import { renderMitigasi } from './components/Mitigasi.js';
 import { renderSimulation } from './components/Simulation.js';
+import { renderWeatherSection } from './components/WeatherWidget.js';
 import { renderArticlePage } from './components/ArticlePage.js';
 import { renderAdminApp, setAdminToken, setAdminRefreshToken, getMe, getAdminUser } from './admin/index.js';
 import { createScene } from './scene/threeScene.js';
@@ -148,59 +149,89 @@ alurSection.innerHTML = `
     <p class="section-lead">Tiga langkah terstruktur ketika peringatan gempa dan potensi tsunami terdeteksi.</p>
   </div>
   <div class="flow-grid">
-    <div class="flow-card">
-      <div class="flow-card__top">
-        <span class="flow-card__badge"><span class="flow-card__badge-pulse"></span>01</span>
-        <div class="flow-card__icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
-            <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
-            <circle cx="12" cy="12" r="2"/>
-            <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
-            <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>
-          </svg>
+    <!-- Card 1 -->
+    <a href="#simulasi" class="notched-card group">
+      <div class="notched-card__cover-wrap">
+        <div class="notched-card__cover">
+          <img
+            src="/img/step-1-bmkg-monitor.jpg"
+            alt="Pusat Kendali Operasi Telemetri BMKG & Pemantauan Seismik"
+            class="notched-card__img"
+          />
+          <div class="notched-card__dim"></div>
+          <div class="notched-card__badge-wrap">
+            <span class="notched-card__badge">TELEMETRI SENSOR</span>
+          </div>
         </div>
+        <div class="notched-card__notch-block" aria-hidden="true"></div>
+        <div class="notched-card__fillet notched-card__fillet--top" aria-hidden="true"></div>
+        <div class="notched-card__fillet notched-card__fillet--left" aria-hidden="true"></div>
+        <span class="notched-card__disc" aria-hidden="true">01</span>
       </div>
-      <h3 class="flow-card__title">BMKG Merilis Informasi</h3>
-      <p class="flow-card__desc">Data real-time magnitudo, episentrum, kedalaman, dan tingkat peringatan diverifikasi serta diproses dalam hitungan detik.</p>
-      <div class="flow-card__footer">
-        <span class="flow-card__pill"><span class="flow-card__dot"></span> Telemetri Sensor BMKG</span>
-        <span class="flow-card__metric">&lt; 3 Detik</span>
-      </div>
-    </div>
-    <div class="flow-card">
-      <div class="flow-card__top">
-        <span class="flow-card__badge"><span class="flow-card__badge-pulse"></span>02</span>
-        <div class="flow-card__icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
+      <h3 class="notched-card__title">BMKG Merilis Informasi</h3>
+      <p class="notched-card__desc">Data real-time magnitudo, episentrum, kedalaman, dan tingkat peringatan diverifikasi serta diproses dalam hitungan detik.</p>
+      <ul class="notched-card__tags">
+        <li class="notched-card__tag">Sensor BMKG</li>
+        <li class="notched-card__tag">&lt; 3 Detik</li>
+        <li class="notched-card__tag">Verifikasi Otomatis</li>
+      </ul>
+    </a>
+
+    <!-- Card 2 -->
+    <a href="#simulasi" class="notched-card group">
+      <div class="notched-card__cover-wrap">
+        <div class="notched-card__cover">
+          <img
+            src="/img/step-2-emergency-alert.jpg"
+            alt="Peringatan Darurat Tsunami & Notifikasi Siaga pada Layar Gawai Warga"
+            class="notched-card__img"
+          />
+          <div class="notched-card__dim"></div>
+          <div class="notched-card__badge-wrap">
+            <span class="notched-card__badge">EDGE BROADCAST</span>
+          </div>
         </div>
+        <div class="notched-card__notch-block" aria-hidden="true"></div>
+        <div class="notched-card__fillet notched-card__fillet--top" aria-hidden="true"></div>
+        <div class="notched-card__fillet notched-card__fillet--left" aria-hidden="true"></div>
+        <span class="notched-card__disc" aria-hidden="true">02</span>
       </div>
-      <h3 class="flow-card__title">Anda Mendapat Notifikasi</h3>
-      <p class="flow-card__desc">Peringatan darurat langsung dikirim ke gawai warga pesisir dengan instruksi padat, lugas, dan bebas kepanikan.</p>
-      <div class="flow-card__footer">
-        <span class="flow-card__pill"><span class="flow-card__dot"></span> Edge Push Broadcast</span>
-        <span class="flow-card__metric">Multi-Platform</span>
-      </div>
-    </div>
-    <div class="flow-card">
-      <div class="flow-card__top">
-        <span class="flow-card__badge"><span class="flow-card__badge-pulse"></span>03</span>
-        <div class="flow-card__icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="3 11 22 2 13 21 11 13 3 11"/>
-          </svg>
+      <h3 class="notched-card__title">Anda Mendapat Notifikasi</h3>
+      <p class="notched-card__desc">Peringatan darurat langsung dikirim ke gawai warga pesisir dengan instruksi padat, lugas, dan bebas kepanikan.</p>
+      <ul class="notched-card__tags">
+        <li class="notched-card__tag">Edge Push</li>
+        <li class="notched-card__tag">Multi-Platform</li>
+        <li class="notched-card__tag">Siaga Cepat</li>
+      </ul>
+    </a>
+
+    <!-- Card 3 -->
+    <a href="#fitur" class="notched-card group">
+      <div class="notched-card__cover-wrap">
+        <div class="notched-card__cover">
+          <img
+            src="/img/step-3-evacuation-route.jpg"
+            alt="Jalur Evakuasi Menuju Elevasi Aman dan Tangga Pesisir Menjauhi Laut"
+            class="notched-card__img"
+          />
+          <div class="notched-card__dim"></div>
+          <div class="notched-card__badge-wrap">
+            <span class="notched-card__badge">NAVIGASI EVAKUASI</span>
+          </div>
         </div>
+        <div class="notched-card__notch-block" aria-hidden="true"></div>
+        <div class="notched-card__fillet notched-card__fillet--top" aria-hidden="true"></div>
+        <div class="notched-card__fillet notched-card__fillet--left" aria-hidden="true"></div>
+        <span class="notched-card__disc" aria-hidden="true">03</span>
       </div>
-      <h3 class="flow-card__title">Anda Mengikuti Rute</h3>
-      <p class="flow-card__desc">Navigasi evakuasi mandiri memandu Anda ke titik aman dan bukit terdekat, menghindari jembatan dan area genangan.</p>
-      <div class="flow-card__footer">
-        <span class="flow-card__pill"><span class="flow-card__dot"></span> Offline Dynamic GPS</span>
-        <span class="flow-card__metric">Peta Lokal</span>
-      </div>
-    </div>
+      <h3 class="notched-card__title">Anda Mengikuti Rute</h3>
+      <p class="notched-card__desc">Navigasi evakuasi mandiri memandu Anda ke titik aman dan bukit terdekat, menghindari jembatan dan area genangan.</p>
+      <ul class="notched-card__tags">
+        <li class="notched-card__tag">Offline GPS</li>
+        <li class="notched-card__tag">Peta Lokal</li>
+        <li class="notched-card__tag">Elevasi Aman</li>
+      </ul>
+    </a>
   </div>
 `;
 main.appendChild(alurSection);
@@ -214,98 +245,83 @@ fiturSection.innerHTML = `
     <h2 class="section-title">Solusi cepat saat detik-detik kritis.</h2>
     <p class="section-lead">Aplikasi dirancang dengan arsitektur tangguh: navigasi ke tempat aman, akses kontak darurat instan, dan artikel edukasi mitigasi resmi.</p>
   </div>
-  <div class="features-bento">
-    <div class="feature-card">
-      <div class="feature-card__top">
-        <div class="feature-card__icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="3 11 22 2 13 21 11 13 3 11"/>
-          </svg>
-        </div>
-        <span class="feature-card__tag">NAVIGASI &amp; EVAKUASI</span>
+  <div class="fui-bento-grid">
+    <!-- Bento Card 1: Col-Span 3 (Top Left - Gelombang & Deteksi Dini Tsunami) -->
+    <div class="fui-bento-card fui-bento-card--span-3 fui-bento-card--tl">
+      <div class="fui-bento-card__graphic">
+        <div class="fui-bento-card__img fui-bento-card__img--1"></div>
+        <div class="fui-bento-card__fade-top"></div>
+        <div class="fui-bento-card__fade-bottom"></div>
       </div>
-      <h3 class="feature-card__title">Navigasi ke Tempat Lebih Aman</h3>
-      <p class="feature-card__desc">Panduan rute dinamis yang menuntun Anda dari lokasi rawan menuju bukit dan shelter elevasi tinggi, menghindari zona genangan dan jembatan berisiko.</p>
-      <div class="feature-card__action"><span>Pelajari Sistem</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      <div class="fui-bento-card__content">
+        <span class="fui-bento-card__eyebrow">Data Telemetri BMKG &amp; Buoy</span>
+        <h3 class="fui-bento-card__title">Peringatan Dini Gelombang Real-Time</h3>
+        <p class="fui-bento-card__desc">Integrasi sensor seismik dasar laut dan buoy BMKG otomatis memantau rambatan gelombang, kedalaman hiposentrum, dan estimasi waktu tiba (ETA) tsunami.</p>
+      </div>
     </div>
-    <div class="feature-card">
-      <div class="feature-card__top">
-        <div class="feature-card__icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-          </svg>
-        </div>
-        <span class="feature-card__tag">RESPONS DARURAT SOS</span>
+
+    <!-- Bento Card 2: Col-Span 3 (Top Right - Navigasi Elevasi Tinggi) -->
+    <div class="fui-bento-card fui-bento-card--span-3 fui-bento-card--tr">
+      <div class="fui-bento-card__graphic">
+        <div class="fui-bento-card__img fui-bento-card__img--2"></div>
+        <div class="fui-bento-card__fade-top"></div>
+        <div class="fui-bento-card__fade-bottom"></div>
       </div>
-      <h3 class="feature-card__title">Akses Kontak Darurat</h3>
-      <p class="feature-card__desc">Panggilan cepat satu ketukan ke posko BPBD terdekat, Basarnas, Ambulans darurat, PMI, serta daftar nomor darurat keluarga yang telah tersimpan.</p>
-      <div class="feature-card__action"><span>Pelajari Sistem</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      <div class="fui-bento-card__content">
+        <span class="fui-bento-card__eyebrow">Navigasi &amp; Evakuasi Mandiri</span>
+        <h3 class="fui-bento-card__title">Rute Menuju Elevasi Aman</h3>
+        <p class="fui-bento-card__desc">Algoritma rute memandu Anda dari garis pantai rawan menuju bukit dan shelter elevasi tinggi, menghindari jembatan runtuh serta zona genangan air laut.</p>
+      </div>
     </div>
-    <div class="feature-card">
-      <div class="feature-card__top">
-        <div class="feature-card__icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          </svg>
-        </div>
-        <span class="feature-card__tag">EDUKASI &amp; RISET</span>
+
+    <!-- Bento Card 3: Col-Span 2 (Bottom Left - Respons Cepat SOS) -->
+    <div class="fui-bento-card fui-bento-card--span-2 fui-bento-card--bl">
+      <div class="fui-bento-card__graphic">
+        <div class="fui-bento-card__img fui-bento-card__img--3"></div>
+        <div class="fui-bento-card__fade-top"></div>
+        <div class="fui-bento-card__fade-bottom"></div>
       </div>
-      <h3 class="feature-card__title">Artikel &amp; Panduan Mitigasi</h3>
-      <p class="feature-card__desc">Publikasi edukasi kebencanaan resmi yang terhubung langsung dengan database backend, mencakup langkah penyelamatan dan pengenalan tanda alam.</p>
-      <div class="feature-card__action"><span>Pelajari Sistem</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      <div class="fui-bento-card__content">
+        <span class="fui-bento-card__eyebrow">Respons Darurat SOS</span>
+        <h3 class="fui-bento-card__title">Akses Kontak Darurat</h3>
+        <p class="fui-bento-card__desc">Panggilan cepat satu ketukan ke Basarnas maritim, posko BPBD, ambulans darurat, serta pengiriman sinyal darurat koordinat ke keluarga.</p>
+      </div>
     </div>
-    <div class="feature-card">
-      <div class="feature-card__top">
-        <div class="feature-card__icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-        </div>
-        <span class="feature-card__tag">DATA TELEMETRI BMKG</span>
+
+    <!-- Bento Card 4: Col-Span 2 (Bottom Mid - Titik Kumpul Aman) -->
+    <div class="fui-bento-card fui-bento-card--span-2">
+      <div class="fui-bento-card__graphic">
+        <div class="fui-bento-card__img fui-bento-card__img--4"></div>
+        <div class="fui-bento-card__fade-top"></div>
+        <div class="fui-bento-card__fade-bottom"></div>
       </div>
-      <h3 class="feature-card__title">Peringatan Dini Real-Time</h3>
-      <p class="feature-card__desc">Integrasi langsung dengan sistem diseminasi BMKG untuk memproses data magnitudo, kedalaman, dan status potensi tsunami dalam hitungan detik.</p>
-      <div class="feature-card__action"><span>Pelajari Sistem</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      <div class="fui-bento-card__content">
+        <span class="fui-bento-card__eyebrow">Titik Kumpul Terverifikasi</span>
+        <h3 class="fui-bento-card__title">Peta Titik Kumpul &amp; Shelter</h3>
+        <p class="fui-bento-card__desc">Peta shelter evakuasi vertikal (TES) dan perbukitan pesisir yang tervalidasi aman dari jangkauan limpasan air laut gelombang tsunami.</p>
+      </div>
     </div>
-    <div class="feature-card">
-      <div class="feature-card__top">
-        <div class="feature-card__icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-            <circle cx="12" cy="10" r="3"/>
-          </svg>
-        </div>
-        <span class="feature-card__tag">TITIK KUMPUL TERVERIFIKASI</span>
+
+    <!-- Bento Card 5: Col-Span 2 (Bottom Right - Mode Offline Satelit) -->
+    <div class="fui-bento-card fui-bento-card--span-2 fui-bento-card--br">
+      <div class="fui-bento-card__graphic">
+        <div class="fui-bento-card__img fui-bento-card__img--5"></div>
+        <div class="fui-bento-card__fade-top"></div>
+        <div class="fui-bento-card__fade-bottom"></div>
       </div>
-      <h3 class="feature-card__title">Peta Titik Kumpul Aman</h3>
-      <p class="feature-card__desc">Menampilkan lokasi shelter evakuasi vertikal dan area kumpul aman di perbukitan yang telah dipetakan dan diverifikasi aman dari inundasi.</p>
-      <div class="feature-card__action"><span>Pelajari Sistem</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-card__top">
-        <div class="feature-card__icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="1" y1="1" x2="23" y2="23"/>
-            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
-            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
-            <path d="M10.71 5.05A16 16 0 0 1 22.58 9"/>
-            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
-            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-            <line x1="12" y1="20" x2="12.01" y2="20"/>
-          </svg>
-        </div>
-        <span class="feature-card__tag">OFFLINE READINESS</span>
+      <div class="fui-bento-card__content">
+        <span class="fui-bento-card__eyebrow">Offline Readiness</span>
+        <h3 class="fui-bento-card__title">Siaga Mode Offline Penuh</h3>
+        <p class="fui-bento-card__desc">Peta jalur evakuasi dan materi keselamatan tersimpan di gawai lokal sehingga tetap berfungsi saat pemancar BTS dan internet padam pascagempa.</p>
       </div>
-      <h3 class="feature-card__title">Dukungan Mode Offline</h3>
-      <p class="feature-card__desc">Peta jalur evakuasi dan nomor kontak darurat tetap tersimpan secara lokal dan dapat dibuka saat jaringan seluler terputus pascagempa.</p>
-      <div class="feature-card__action"><span>Pelajari Sistem</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </div>
   </div>
 `;
 fiturSection.appendChild(document.createElement('div'));
 main.appendChild(fiturSection);
+
+// Section: Cuaca Maritim & Atmosfer Yogyakarta (Live Data)
+renderWeatherSection(main);
 
 // Section: Simulasi
 renderSimulation(main);
@@ -598,7 +614,7 @@ window.addEventListener('scroll', fromScroll, { passive: true });
 window.addEventListener('resize', fromScroll, { passive: true });
 
 // ===== ANIMATION LOOP =====
-const clock = new THREE.Clock();
+let lastTime = performance.now();
 let lastPing = 0;
 
 function Hj(x, z, t, tsu, fr, amp) {
@@ -654,7 +670,9 @@ function getEvacWalkPose(u) {
 function loop() {
   requestAnimationFrame(loop);
 
-  const dt = Math.min(clock.getDelta(), 0.05);
+  const now = performance.now();
+  const dt = Math.min((now - lastTime) / 1000, 0.05);
+  lastTime = now;
   const t = U.uT.value + dt * (matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.25 : 1);
   const st = threeCtx.getState();
 
@@ -1078,4 +1096,46 @@ window.addEventListener('samudra:content-updated', (e) => {
     }
   }
 });
+
+// ===== INSTANT ZERO-LATENCY SCROLL & READING PROGRESS =====
+function initSmoothScroll() {
+  // Top reading progress indicator
+  let progressBar = document.getElementById('scroll-progress-bar');
+  if (!progressBar) {
+    progressBar = document.createElement('div');
+    progressBar.id = 'scroll-progress-bar';
+    progressBar.className = 'scroll-progress-bar';
+    document.body.appendChild(progressBar);
+  }
+
+  function updateProgressBar() {
+    const docH = document.documentElement.scrollHeight - window.innerHeight;
+    if (docH > 0) {
+      const p = Math.min(100, Math.max(0, (window.scrollY / docH) * 100));
+      progressBar.style.width = `${p}%`;
+    } else {
+      progressBar.style.width = '0%';
+    }
+  }
+
+  window.addEventListener('scroll', updateProgressBar, { passive: true });
+  window.addEventListener('resize', updateProgressBar, { passive: true });
+  updateProgressBar();
+
+  // Smooth easing for internal hash anchors
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[href^="#"]');
+    if (!link) return;
+    const href = link.getAttribute('href');
+    if (!href || href === '#' || href === '#!') return;
+    const targetEl = document.querySelector(href);
+    if (!targetEl) return;
+
+    e.preventDefault();
+    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+initSmoothScroll();
+
 

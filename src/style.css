@@ -17,7 +17,58 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: env(safe-area-inset-top, 0px);
+  scroll-padding-top: calc(82px + env(safe-area-inset-top, 0px));
+  scrollbar-width: thin;
+  scrollbar-color: #00d2ff #020713;
+}
+
+/* ===== CUSTOM SLEEK OCEANIC SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020713;
+  border-left: 1px solid rgba(0, 210, 255, 0.08);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.7);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00d2ff 0%, #0284c7 50%, #034078 100%);
+  border-radius: 999px;
+  border: 2px solid #020713;
+  box-shadow: 0 0 10px rgba(0, 210, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #38bdf8 0%, #00d2ff 50%, #0284c7 100%);
+  box-shadow: 0 0 16px rgba(0, 210, 255, 0.75), inset 0 1px 1px rgba(255, 255, 255, 0.85);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #00f0ff 0%, #00d2ff 100%);
+  box-shadow: 0 0 22px rgba(0, 240, 255, 0.95), inset 0 1px 2px #ffffff;
+}
+
+::-webkit-scrollbar-corner {
+  background: #020713;
+}
+
+/* Top Scroll Reading Progress Bar */
+.scroll-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, #0284c7 0%, #00d2ff 50%, #38bdf8 85%, #ffffff 100%);
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.9), 0 0 4px #00d2ff;
+  z-index: 9999;
+  pointer-events: none;
+  transition: width 0.08s ease-out;
+  border-radius: 0 2px 2px 0;
 }
 
 body {
@@ -495,14 +546,18 @@ a { color: inherit; text-decoration: none; }
 
 /* ===== LIVE EARTHQUAKE BANNER ===== */
 .quake-banner {
-  background: linear-gradient(90deg, #020713 0%, #061934 50%, #020713 100%);
-  border-bottom: 1px solid rgba(0, 210, 255, 0.18);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  background: linear-gradient(90deg, rgba(2, 7, 19, 0.72) 0%, rgba(6, 25, 52, 0.72) 50%, rgba(2, 7, 19, 0.72) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   padding: 14px clamp(20px, 5vw, 72px);
   display: flex;
   align-items: center;
   gap: 16px;
   font: 13px 'JetBrains Mono', monospace;
+  position: relative;
+  z-index: 15;
 }
 
 .quake-banner__dot {
@@ -527,9 +582,28 @@ a { color: inherit; text-decoration: none; }
 .quake-banner__aman { color: #00d2ff; font-weight: 600; }
 
 /* ===== MAIN TWO-TONE SECTIONS (HITAM & BIRU SAMUDRA) ===== */
+/* ===== MAIN OCEANIC MESH SECTIONS & DYNAMIC BACKGROUNDS ===== */
 main {
   width: 100%;
   overflow-x: hidden;
+  position: relative;
+  background: #020713;
+}
+
+main::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(rgba(0, 210, 255, 0.075) 1.2px, transparent 1.2px),
+    linear-gradient(to right, rgba(0, 210, 255, 0.014) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 210, 255, 0.014) 1px, transparent 1px);
+  background-size: 36px 36px, 72px 72px, 72px 72px;
+  background-position: center top;
+  mask-image: linear-gradient(180deg, transparent 0%, black 2%, black 98%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, black 2%, black 98%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 main section {
@@ -537,12 +611,15 @@ main section {
   box-sizing: border-box;
   padding: clamp(76px, 9vw, 130px) clamp(20px, 5vw, 72px);
   position: relative;
+  z-index: 1;
 }
 
 .section-header,
 .flow-grid,
 .features-bento,
-.sim,
+.fui-bento-grid,
+.weather-grid,
+.seismic-card,
 .mitigasi-header,
 .mitigasi-carousel,
 .mitigasi-grid,
@@ -551,81 +628,32 @@ main section {
 .morgana-latest,
 .morgana-faq,
 .cta-banner {
-  max-width: 1240px;
+  max-width: 1140px;
   margin-left: auto;
   margin-right: auto;
 }
 
-/* SECTION 1: ALUR -> Obsidian Dark Tech (#020610) */
-#alur {
-  background: #020610;
-  border-top: 1px solid rgba(0, 210, 255, 0.14);
-}
-
-#alur::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 700px;
-  height: 260px;
-  background: radial-gradient(ellipse at 50% 0%, rgba(0, 180, 255, 0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-/* SECTION 2: FITUR -> Deep Ocean Navy Sapphire (Dual-Tone Contrast) */
-#fitur {
-  background: linear-gradient(180deg, #041026 0%, #030d1f 100%);
-  border-top: 1px solid rgba(0, 210, 255, 0.22);
-  border-bottom: 1px solid rgba(0, 210, 255, 0.12);
-}
-
-#fitur::before {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #00d2ff 50%, transparent 100%);
-  opacity: 0.6;
-}
-
-/* SECTION 3: SIMULASI -> Obsidian Laboratory Dark */
-#simulasi {
-  background: #020610;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-/* SECTION 4: MITIGASI -> Deep Tactical Sapphire */
-#mitigasi {
-  background: linear-gradient(180deg, #030f24 0%, #020817 100%);
-  border-top: 1px solid rgba(0, 210, 255, 0.22);
-  border-bottom: 1px solid rgba(0, 210, 255, 0.12);
-}
-
-#mitigasi::before {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #38bdf8 50%, transparent 100%);
-  opacity: 0.6;
-}
-
-/* SECTION 5: ARTIKEL -> Obsidian Editorial Dark */
-#artikel {
-  background: #02050f;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-/* SECTION 6: AKSES (CTA) -> Luminous Ocean Blue Gradient */
+/* SECTION SEAMLESS CONTINUITY - ZERO HARD CUTS, ZERO DIVIDER LINES */
+#alur,
+#fitur,
+#cuaca,
+#simulasi,
+#mitigasi,
+#artikel,
 #akses {
-  background: linear-gradient(180deg, #030c1d 0%, #01040d 100%);
-  border-top: 1px solid rgba(0, 210, 255, 0.16);
+  background: transparent !important;
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  position: relative;
+}
+
+/* Remove all 1px divider lines between sections */
+#alur::before,
+#fitur::before,
+#cuaca::before,
+#mitigasi::before {
+  display: none !important;
 }
 
 h2 {
@@ -688,149 +716,875 @@ h2 {
   line-height: 1.7;
 }
 
-/* ===== ENHANCED 3-STEP FLOW CARDS (#alur) ===== */
+/* ===== NOTCHED PROJECT CARDS (#alur) ===== */
 .flow-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  gap: 28px;
   position: relative;
+  max-width: 1140px;
+  margin: 0 auto;
 }
 
-.flow-card {
-  background: linear-gradient(155deg, rgba(8, 28, 58, 0.95) 0%, rgba(3, 10, 22, 0.98) 100%);
-  border: 1px solid rgba(0, 210, 255, 0.2);
-  border-radius: 20px;
-  padding: 32px 28px;
+.notched-card {
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 28px;
+  text-decoration: none;
+  outline: none;
+  transition: transform 0.3s ease;
   position: relative;
-  overflow: hidden;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.flow-card::before {
-  content: '';
+.notched-card:hover {
+  transform: translateY(-4px);
+}
+
+.notched-card__cover-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.notched-card__cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 28px;
+  background: rgba(4, 14, 32, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.notched-card__img {
   position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 130px;
-  height: 130px;
-  background: radial-gradient(circle, rgba(0, 210, 255, 0.16) 0%, transparent 70%);
-  filter: blur(16px);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+}
+
+.notched-card:hover .notched-card__img {
+  transform: scale(1.05);
+}
+
+.notched-card__dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
   pointer-events: none;
 }
 
-.flow-card:hover {
-  transform: translateY(-6px);
-  border-color: rgba(0, 210, 255, 0.55);
-  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.65), 0 0 35px rgba(0, 210, 255, 0.22);
-}
-
-.flow-card__top {
+.notched-card__badge-wrap {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  right: 0;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
 }
 
-.flow-card__badge {
-  font: 700 12px/1 'JetBrains Mono', monospace;
-  color: #020b18;
-  background: linear-gradient(135deg, #00d2ff, #0088ff);
-  padding: 6px 14px;
+.notched-card__badge {
+  font: 600 11px/1 'JetBrains Mono', monospace;
+  color: #ffffff;
+  background: rgba(3, 11, 26, 0.7);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 999px;
+  padding: 6px 14px;
   letter-spacing: 0.06em;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  box-shadow: 0 0 14px rgba(0, 210, 255, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
-.flow-card__badge-pulse {
-  width: 6px;
-  height: 6px;
+/* The Notch Block: Concentric cutout painted in surface background */
+.notched-card__notch-block {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 80px;
+  height: 80px;
+  border-top-left-radius: 48px;
+  background: var(--bg, #020512);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Fillets at each end where cut meets cover edges */
+.notched-card__fillet {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.notched-card__fillet--top {
+  bottom: 80px;
+  right: 0;
+  background: radial-gradient(circle at top left, transparent 27.5px, var(--bg, #020512) 28px);
+}
+
+.notched-card__fillet--left {
+  bottom: 0;
+  right: 80px;
+  background: radial-gradient(circle at top left, transparent 27.5px, var(--bg, #020512) 28px);
+}
+
+/* Nested Step Number Disc */
+.notched-card__disc {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: #ffffff;
-  animation: pulse 1.8s infinite;
-}
-
-.flow-card__icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(0, 210, 255, 0.12), rgba(0, 80, 180, 0.22));
+  background: rgba(3, 11, 26, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(0, 210, 255, 0.35);
+  color: #00d2ff;
+  font: 700 20px/1 'JetBrains Mono', monospace;
+  letter-spacing: -0.02em;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #00d2ff;
-  box-shadow: 0 0 18px rgba(0, 210, 255, 0.2);
-  transition: all 0.25s ease;
+  z-index: 4;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.flow-card:hover .flow-card__icon {
-  transform: scale(1.08);
+.notched-card:hover .notched-card__disc {
+  background: #00d2ff;
   border-color: #00d2ff;
-  box-shadow: 0 0 25px rgba(0, 210, 255, 0.45);
+  color: #020914;
+  transform: scale(1.08);
+  box-shadow: 0 0 28px rgba(0, 210, 255, 0.75);
 }
 
-.flow-card__title {
-  font: 500 19px/1.3 'Inter', sans-serif;
+.notched-card__title {
+  margin-top: 20px;
+  font: 600 22px/1.3 'Inter', sans-serif;
   letter-spacing: -0.015em;
   color: #f8fafc;
-  margin: 0 0 12px;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
-.flow-card:hover .flow-card__title {
+.notched-card:hover .notched-card__title {
   color: #00d2ff;
 }
 
-.flow-card__desc {
-  font-size: 14px;
-  line-height: 1.68;
-  color: #8fa0b6;
-  margin: 0 0 24px;
-  flex-grow: 1;
+.notched-card__desc {
+  margin: 8px 0 0;
+  font: 400 14px/1.65 'Inter', sans-serif;
+  color: #94a3b8;
 }
 
-.flow-card__footer {
-  padding-top: 18px;
-  border-top: 1px solid rgba(0, 210, 255, 0.12);
+.notched-card__tags {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.notched-card__tag {
+  font: 600 10.5px/1 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #38bdf8;
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.2);
+  border-radius: 6px;
+  padding: 5px 10px;
+  backdrop-filter: blur(8px);
+}
+
+@media (max-width: 900px) {
+  .flow-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+/* ===== ENHANCED BENTO GRID FEATURES (#fitur) ===== */
+.fui-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 20px;
+  max-width: 1140px;
+  margin: 36px auto 0;
+  width: 100%;
+}
+
+.fui-bento-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 18px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
+    rgba(0, 210, 255, 0.05) 100%
+  ), rgba(3, 11, 26, 0.35);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 
+    0 20px 48px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 1px 0 rgba(0, 210, 255, 0.18),
+    inset 0 -20px 60px -20px rgba(0, 210, 255, 0.12);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.fui-bento-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 30%, rgba(0, 210, 255, 0.8) 60%, transparent 100%);
+  z-index: 25;
+  pointer-events: none;
+}
+
+.fui-bento-card--span-3 {
+  grid-column: span 3;
+}
+
+.fui-bento-card--span-2 {
+  grid-column: span 2;
+}
+
+@media (min-width: 1025px) {
+  .fui-bento-card--tl { border-top-left-radius: 36px; }
+  .fui-bento-card--tr { border-top-right-radius: 36px; }
+  .fui-bento-card--bl { border-bottom-left-radius: 36px; }
+  .fui-bento-card--br { border-bottom-right-radius: 36px; }
+}
+
+.fui-bento-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(0, 210, 255, 0.65);
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.7),
+    0 0 35px rgba(0, 210, 255, 0.25),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.55);
+}
+
+.fui-bento-card__graphic {
+  position: relative;
+  height: 290px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #020712;
+}
+
+.fui-bento-card__graphic::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(2, 6, 18, 0.15) 0%, rgba(2, 8, 22, 0.35) 100%);
+  pointer-events: none;
+}
+
+.fui-bento-card__img {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  opacity: 0.95;
+}
+
+.fui-bento-card:hover .fui-bento-card__img {
+  transform: scale(1.06);
+  opacity: 1;
+}
+
+/* Dedicated authentic Tsunami Mitigation & Emergency Preparedness Visuals */
+.fui-bento-card__img--1 {
+  /* DART tsunami detection buoy floating in dark stormy sea with glowing telemetry */
+  background-image: url('/img/bento-buoy-warning.jpg');
+}
+
+.fui-bento-card__img--2 {
+  /* Coastal concrete stairs to high elevation hill with official Tsunami Evacuation Route signpost */
+  background-image: url('/img/bento-evacuation-route.jpg');
+}
+
+.fui-bento-card__img--3 {
+  /* Coastal maritime search and rescue (SAR) responders with flashing rotator lights and radio dispatch */
+  background-image: url('/img/bento-emergency-dispatch.jpg');
+}
+
+.fui-bento-card__img--4 {
+  /* Multi-story reinforced concrete TES (Tempat Evakuasi Sementara) shelter building on coastal hill */
+  background-image: url('/img/bento-shelter-tes.jpg');
+}
+
+.fui-bento-card__img--5 {
+  /* Smartphone with offline digital evacuation map in hand during coastal storm & blackout */
+  background-image: url('/img/bento-offline-navigation.jpg');
+}
+
+.fui-bento-card__fade-top {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(2, 7, 18, 0.25) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.fui-bento-card__fade-bottom {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(2, 8, 20, 0.45) 0%, rgba(2, 8, 20, 0.1) 45%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Seamless glassmorphic text content container without harsh lines */
+.fui-bento-card__content {
+  position: relative;
+  z-index: 20;
+  margin-top: -110px;
+  min-height: 13rem;
+  padding: 36px 30px 28px;
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 28%, black 45%, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 28%, black 45%, black 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(3, 11, 26, 0) 0%,
+    rgba(3, 11, 26, 0.35) 25%,
+    rgba(3, 11, 26, 0.65) 55%,
+    rgba(2, 8, 20, 0.88) 100%
+  );
+  border-top: none;
+  box-shadow: none;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  transition: background 0.3s ease;
+}
+
+.fui-bento-card:hover .fui-bento-card__content {
+  background: linear-gradient(
+    180deg,
+    rgba(3, 11, 26, 0) 0%,
+    rgba(3, 11, 26, 0.4) 25%,
+    rgba(3, 11, 26, 0.72) 55%,
+    rgba(2, 8, 20, 0.92) 100%
+  );
+}
+
+.fui-bento-card__eyebrow {
+  display: block;
+  font: 600 11px/1 'JetBrains Mono', monospace;
+  color: #38bdf8;
+  margin-bottom: 7px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fui-bento-card__title {
+  font: 600 19px/1.3 'Inter', sans-serif;
+  letter-spacing: -0.015em;
+  color: #ffffff;
+  margin: 0 0 8px;
+  transition: color 0.2s ease;
+}
+
+.fui-bento-card:hover .fui-bento-card__title {
+  color: #38bdf8;
+}
+
+.fui-bento-card__desc {
+  font: 400 13px/1.6 'Inter', sans-serif;
+  color: #94a3b8;
+  margin: 0;
+  max-width: 540px;
+}
+
+@media (max-width: 1024px) {
+  .fui-bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .fui-bento-card--span-3,
+  .fui-bento-card--span-2 {
+    grid-column: span 1;
+  }
+  .fui-bento-card--span-2:last-child {
+    grid-column: span 2;
+  }
+  .fui-bento-card__graphic {
+    height: 320px;
+  }
+  .fui-bento-card__content {
+    margin-top: -90px;
+    height: auto;
+    min-height: 12rem;
+    padding: 24px 28px;
+  }
+}
+
+@media (max-width: 680px) {
+  .fui-bento-grid {
+    grid-template-columns: 1fr;
+  }
+  .fui-bento-card--span-3,
+  .fui-bento-card--span-2,
+  .fui-bento-card--span-2:last-child {
+    grid-column: span 1;
+  }
+  .fui-bento-card--tl,
+  .fui-bento-card--tr,
+  .fui-bento-card--bl,
+  .fui-bento-card--br {
+    border-radius: 12px;
+  }
+  .fui-bento-card__graphic {
+    height: 260px;
+  }
+  .fui-bento-card__content {
+    margin-top: -80px;
+    padding: 20px;
+  }
+}
+
+/* ===== LIVE YOGYAKARTA WEATHER STATION COMPONENT (#cuaca) ===== */
+.weather-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.weather-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+  gap: 28px;
+  max-width: 1140px;
+  margin: 36px auto 0;
+  width: 100%;
+  align-items: start;
+}
+
+.weather-slab {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 40%, rgba(0, 210, 255, 0.05) 100%), rgba(3, 11, 26, 0.65);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 24px;
+  padding: 26px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.weather-slab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 30%, rgba(0, 210, 255, 0.8) 60%, transparent 100%);
+  pointer-events: none;
+}
+
+.weather-slab__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.weather-slab__place {
+  font: 600 20px/1.2 'Inter', sans-serif;
+  color: #ffffff;
+  margin: 0 0 4px;
+}
+
+.weather-slab__summary {
+  font-size: 12.5px;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.weather-slab__live {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.25);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font: 600 11px/1 'JetBrains Mono', monospace;
+  color: #00d2ff;
+  white-space: nowrap;
+}
+
+.weather-led {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+  animation: pulse 1.5s infinite;
+}
+
+.weather-clock {
+  color: #e2e8f0;
+  font-weight: 500;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  padding-left: 8px;
+}
+
+.weather-location-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.weather-location-bar::-webkit-scrollbar {
+  height: 3px;
+}
+.weather-location-bar::-webkit-scrollbar-thumb {
+  background: rgba(0, 210, 255, 0.2);
+  border-radius: 3px;
+}
+
+.weather-loc-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  font: 500 11.5px/1 'Inter', sans-serif;
+  color: #94a3b8;
+  padding: 7px 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.weather-loc-btn:hover {
+  background: rgba(0, 210, 255, 0.08);
+  border-color: rgba(0, 210, 255, 0.3);
+  color: #ffffff;
+}
+
+.weather-loc-btn--active {
+  background: rgba(0, 210, 255, 0.16);
+  border-color: #00d2ff;
+  color: #00d2ff;
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.25);
+}
+
+.weather-sky {
+  position: relative;
+  height: 224px;
+  border-radius: 16px;
+  background: #020612;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  overflow: hidden;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+.weather-sky svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.weather-now-overlay {
+  position: absolute;
+  inset: auto 16px 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.weather-now-temp {
+  font: 700 48px/0.9 'JetBrains Mono', monospace;
+  letter-spacing: -0.04em;
+  color: #ffffff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+}
+
+.weather-now-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.weather-now-cond {
+  font: 600 15px/1 'Inter', sans-serif;
+  color: #38bdf8;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+.weather-now-readout {
+  font: 500 11.5px/1 'JetBrains Mono', monospace;
+  color: #cbd5e1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+.weather-hours-list {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.weather-hour-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.weather-hour-lbl {
+  font: 500 11px/1 'JetBrains Mono', monospace;
+  color: #94a3b8;
+}
+
+.weather-hour-temp {
+  font: 600 12.5px/1 'JetBrains Mono', monospace;
+  color: #ffffff;
+}
+
+.weather-week-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.weather-week-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font: 600 10.5px/1 'JetBrains Mono', monospace;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0 4px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.weather-week-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+  padding: 0 16px;
+}
+
+.weather-week-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.weather-week-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 2px 4px;
+}
+
+.weather-week-name {
+  width: 60px;
+  font-weight: 500;
+  color: #cbd5e1;
+}
+
+.weather-week-name--today {
+  color: #00d2ff;
+  font-weight: 600;
+}
+
+.weather-week-low {
+  width: 32px;
+  text-align: right;
+  font: 500 12px/1 'JetBrains Mono', monospace;
+  color: #94a3b8;
+}
+
+.weather-week-bar {
+  flex: 1;
+  margin: 0 14px;
+  height: 8px;
+  display: block;
+}
+
+.weather-week-high {
+  width: 32px;
+  text-align: left;
+  font: 600 12.5px/1 'JetBrains Mono', monospace;
+  color: #ffffff;
+}
+
+/* Right Column: Intelligence Cards */
+.weather-intel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.intel-card {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
+    rgba(0, 210, 255, 0.05) 100%
+  ), rgba(3, 11, 26, 0.58);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 
+    0 18px 45px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 1px 0 rgba(0, 210, 255, 0.15);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.intel-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 30%, rgba(0, 210, 255, 0.7) 60%, transparent 100%);
+  pointer-events: none;
+}
+
+.intel-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 210, 255, 0.55);
+  box-shadow: 0 24px 55px rgba(0, 0, 0, 0.65), 0 0 30px rgba(0, 210, 255, 0.2);
+}
+
+.intel-card__top {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.flow-card__pill {
-  font: 500 11px/1 'JetBrains Mono', monospace;
+.intel-card__badge {
+  font: 600 10.5px/1 'JetBrains Mono', monospace;
+  letter-spacing: 0.14em;
   color: #38bdf8;
-  letter-spacing: 0.05em;
   text-transform: uppercase;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
   background: rgba(0, 210, 255, 0.08);
-  border: 1px solid rgba(0, 210, 255, 0.2);
+  border: 1px solid rgba(0, 210, 255, 0.25);
   padding: 5px 12px;
   border-radius: 999px;
+  backdrop-filter: blur(8px);
 }
 
-.flow-card__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #00d2ff;
-  box-shadow: 0 0 8px #00d2ff;
+.intel-card__status {
+  font: 600 11px/1 'JetBrains Mono', monospace;
+  color: #a1a1aa;
 }
 
-.flow-card__metric {
-  font: 600 11.5px 'JetBrains Mono', monospace;
+.intel-card__title {
+  font: 600 20px/1.3 'Inter', sans-serif;
+  color: #ffffff;
+  margin: 0;
+}
+
+.intel-card__desc {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.intel-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.intel-stat {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.intel-stat__lbl {
+  font: 600 10px/1 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
   color: #64748b;
+  text-transform: uppercase;
 }
 
-/* ===== ENHANCED BENTO GRID FEATURES (#fitur) ===== */
+.intel-stat__val {
+  font: 600 18px/1 'JetBrains Mono', monospace;
+  color: #ffffff;
+}
+
+.intel-stat__val--safe {
+  color: #34d399;
+}
+
+.intel-stat__val--warn {
+  color: #f59e0b;
+}
+
+@media (max-width: 960px) {
+  .weather-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .features-bento {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -931,161 +1685,880 @@ h2 {
   color: #00d2ff;
 }
 
-/* ===== ENHANCED SIMULATION CARDS (#simulasi) ===== */
-.sim {
-  display: grid;
-  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
-  gap: 28px;
-  align-items: start;
+/* ===== SEISMICID & TSUNAMI SIMULATOR COMPONENT (#simulasi) ===== */
+#simulasi.seismic-section {
+  padding-top: clamp(48px, 6vw, 76px);
+  padding-bottom: clamp(48px, 6vw, 76px);
+  background: transparent !important;
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
 }
 
-.sim__controls {
-  display: grid;
-  gap: 22px;
-  padding: 32px 28px;
-  border: 1px solid rgba(0, 210, 255, 0.22);
-  border-radius: 20px;
-  background: linear-gradient(155deg, #071936 0%, #030b18 100%);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+.seismic-container {
+  max-width: 1140px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
 }
 
-.sim__controls label {
-  display: grid;
+.seismic-section .section-header {
+  margin-bottom: 22px;
+  max-width: 1140px;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Mode Switcher Tabs */
+.seismic-tabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.seismic-tab-btn {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
-  font: 13px 'JetBrains Mono', monospace;
-  color: #8fa0b6;
-}
-
-.sim__controls label b {
-  color: #f8fafc;
-  font-weight: 500;
-  float: right;
-}
-
-input[type=range] {
-  width: 100%;
-  accent-color: #00d2ff;
-  background: rgba(255, 255, 255, 0.08);
-  height: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-}
-
-#sc {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16/9;
-  border: 1px solid rgba(0, 210, 255, 0.22);
-  border-radius: 18px;
-  background: #040914;
-  display: block;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-}
-
-.sim__outputs {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 18px;
-}
-
-.sim__output {
-  padding: 18px 22px;
-  border: 1px solid rgba(0, 210, 255, 0.2);
-  border-radius: 14px;
-  background: linear-gradient(150deg, #071936 0%, #030c1c 100%);
+  padding: 8px 18px;
+  color: #94a3b8;
+  font: 500 12.5px/1 'Inter', sans-serif;
+  cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.seismic-tab-btn:hover {
+  background: rgba(0, 210, 255, 0.1);
+  border-color: rgba(0, 210, 255, 0.35);
+  color: #f8fafc;
+}
+
+.seismic-tab-btn--active {
+  background: linear-gradient(135deg, rgba(0, 210, 255, 0.22) 0%, rgba(3, 16, 36, 0.8) 100%);
+  border-color: rgba(0, 210, 255, 0.6);
+  color: #00d2ff;
+  font-weight: 600;
+  box-shadow: 0 4px 18px rgba(0, 210, 255, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.seismic-card {
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
+  border-radius: 24px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.015) 45%,
+    rgba(0, 210, 255, 0.04) 100%
+  ), rgba(3, 10, 24, 0.6);
+  backdrop-filter: blur(36px) saturate(200%);
+  -webkit-backdrop-filter: blur(36px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(0, 210, 255, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.28);
+  overflow: hidden;
+  position: relative;
+}
+
+.seismic-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 30%, rgba(0, 210, 255, 0.8) 60%, transparent 100%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.seismic-card__toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 22px;
+  background: rgba(2, 8, 22, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.seismic-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.seismic-live-badge {
+  font: 600 11px/1 'JetBrains Mono', monospace;
+  color: #38bdf8;
+  letter-spacing: 0.06em;
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.25);
+  border-radius: 999px;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.seismic-live-badge--cyan {
+  color: #00d2ff;
+  border-color: rgba(0, 210, 255, 0.35);
+}
+
+.seismic-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+  animation: pulse 1.6s infinite;
+}
+
+.seismic-led--cyan {
+  background: #00d2ff;
+  box-shadow: 0 0 8px #00d2ff;
+}
+
+.seismic-tag {
+  font: 500 11.5px/1 'JetBrains Mono', monospace;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 5px 12px;
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+}
+
+.seismic-sources {
+  font: 400 11.5px/1 'Inter', sans-serif;
+  color: #64748b;
+}
+
+.seismic-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.seismic-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font: 600 12px/1 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.seismic-action-btn--primary {
+  background: linear-gradient(135deg, #00d2ff 0%, #0284c7 100%);
+  border: 1px solid #00d2ff;
+  color: #020914;
+  box-shadow: 0 4px 18px rgba(0, 210, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.seismic-action-btn--primary:hover {
+  background: linear-gradient(135deg, #38bdf8 0%, #00d2ff 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(0, 210, 255, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.seismic-action-btn--secondary {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #cbd5e1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.seismic-action-btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.seismic-select-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seismic-label {
+  font: 500 11px/1 'JetBrains Mono', monospace;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.seismic-select {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 210, 255, 0.28);
+  border-radius: 999px;
+  color: #f8fafc;
+  font: 500 11.5px/1 'JetBrains Mono', monospace;
+  padding: 6px 14px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.seismic-select option {
+  background: #040d21;
+  color: #f8fafc;
+}
+
+.seismic-select:hover,
+.seismic-select:focus {
+  border-color: #00d2ff;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 14px rgba(0, 210, 255, 0.25);
+}
+
+.seismic-btn-ext {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 210, 255, 0.1);
+  border: 1px solid rgba(0, 210, 255, 0.35);
+  color: #00d2ff;
+  font: 500 11.5px/1 'Inter', sans-serif;
+  padding: 6px 13px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.seismic-btn-ext:hover {
+  background: #00d2ff;
+  color: #020914;
+  box-shadow: 0 0 14px rgba(0, 210, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Quick Location Jump Bar */
+.seismic-quick-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  overflow-x: auto;
+}
+
+.seismic-quick-bar::-webkit-scrollbar {
+  height: 3px;
+}
+.seismic-quick-bar::-webkit-scrollbar-thumb {
+  background: rgba(0, 210, 255, 0.2);
+  border-radius: 3px;
+}
+
+.seismic-quick-title {
+  font: 700 10.5px/1 'JetBrains Mono', monospace;
+  color: #38bdf8;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.seismic-quick-tags {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.seismic-quick-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  font: 500 11px/1 'Inter', sans-serif;
+  color: #cbd5e1;
+  padding: 5px 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.seismic-quick-btn:hover {
+  background: rgba(0, 210, 255, 0.12);
+  border-color: rgba(0, 210, 255, 0.4);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.seismic-quick-btn small {
+  font: 700 10px/1 'JetBrains Mono', monospace;
+  color: #f87171;
+}
+
+.seismic-quick-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* Compact Frame - Native Leaflet Map & Canvas */
+.seismic-frame-wrap {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  background: #020612;
+  overflow: hidden;
+}
+
+.seismic-native-map {
+  width: 100%;
+  height: 100%;
+  background: #020612;
+  outline: none;
+}
+
+.seismic-cross-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #020919;
+}
+
+/* Simulation HUD Overlay */
+.sim-hud-overlay {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(3, 11, 26, 0.72);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(0, 210, 255, 0.3);
+  border-radius: 999px;
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 500;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  flex-wrap: wrap;
+}
+
+.sim-hud-badge {
+  font: 700 10.5px/1 'JetBrains Mono', monospace;
+  padding: 5px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(10px);
+}
+
+.sim-hud-badge--red {
+  background: rgba(239, 68, 68, 0.22);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+}
+
+.sim-hud-badge--orange {
+  background: rgba(249, 115, 22, 0.22);
+  border: 1px solid #f97316;
+  color: #f97316;
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+}
+
+.sim-hud-badge--green {
+  background: rgba(16, 185, 129, 0.22);
+  border: 1px solid #10b981;
+  color: #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+.sim-hud-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.5s infinite;
+}
+
+.sim-hud-item {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 2px;
+  position: relative;
 }
 
-.sim__output:hover {
-  border-color: rgba(0, 210, 255, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55), 0 0 20px rgba(0, 210, 255, 0.2);
+.sim-hud-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -9px;
+  top: 3px;
+  bottom: 3px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.12);
 }
 
-.sim__output small {
-  display: block;
-  color: #38bdf8;
-  font: 600 11px/1 'JetBrains Mono', monospace;
-  letter-spacing: 0.12em;
+.sim-hud-lbl {
+  font: 600 8.5px/1 'JetBrains Mono', monospace;
+  color: #7dd3fc;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-bottom: 8px;
 }
 
-.sim__output b {
-  background: linear-gradient(90deg, #ffffff 0%, #38bdf8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+.sim-hud-val {
+  font: 600 12.5px/1 'JetBrains Mono', monospace;
+  color: #ffffff;
 }
 
-/* Status Bahaya */
-.sim__output--status {
-  transition: all 0.3s ease;
+/* Epicenter and Coast Markers on Leaflet */
+.sim-epicenter-marker {
+  position: relative;
 }
 
-.sim__status-val {
-  display: block;
-  font-size: 26px !important;
-  font-weight: 700 !important;
+.sim-epicenter-core {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 12px #ef4444;
+  position: absolute;
+  top: 9px;
+  left: 9px;
+}
+
+.sim-epicenter-pulse {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #ef4444;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: seismicPing 1.6s infinite;
+}
+
+.sim-coast-pill {
+  background: rgba(4, 14, 32, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 210, 255, 0.35);
+  border-radius: 999px;
+  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 500 10.5px/1 'Inter', sans-serif;
+  color: #f1f5f9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+.sim-coast-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #00d2ff;
+}
+
+.sim-coast-pill small {
+  color: #f59e0b;
+  font: 700 9.5px 'JetBrains Mono', monospace;
+}
+
+/* Controls Slider Bar */
+.seismic-controls-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  padding: 16px 20px;
+  background: rgba(2, 7, 18, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sim-control-item {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.015) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
+}
+
+.sim-control-item:hover {
+  border-color: rgba(0, 210, 255, 0.35);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(0, 210, 255, 0.03) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.sim-control-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sim-control-label {
+  font: 500 11.5px/1 'Inter', sans-serif;
+  color: #94a3b8;
   letter-spacing: 0.02em;
 }
 
-/* Waspada */
-.status--waspada {
-  border-color: rgba(234, 179, 8, 0.5) !important;
-  background: linear-gradient(150deg, #211c05 0%, #0c0a02 100%) !important;
-}
-.status--waspada b {
-  background: linear-gradient(90deg, #ffffff 0%, #facc15 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-}
-
-/* Siaga */
-.status--siaga {
-  border-color: rgba(249, 115, 22, 0.5) !important;
-  background: linear-gradient(150deg, #241407 0%, #0e0702 100%) !important;
-}
-.status--siaga b {
-  background: linear-gradient(90deg, #ffffff 0%, #fb923c 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
+.sim-control-val {
+  font: 700 12px/1 'JetBrains Mono', monospace;
+  color: #00d2ff;
+  background: rgba(0, 210, 255, 0.12);
+  border: 1px solid rgba(0, 210, 255, 0.28);
+  padding: 3px 8px;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0, 210, 255, 0.15);
 }
 
-/* Awas */
-.status--awas {
-  border-color: rgba(239, 68, 68, 0.6) !important;
-  background: linear-gradient(150deg, #2b0b0f 0%, #120305 100%) !important;
-  box-shadow: 0 8px 30px rgba(239, 68, 68, 0.25) !important;
-}
-.status--awas b {
-  background: linear-gradient(90deg, #ffffff 0%, #f87171 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
+.sim-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  outline: none;
+  transition: background 0.2s ease;
 }
 
-.sim__note {
-  color: #64748b;
-  font: 12px/1.6 'JetBrains Mono', monospace;
-  margin-top: 16px;
+.sim-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00d2ff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.8), 0 2px 6px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sim-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 18px #00d2ff, 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.sim-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00d2ff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.8);
+  cursor: pointer;
+}
+
+/* Leaflet Custom Styling to Match Theme */
+.leaflet-container {
+  background: #020612 !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.leaflet-bottom.leaflet-right .leaflet-control-zoom {
+  margin-bottom: 16px;
+  margin-right: 16px;
+}
+
+.leaflet-bar {
+  border: 1px solid rgba(0, 210, 255, 0.3) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+.leaflet-bar a {
+  background: rgba(3, 12, 28, 0.75) !important;
+  color: #00d2ff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  transition: all 0.2s ease !important;
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+}
+
+.leaflet-bar a:hover {
+  background: rgba(0, 210, 255, 0.25) !important;
+  color: #ffffff !important;
+}
+
+/* Map Legend Overlay */
+.seismic-legend-overlay {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  background: rgba(3, 11, 26, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 500;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  font: 500 10.5px/1 'JetBrains Mono', monospace;
+  color: #cbd5e1;
+  pointer-events: none;
+}
+
+.seismic-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.seismic-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* Beacon Marker Pulse Animation */
+.seismic-beacon-pulse {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #ef4444;
+  animation: seismicPing 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes seismicPing {
+  0% { transform: scale(0.6); opacity: 1; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+/* Popup Glass Styling */
+.leaflet-popup-content-wrapper {
+  background: rgba(4, 14, 32, 0.92) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 210, 255, 0.35) !important;
+  border-radius: 16px !important;
+  color: #f8fafc !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 25px rgba(0, 210, 255, 0.2) !important;
+  padding: 6px !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(4, 14, 32, 0.92) !important;
+  border: 1px solid rgba(0, 210, 255, 0.35) !important;
+}
+
+.leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  padding: 6px !important;
+}
+
+.seismic-popup {
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.seismic-popup__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+  font: 700 11.5px/1 'JetBrains Mono', monospace;
+  width: fit-content;
+}
+
+.seismic-popup__title {
+  margin: 0;
+  font: 600 14px/1.3 'Inter', sans-serif;
+  color: #ffffff;
+}
+
+.seismic-popup__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #94a3b8;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 6px;
+}
+
+.seismic-popup__meta strong {
+  color: #cbd5e1;
+}
+
+.seismic-reload-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(3, 11, 26, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 210, 255, 0.3);
+  color: #00d2ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 500;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.seismic-reload-btn:hover {
+  background: rgba(0, 210, 255, 0.25);
+  border-color: #00d2ff;
+  transform: scale(1.08);
+}
+
+.seismic-card__footer {
+  padding: 16px 20px;
+  background: rgba(2, 7, 18, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.seismic-pills {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.seismic-pill {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.015) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
+}
+
+.seismic-pill:hover {
+  border-color: rgba(0, 210, 255, 0.35);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(0, 210, 255, 0.03) 100%);
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.seismic-pill__lbl {
+  font: 600 9.5px/1 'JetBrains Mono', monospace;
+  color: #7dd3fc;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.seismic-pill__val {
+  font: 600 13px/1.3 'JetBrains Mono', monospace;
+  color: #f1f5f9;
+}
+
+@media (max-width: 860px) {
+  .seismic-frame-wrap {
+    height: 320px;
+  }
+  .seismic-controls-bar {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .seismic-pills {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .sim-hud-overlay {
+    gap: 10px;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .seismic-card__toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .seismic-card__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .seismic-pills {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ===== CTA BANNER & APK SHOWCASE ===== */
 .cta-banner {
-  background: linear-gradient(135deg, #072147 0%, #030e20 55%, #051934 100%);
-  border: 1px solid rgba(0, 210, 255, 0.32);
-  border-radius: 22px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.09) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
+    rgba(0, 210, 255, 0.08) 100%
+  ), rgba(4, 14, 34, 0.6);
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
   padding: clamp(36px, 5vw, 64px);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.65), 0 0 45px rgba(0, 210, 255, 0.15);
+  box-shadow: 0 30px 75px rgba(0, 0, 0, 0.65), 0 0 45px rgba(0, 210, 255, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.4);
+}
+
+.cta-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 30%, rgba(0, 210, 255, 0.8) 60%, transparent 100%);
+  pointer-events: none;
 }
 
 .cta-banner__grid {
@@ -1132,6 +2605,13 @@ input[type=range] {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .apk-meta-label {
@@ -1310,15 +2790,21 @@ input[type=range] {
 
 /* QR Card */
 .qr-card {
-  background: linear-gradient(150deg, #071936 0%, #030c1c 100%);
-  border: 1px solid rgba(0, 210, 255, 0.25);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  ), rgba(3, 11, 26, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 18px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   max-width: 160px;
   text-align: center;
 }
@@ -1350,13 +2836,15 @@ input[type=range] {
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%) translateY(100px);
-  background: #061e38;
-  border: 1px solid #00d2ff;
+  background: rgba(3, 14, 32, 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(0, 210, 255, 0.45);
   color: #fff;
   font: 500 13px 'Inter', sans-serif;
   padding: 12px 24px;
   border-radius: 999px;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 210, 255, 0.35);
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 210, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   z-index: 9999;
   opacity: 0;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1381,7 +2869,8 @@ input[type=range] {
 .mitigasi-section {
   padding-top: clamp(80px, 10vw, 130px);
   padding-bottom: clamp(60px, 8vw, 100px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border: none !important;
+  border-top: none !important;
   position: relative;
 }
 
@@ -1459,17 +2948,17 @@ input[type=range] {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(3, 14, 30, 0.88);
-  border: 1.5px solid rgba(0, 210, 255, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(4, 14, 30, 0.65);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: #00d2ff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75), 0 0 18px rgba(0, 210, 255, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), 0 0 18px rgba(0, 210, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1553,22 +3042,47 @@ input[type=range] {
 }
 
 .mitigasi-card {
-  background: linear-gradient(145deg, #071529 0%, #030a16 100%);
-  border: 1px solid rgba(0, 210, 255, 0.16);
-  border-radius: 18px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
+    rgba(56, 239, 125, 0.04) 100%
+  ), rgba(4, 14, 28, 0.55);
+  backdrop-filter: blur(26px) saturate(190%);
+  -webkit-backdrop-filter: blur(26px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 20px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
   text-decoration: none;
   cursor: pointer;
   position: relative;
+  box-shadow: 
+    0 20px 48px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.mitigasi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 30%, rgba(56, 239, 125, 0.7) 60%, transparent 100%);
+  z-index: 5;
+  pointer-events: none;
 }
 
 .mitigasi-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(0, 210, 255, 0.5);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.65), 0 0 28px rgba(0, 210, 255, 0.18);
+  transform: translateY(-6px);
+  border-color: rgba(56, 239, 125, 0.55);
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.65),
+    0 0 35px rgba(56, 239, 125, 0.2),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.5);
 }
 
 .mitigasi-card__thumb {
@@ -1721,19 +3235,45 @@ input[type=range] {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(145deg, #07152c 0%, #030a17 100%);
-  border: 1px solid rgba(0, 210, 255, 0.16);
-  border-radius: 18px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
+    rgba(0, 210, 255, 0.05) 100%
+  ), rgba(4, 13, 29, 0.55);
+  backdrop-filter: blur(26px) saturate(190%);
+  -webkit-backdrop-filter: blur(26px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 20px;
   overflow: hidden;
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   box-sizing: border-box;
+  box-shadow: 
+    0 20px 48px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.35);
+  position: relative;
+}
+
+.morgana-hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 30%, rgba(0, 210, 255, 0.7) 60%, transparent 100%);
+  z-index: 5;
+  pointer-events: none;
 }
 
 .morgana-hero-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(0, 210, 255, 0.5);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(0, 210, 255, 0.18);
+  transform: translateY(-5px);
+  border-color: rgba(0, 210, 255, 0.6);
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.65),
+    0 0 35px rgba(0, 210, 255, 0.22),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.5);
 }
 
 .morgana-hero-card__visual {
@@ -1828,22 +3368,35 @@ input[type=range] {
   grid-template-columns: 1fr 132px;
   gap: 16px;
   align-items: center;
-  background: linear-gradient(145deg, #07152c 0%, #030a17 100%);
-  border: 1px solid rgba(0, 210, 255, 0.16);
-  border-radius: 14px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.015) 50%,
+    rgba(0, 210, 255, 0.04) 100%
+  ), rgba(4, 13, 29, 0.52);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
   padding: 14px 18px;
-  transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+  transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
   cursor: pointer;
   height: 100%;
   min-height: 0;
   box-sizing: border-box;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .morgana-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(0, 210, 255, 0.5);
-  background: linear-gradient(145deg, #0a1f3d 0%, #040e1f 100%);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 18px rgba(0, 210, 255, 0.12);
+  transform: translateY(-3px);
+  border-color: rgba(0, 210, 255, 0.55);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(0, 210, 255, 0.08) 100%
+  ), rgba(4, 16, 36, 0.65);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55), 0 0 22px rgba(0, 210, 255, 0.18);
 }
 
 .morgana-card:hover .morgana-card__title {
@@ -1863,6 +3416,7 @@ input[type=range] {
   border-radius: 999px;
   border: 1px solid rgba(0, 210, 255, 0.35);
   background: rgba(0, 210, 255, 0.08);
+  backdrop-filter: blur(8px);
   color: #00d2ff;
   font: 500 10px 'JetBrains Mono', monospace;
   text-transform: uppercase;
@@ -1965,20 +3519,28 @@ input[type=range] {
 }
 
 .morgana-latest-card {
-  background: linear-gradient(145deg, #07152c 0%, #030a17 100%);
-  border: 1px solid rgba(0, 210, 255, 0.16);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
+    rgba(0, 210, 255, 0.04) 100%
+  ), rgba(4, 13, 29, 0.52);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 18px;
   overflow: hidden;
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .morgana-latest-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(0, 210, 255, 0.5);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 210, 255, 0.15);
+  transform: translateY(-5px);
+  border-color: rgba(0, 210, 255, 0.55);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 28px rgba(0, 210, 255, 0.2);
 }
 
 .morgana-latest-card:hover .morgana-latest-card__title {
@@ -2025,7 +3587,7 @@ input[type=range] {
   overflow: hidden;
 }
 
-/* Interactive FAQ Accordion with Cobalt/Azure Active Item */
+/* Interactive FAQ Accordion with Glass Azure Accent */
 .morgana-faq {
   margin-top: 72px;
   padding-top: 52px;
@@ -2058,11 +3620,19 @@ input[type=range] {
 }
 
 .morgana-accordion__item {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
   overflow: hidden;
-  background: #080d0a;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.25s ease;
+}
+
+.morgana-accordion__item:hover {
+  border-color: rgba(0, 210, 255, 0.35);
+  background: rgba(255, 255, 255, 0.055);
 }
 
 .morgana-accordion__trigger {
@@ -2104,25 +3674,27 @@ input[type=range] {
   margin: 0;
 }
 
-/* THE ICONIC ACTIVE ACCORDION ITEM WITH ELECTRIC AZURE ACCENT */
+/* THE ICONIC ACTIVE ACCORDION ITEM WITH GLASS AZURE ACCENT */
 .morgana-accordion__item--active {
-  background: #00d2ff !important;
-  border-color: #00d2ff !important;
+  background: linear-gradient(135deg, rgba(0, 210, 255, 0.25) 0%, rgba(3, 16, 36, 0.8) 100%) !important;
+  border-color: rgba(0, 210, 255, 0.6) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 210, 255, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(20px) !important;
 }
 
 .morgana-accordion__item--active .morgana-accordion__trigger {
-  color: #030a17 !important;
+  color: #ffffff !important;
   font-weight: 600 !important;
 }
 
 .morgana-accordion__item--active .morgana-accordion__icon {
-  color: #030a17 !important;
+  color: #00d2ff !important;
   font-weight: 700 !important;
 }
 
 .morgana-accordion__item--active .morgana-accordion__content {
-  color: #061938 !important;
-  font-weight: 500 !important;
+  color: #e2e8f0 !important;
+  font-weight: 400 !important;
 }
 
 /* Responsive Rules for Morgana Layout */
@@ -2171,11 +3743,18 @@ input[type=range] {
 
 /* ===== CHECKLIST ===== */
 .checklist-card {
-  background: #080d0a;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  ), rgba(4, 12, 28, 0.55);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 20px;
   padding: 32px clamp(20px, 4vw, 36px);
   max-width: 640px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.35);
 }
 
 .checklist {
@@ -2237,14 +3816,17 @@ input[type=range] {
 
 /* ===== FOOTER ===== */
 footer {
-  padding: 40px clamp(20px, 5vw, 72px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 44px clamp(20px, 5vw, 72px);
+  border-top: 1px solid rgba(0, 210, 255, 0.2);
+  background: linear-gradient(180deg, #010411 0%, #000208 100%);
   color: #64748b;
   font: 12px 'JetBrains Mono', monospace;
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -2335,13 +3917,20 @@ footer {
   width: 100%;
   max-width: 760px;
   max-height: 88vh;
-  background: #070e1a;
-  border: 1px solid rgba(0, 210, 255, 0.3);
-  border-radius: 20px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.09) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
+    rgba(0, 210, 255, 0.06) 100%
+  ), rgba(4, 12, 28, 0.78);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.75), 0 0 40px rgba(0, 210, 255, 0.12);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 45px rgba(0, 210, 255, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.4);
   transform: translateY(20px) scale(0.97);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
