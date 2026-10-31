@@ -6,6 +6,7 @@ export function renderNavbar(container) {
     <div class="nav__links">
       <a class="nav__link nav__link--active" href="#top" data-target="top">Beranda</a>
       <a class="nav__link" href="#fitur" data-target="fitur">Fitur</a>
+      <a class="nav__link" href="#cuaca" data-target="cuaca">Cuaca Maritim</a>
       <a class="nav__link" href="#simulasi" data-target="simulasi">Simulasi</a>
       <a class="nav__link" href="#mitigasi" data-target="mitigasi">Mitigasi</a>
       <a class="nav__link" href="#artikel" data-target="artikel">Berita</a>
@@ -56,6 +57,7 @@ function initScrollSpy(nav) {
       { id: 'top', target: 'top' },
       { id: 'alur', target: 'fitur' },
       { id: 'fitur', target: 'fitur' },
+      { id: 'cuaca', target: 'cuaca' },
       { id: 'simulasi', target: 'simulasi' },
       { id: 'mitigasi', target: 'mitigasi' },
       { id: 'artikel', target: 'artikel' }
