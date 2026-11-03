@@ -1,29 +1,15 @@
-
 import {
   fetchArticleById,
   fetchArticles,
   fetchMitigasi
 } from '../api.js';
 
-// DARK AQUA GLASS THEME
-const C = {
-  text: '#F1F7F6',
-  muted: '#B5C8C7',
-  soft: '#91AAA9',
-  aqua: '#8ADBD3',
-  accent: '#55BFB7',
-  border: 'rgba(255,255,255,0.16)',
-  glass: 'rgba(255,255,255,0.07)',
-  glassStrong: 'rgba(255,255,255,0.10)'
-};
-
-const glass = `
-  background: ${C.glass};
-  border: 1px solid ${C.border};
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow: 0 14px 35px rgba(0,0,0,0.18);
-`;
+// PALET WARNA (Muted Aqua Glass / Nature Retreat Dribbble Inspiration)
+// Background utama: #10191D | Background sekunder: #18272C
+// Muted aqua: #789A98 | Dusty teal: #607F80 | Soft blue-gray: #91A5A5
+// Glass surface: rgba(145, 165, 165, 0.09) / rgba(24, 39, 44, 0.70)
+// Glass border: rgba(180, 200, 198, 0.17)
+// Primary text: #E8EFED | Secondary text: #AABAB8 | Subtle accent: #B1C1B8
 
 // MENGAMANKAN TEKS DARI API
 function escapeHTML(value = '') {
@@ -53,7 +39,7 @@ function safeImageUrl(url) {
   return '';
 }
 
-// FORMAT TANGGAL
+// FORMAT TANGGAL RESMI INDONESIA
 function formatDate(date) {
   if (!date) return 'Informasi SAMUDRA';
 
@@ -73,15 +59,12 @@ function formatDate(date) {
 // SALIN TAUTAN DENGAN FALLBACK
 async function copyLink(url) {
   try {
-    // Menggunakan Clipboard API jika tersedia
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(url);
       return true;
     }
 
-    // Alternatif untuk browser yang tidak mendukung Clipboard API
     const textarea = document.createElement('textarea');
-
     textarea.value = url;
     textarea.setAttribute('readonly', '');
     textarea.style.position = 'fixed';
@@ -94,7 +77,6 @@ async function copyLink(url) {
     textarea.setSelectionRange(0, textarea.value.length);
 
     const success = document.execCommand('copy');
-
     textarea.remove();
 
     return success;
@@ -104,137 +86,890 @@ async function copyLink(url) {
   }
 }
 
-
-// MAIN ARTICLE PAGE
+// MAIN ARTICLE PAGE RENDERER
 export async function renderArticlePage(container, articleId, onBack) {
-
   container.innerHTML = `
-    <div style="
-      min-height:100vh;
-      width:100%;
-      overflow:hidden;
-      font-family:Arial,sans-serif;
-      color:${C.text};
-      background:transparent;
-    ">
+    <style>
+      .artp-root {
+        min-height: 100vh;
+        width: 100%;
+        background-color: #10191D;
+        color: #E8EFED;
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow-x: hidden;
+      }
 
-      <!-- NAVBAR -->
-      <header style="
-        position:sticky;
-        top:0;
-        z-index:100;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        flex-wrap:wrap;
-        gap:15px;
-        padding:17px 8%;
-        background:rgba(5,18,22,0.76);
-        backdrop-filter:blur(22px);
-        -webkit-backdrop-filter:blur(22px);
-        border-bottom:1px solid ${C.border};
-        box-shadow:0 8px 25px rgba(0,0,0,0.15);
-      ">
+      /* TOP STICKY NAVBAR */
+      .artp-nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px clamp(20px, 4vw, 48px);
+        background: rgba(16, 25, 29, 0.90);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(180, 200, 198, 0.17);
+      }
 
-        <button id="article-back-top" style="
-          border:1px solid ${C.border};
-          background:rgba(255,255,255,0.07);
-          color:${C.aqua};
-          padding:12px 18px;
-          border-radius:30px;
-          cursor:pointer;
-          font-weight:bold;
-          font-size:13px;
-          backdrop-filter:blur(12px);
-          -webkit-backdrop-filter:blur(12px);
-        ">
-          ← Kembali
+      .artp-btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(24, 39, 44, 0.70);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(180, 200, 198, 0.22);
+        color: #E8EFED;
+        padding: 9px 18px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .artp-btn-back:hover {
+        background: #607F80;
+        color: #FEFEFE;
+        border-color: rgba(180, 200, 198, 0.4);
+        transform: translateX(-3px);
+      }
+
+      .artp-btn-back svg {
+        transition: transform 0.2s ease;
+      }
+
+      .artp-btn-back:hover svg {
+        transform: translateX(-2px);
+      }
+
+      .artp-logo {
+        color: #E8EFED;
+        text-decoration: none;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        transition: opacity 0.2s ease;
+      }
+
+      .artp-logo:hover {
+        opacity: 0.85;
+      }
+
+      .artp-btn-share {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(24, 39, 44, 0.70);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(180, 200, 198, 0.22);
+        color: #E8EFED;
+        padding: 9px 18px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .artp-btn-share:hover {
+        background: #607F80;
+        color: #FEFEFE;
+        border-color: rgba(180, 200, 198, 0.4);
+        transform: translateY(-2px);
+      }
+
+      /* MAIN CONTAINER */
+      .artp-main-container {
+        width: 100%;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: clamp(32px, 5vw, 64px) clamp(20px, 4vw, 40px) 96px;
+        box-sizing: border-box;
+      }
+
+      /* BREADCRUMB */
+      .artp-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12.5px;
+        color: #789A98;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+      }
+
+      .artp-bc-link {
+        color: #789A98;
+        text-decoration: none;
+        cursor: pointer;
+        transition: color 0.2s ease;
+      }
+
+      .artp-bc-link:hover {
+        color: #FEFEFE;
+      }
+
+      .artp-bc-sep {
+        color: rgba(180, 200, 198, 0.3);
+      }
+
+      .artp-bc-current {
+        color: #AABAB8;
+        max-width: 320px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* HERO SECTION */
+      .artp-hero-header {
+        margin-bottom: clamp(32px, 4vw, 44px);
+      }
+
+      .artp-category-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(16, 25, 29, 0.88);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(180, 200, 198, 0.25);
+        color: #789A98;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+      }
+
+      .artp-badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #789A98;
+      }
+
+      .artp-title {
+        font-size: clamp(28px, 4.2vw, 46px);
+        font-weight: 700;
+        line-height: 1.22;
+        letter-spacing: -0.025em;
+        color: #E8EFED;
+        margin: 0 0 20px;
+      }
+
+      /* AUTHOR & METADATA BAR */
+      .artp-meta-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        padding: 16px 0;
+        border-top: 1px solid rgba(180, 200, 198, 0.17);
+        border-bottom: 1px solid rgba(180, 200, 198, 0.17);
+      }
+
+      .artp-author-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .artp-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(180, 200, 198, 0.25);
+      }
+
+      .artp-avatar-placeholder {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #18272C;
+        border: 1px solid rgba(180, 200, 198, 0.25);
+        color: #E8EFED;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 16px;
+      }
+
+      .artp-author-name {
+        font-size: 14.5px;
+        font-weight: 600;
+        color: #E8EFED;
+        margin: 0;
+        line-height: 1.3;
+      }
+
+      .artp-author-role {
+        font-size: 11.5px;
+        color: #789A98;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .artp-meta-details {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+        color: #AABAB8;
+      }
+
+      .artp-meta-dot {
+        color: #789A98;
+      }
+
+      /* HERO MEDIA / FEATURED IMAGE */
+      .artp-hero-media {
+        width: 100%;
+        height: clamp(280px, 46vw, 500px);
+        border-radius: 22px;
+        overflow: hidden;
+        border: 1px solid rgba(180, 200, 198, 0.17);
+        background: #18272C;
+        margin: clamp(28px, 4vw, 44px) 0 clamp(36px, 5vw, 64px);
+        box-shadow: 0 20px 48px -12px rgba(5, 12, 15, 0.7);
+        position: relative;
+      }
+
+      .artp-hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        filter: brightness(0.88) contrast(1.04);
+      }
+
+      .artp-media-fallback {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background: radial-gradient(circle at 50% 40%, rgba(96, 127, 128, 0.25) 0%, #132227 70%);
+      }
+
+      .artp-fallback-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        background: rgba(145, 165, 165, 0.10);
+        border: 1px solid rgba(180, 200, 198, 0.22);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #789A98;
+      }
+
+      .artp-fallback-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        color: #789A98;
+        text-transform: uppercase;
+      }
+
+      /* EDITORIAL CONTENT AREA */
+      .artp-editorial-wrapper {
+        max-width: 780px;
+        margin: 0 auto;
+      }
+
+      .artp-paragraph {
+        font-size: clamp(16px, 1.2vw, 17.5px);
+        line-height: 1.88;
+        color: #AABAB8;
+        margin: 0 0 28px;
+        white-space: pre-line;
+      }
+
+      .artp-subheading {
+        font-size: clamp(20px, 2.2vw, 25px);
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        color: #E8EFED;
+        margin: 44px 0 16px;
+        line-height: 1.35;
+      }
+
+      /* NATURE RETREAT CALLOUT BOX */
+      .artp-callout {
+        background: #0B171D;
+        border: 1px solid rgba(88, 129, 143, 0.25);
+        border-left: 4px solid #BB4019;
+        background: rgba(24, 39, 44, 0.70);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(180, 200, 198, 0.17);
+        border-left: 4px solid #789A98;
+        border-radius: 16px;
+        padding: 24px 28px;
+        margin: 36px 0;
+        display: flex;
+        gap: 18px;
+        align-items: flex-start;
+        box-shadow: 0 10px 26px -4px rgba(6, 14, 18, 0.5);
+        box-shadow: 0 10px 26px -4px rgba(5, 12, 15, 0.4);
+      }
+
+      .artp-callout-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: rgba(187, 64, 25, 0.15);
+        border: 1px solid rgba(187, 64, 25, 0.35);
+        background: rgba(145, 165, 165, 0.12);
+        border: 1px solid rgba(180, 200, 198, 0.22);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #BB4019;
+        color: #789A98;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .artp-callout-body {
+        font-size: 14.5px;
+        line-height: 1.75;
+        color: #A5B5BC;
+        color: #AABAB8;
+      }
+
+      .artp-callout-body strong {
+        color: #FEFEFE;
+        color: #E8EFED;
+        display: block;
+        margin-bottom: 4px;
+        font-size: 15px;
+      }
+
+      /* SHARE & ACTIONS FOOTER */
+      .artp-share-section {
+        margin: 56px 0 clamp(56px, 7vw, 84px);
+        padding: 28px clamp(20px, 4vw, 36px);
+        background: #0B171D;
+        border: 1px solid rgba(88, 129, 143, 0.22);
+        background: rgba(24, 39, 44, 0.70);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(180, 200, 198, 0.17);
+        border-radius: 20px;
+        box-shadow: 0 10px 24px rgba(5, 12, 15, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .artp-share-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #FEFEFE;
+        color: #E8EFED;
+        margin: 0 0 4px;
+      }
+
+      .artp-share-desc {
+        font-size: 13px;
+        color: #58818F;
+        color: #789A98;
+        margin: 0;
+      }
+
+      .artp-share-buttons {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .artp-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .artp-btn-copy {
+        background: rgba(43, 81, 97, 0.3);
+        border: 1px solid rgba(88, 129, 143, 0.35);
+        background: #607F80;
+        border: 1px solid rgba(180, 200, 198, 0.25);
+        color: #FEFEFE;
+      }
+
+      .artp-btn-copy:hover {
+        background: #2B5161;
+        border-color: rgba(165, 181, 188, 0.45);
+        background: #789A98;
+        border-color: rgba(180, 200, 198, 0.45);
+        transform: translateY(-2px);
+      }
+
+      .artp-btn-wa {
+        background: #0B171D;
+        border: 1px solid rgba(88, 129, 143, 0.28);
+        color: #FEFEFE;
+        background: rgba(24, 39, 44, 0.85);
+        border: 1px solid rgba(180, 200, 198, 0.22);
+        color: #E8EFED;
+      }
+
+      .artp-btn-wa:hover {
+        background: #142a35;
+        border-color: rgba(165, 181, 188, 0.4);
+        background: rgba(28, 45, 51, 0.95);
+        border-color: rgba(180, 200, 198, 0.35);
+        transform: translateY(-2px);
+      }
+
+      /* CTA BANNER: SIMULASI & PORTAL RESMI */
+      .artp-cta-banner {
+        background: linear-gradient(135deg, #0B171D 0%, #10242D 100%);
+        border: 1px solid rgba(88, 129, 143, 0.25);
+        border-left: 4px solid #BB4019;
+        background: linear-gradient(135deg, rgba(24, 39, 44, 0.85) 0%, rgba(16, 25, 29, 0.95) 100%);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(180, 200, 198, 0.2);
+        border-left: 4px solid #789A98;
+        border-radius: 22px;
+        padding: clamp(32px, 5vw, 48px);
+        margin: 0 0 clamp(64px, 8vw, 96px);
+        text-align: center;
+        box-shadow: 0 16px 44px -8px rgba(6, 14, 18, 0.65);
+        box-shadow: 0 16px 44px -8px rgba(5, 12, 15, 0.55);
+      }
+
+      .artp-cta-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #BB4019;
+        color: #789A98;
+        margin-bottom: 12px;
+      }
+
+      .artp-cta-title {
+        font-size: clamp(22px, 3.2vw, 30px);
+        font-weight: 700;
+        color: #FEFEFE;
+        color: #E8EFED;
+        line-height: 1.35;
+        margin: 0 0 12px;
+      }
+
+      .artp-cta-desc {
+        font-size: 14.5px;
+        line-height: 1.75;
+        color: #A5B5BC;
+        color: #AABAB8;
+        max-width: 620px;
+        margin: 0 auto 24px;
+      }
+
+      .artp-cta-actions {
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+
+      .artp-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #BB4019;
+        color: #FEFEFE;
+        background-color: #607F80;
+        color: #E8EFED;
+        padding: 12px 24px;
+        border-radius: 999px;
+        font-size: 13.5px;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid rgba(254, 254, 254, 0.15);
+        border: 1px solid rgba(180, 200, 198, 0.25);
+        cursor: pointer;
+        transition: all 0.22s ease;
+      }
+
+      .artp-btn-primary:hover {
+        background-color: #a33512;
+        background-color: #789A98;
+        color: #FEFEFE;
+        border-color: rgba(180, 200, 198, 0.45);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -2px rgba(187, 64, 25, 0.4);
+        box-shadow: 0 8px 24px -2px rgba(96, 127, 128, 0.4);
+      }
+
+      .artp-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #0B171D;
+        color: #FEFEFE;
+        background: rgba(24, 39, 44, 0.70);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: #E8EFED;
+        padding: 12px 24px;
+        border-radius: 999px;
+        font-size: 13.5px;
+        font-weight: 600;
+        border: 1px solid rgba(88, 129, 143, 0.3);
+        border: 1px solid rgba(180, 200, 198, 0.22);
+        cursor: pointer;
+        transition: all 0.22s ease;
+      }
+
+      .artp-btn-secondary:hover {
+        background: #2B5161;
+        border-color: rgba(165, 181, 188, 0.45);
+        background: #607F80;
+        color: #FEFEFE;
+        border-color: rgba(180, 200, 198, 0.35);
+        transform: translateY(-2px);
+      }
+
+      /* ARTIKEL TERKAIT SECTION */
+      .artp-related-section {
+        margin-top: 24px;
+        padding-top: clamp(48px, 6vw, 72px);
+        border-top: 1px solid rgba(88, 129, 143, 0.2);
+        border-top: 1px solid rgba(180, 200, 198, 0.17);
+      }
+
+      .artp-related-header {
+        margin-bottom: clamp(28px, 4vw, 36px);
+      }
+
+      .artp-related-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #58818F;
+        color: #789A98;
+        margin-bottom: 10px;
+      }
+
+      .artp-related-title {
+        font-size: clamp(24px, 3.2vw, 32px);
+        font-weight: 700;
+        color: #FEFEFE;
+        color: #E8EFED;
+        margin: 0 0 10px;
+      }
+
+      .artp-related-desc {
+        font-size: 14.5px;
+        color: #A5B5BC;
+        color: #AABAB8;
+        margin: 0;
+      }
+
+      .artp-related-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+      }
+
+      .artp-related-card {
+        background: #0B171D;
+        border: 1px solid rgba(88, 129, 143, 0.2);
+        background: rgba(24, 39, 44, 0.70);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(180, 200, 198, 0.17);
+        border-radius: 18px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 8px 24px -4px rgba(6, 14, 18, 0.45);
+        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        box-shadow: 0 8px 24px -4px rgba(5, 12, 15, 0.35);
+        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+        cursor: pointer;
+        height: 100%;
+      }
+
+      .artp-related-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(165, 181, 188, 0.4);
+        box-shadow: 0 16px 34px -6px rgba(6, 14, 18, 0.75);
+        background: rgba(28, 45, 51, 0.85);
+        border-color: rgba(180, 200, 198, 0.35);
+        box-shadow: 0 16px 34px -6px rgba(5, 12, 15, 0.55);
+      }
+
+      .artp-related-thumb {
+        position: relative;
+        height: 170px;
+        background: #10242D;
+        background: #132227;
+        overflow: hidden;
+      }
+
+      .artp-related-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        filter: brightness(0.85);
+        transition: transform 0.4s ease;
+      }
+
+      .artp-related-card:hover .artp-related-img {
+        transform: scale(1.05);
+      }
+
+      .artp-related-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: rgba(6, 14, 18, 0.88);
+        border: 1px solid rgba(88, 129, 143, 0.35);
+        background: rgba(16, 25, 29, 0.88);
+        border: 1px solid rgba(180, 200, 198, 0.25);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 9.5px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #58818F;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        color: #789A98;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      .artp-related-body {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+      }
+
+      .artp-related-date {
+        font-size: 11.5px;
+        color: #58818F;
+        color: #789A98;
+        margin-bottom: 8px;
+      }
+
+      .artp-related-card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #FEFEFE;
+        color: #E8EFED;
+        line-height: 1.45;
+        margin: 0 0 10px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .artp-related-card-desc {
+        font-size: 13px;
+        line-height: 1.65;
+        color: #A5B5BC;
+        color: #AABAB8;
+        margin: 0 0 16px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex-grow: 1;
+      }
+
+      .artp-related-action {
+        border-top: 1px solid rgba(88, 129, 143, 0.16);
+        border-top: 1px solid rgba(180, 200, 198, 0.15);
+        padding-top: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: #58818F;
+        color: #789A98;
+        font-size: 12.5px;
+        font-weight: 600;
+        transition: color 0.2s ease;
+      }
+
+      .artp-related-card:hover .artp-related-action {
+        color: #FEFEFE;
+      }
+
+      .artp-related-action svg {
+        transition: transform 0.25s ease, color 0.25s ease;
+      }
+
+      .artp-related-card:hover .artp-related-action svg {
+        transform: translateX(4px);
+        color: #BB4019;
+        color: #91A5A5;
+      }
+
+      /* FOOTER */
+      .artp-footer {
+        padding: 32px clamp(20px, 4vw, 48px);
+        background: #0B171D;
+        border-top: 1px solid rgba(88, 129, 143, 0.18);
+        color: #58818F;
+        background: #18272C;
+        border-top: 1px solid rgba(180, 200, 198, 0.17);
+        color: #789A98;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 12.5px;
+      }
+
+      .artp-footer a {
+        color: #FEFEFE;
+        color: #E8EFED;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .artp-footer a:hover {
+        text-decoration: underline;
+      }
+
+      @keyframes artp-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* RESPONSIVE BREAKPOINTS */
+      @media (max-width: 960px) {
+        .artp-related-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20px;
+        }
+      }
+
+      @media (max-width: 680px) {
+        .artp-nav {
+          padding: 12px 18px;
+        }
+        .artp-logo {
+          font-size: 18px;
+        }
+        .artp-related-grid {
+          grid-template-columns: 1fr;
+          gap: 18px;
+        }
+        .artp-share-section {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .artp-share-buttons {
+          width: 100%;
+        }
+        .artp-action-btn {
+          flex: 1;
+          justify-content: center;
+        }
+        .artp-cta-actions {
+          flex-direction: column;
+          width: 100%;
+        }
+        .artp-cta-actions button {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
+
+    <div class="artp-root">
+      <!-- TOP STICKY NAVBAR -->
+      <header class="artp-nav">
+        <button id="article-back-top" class="artp-btn-back" type="button" aria-label="Kembali ke halaman berita">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+          <span>Kembali</span>
         </button>
 
-        <a href="/" id="article-nav-logo" style="
-          color:${C.text};
-          text-decoration:none;
-          font-size:22px;
-          font-weight:800;
-          letter-spacing:3px;
-        ">
+        <a href="/" id="article-nav-logo" class="artp-logo" aria-label="Beranda SAMUDRA">
           SAMUDRA
         </a>
 
-        <button id="article-share-btn" style="
-          border:1px solid ${C.border};
-          background:rgba(255,255,255,0.07);
-          color:${C.aqua};
-          padding:12px 19px;
-          border-radius:30px;
-          cursor:pointer;
-          font-size:13px;
-          font-weight:bold;
-          backdrop-filter:blur(12px);
-          -webkit-backdrop-filter:blur(12px);
-        ">
-          ↗ <span id="share-label">Bagikan</span>
+        <button id="article-share-btn" class="artp-btn-share" type="button" aria-label="Bagikan artikel ini">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          <span id="share-label">Bagikan</span>
         </button>
-
       </header>
 
-
-      <!-- MAIN CONTENT -->
-      <main id="article-content-slot" style="
-        width:84%;
-        max-width:1200px;
-        margin:0 auto;
-        padding:65px 0 85px;
-      ">
-
-        <div style="
-          padding:70px 20px;
-          text-align:center;
-          color:${C.muted};
-          ${glass}
-          border-radius:22px;
-        ">
-          <div style="font-size:42px;margin-bottom:15px;">🌊</div>
-          Memuat warta dan informasi mitigasi...
+      <!-- MAIN CONTENT SLOT -->
+      <main id="article-content-slot" class="artp-main-container">
+        <div style="padding: 80px 20px; text-align: center; color: #A5B5BC;">
+          <div style="width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(88,129,143,0.3); border-top-color: #BB4019; animation: artp-spin 0.8s linear infinite;"></div>
+        <div style="padding: 80px 20px; text-align: center; color: #AABAB8;">
+          <div style="width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(180,200,198,0.2); border-top-color: #789A98; animation: artp-spin 0.8s linear infinite;"></div>
+          Memuat publikasi dan informasi kebencanaan SAMUDRA...
         </div>
-
       </main>
 
-
       <!-- FOOTER -->
-      <footer style="
-        padding:30px 8%;
-        background:rgba(5,18,22,0.72);
-        border-top:1px solid ${C.border};
-        color:${C.muted};
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        flex-wrap:wrap;
-        gap:15px;
-        font-size:12px;
-        line-height:1.8;
-        backdrop-filter:blur(18px);
-        -webkit-backdrop-filter:blur(18px);
-      ">
-        <span>SAMUDRA.3D — Sistem Antisipasi & Mitigasi Tsunami</span>
-
+      <footer class="artp-footer">
+        <span>SAMUDRA.3D &mdash; Sistem Informasi Mitigasi dan Edukasi Bencana Tsunami</span>
         <span>
           Data resmi:
-          <a href="https://www.bmkg.go.id"
-            target="_blank"
-            rel="noopener"
-            style="color:${C.aqua};text-decoration:none;font-weight:bold;">
-            bmkg.go.id
-          </a>
+          <a href="https://www.bmkg.go.id" target="_blank" rel="noopener">bmkg.go.id</a>
         </span>
       </footer>
-
     </div>
   `;
 
-
-  // NAVIGATION
+  // HANDLER TOMBOL NAVIGASI HEADER
   const backBtn = container.querySelector('#article-back-top');
   const logoBtn = container.querySelector('#article-nav-logo');
   const shareBtn = container.querySelector('#article-share-btn');
@@ -242,44 +977,41 @@ export async function renderArticlePage(container, articleId, onBack) {
 
   const goHome = event => {
     if (event) event.preventDefault();
-
     if (typeof onBack === 'function') {
       onBack();
     }
   };
 
-  backBtn.onclick = goHome;
-  logoBtn.onclick = goHome;
+  if (backBtn) backBtn.onclick = goHome;
+  if (logoBtn) logoBtn.onclick = goHome;
 
   const contentSlot = container.querySelector('#article-content-slot');
-
   let articleData = null;
   let allArticlesList = [];
 
-
-  // AMBIL DATA ARTIKEL
+  // PENGAMBILAN DATA ARTIKEL
   try {
-
     allArticlesList = await fetchArticles().catch(() => []);
 
-    if (articleId && articleId.length > 10) {
+    // 1. CARI BERDASARKAN ID DI DETAIL API
+    if (articleId && String(articleId).length > 10) {
       try {
         articleData = await fetchArticleById(articleId);
-      } catch (error) {
-        console.warn('Gagal mengambil detail artikel:', error);
+      } catch (err) {
+        console.warn('Gagal mengambil detail artikel spesifik:', err);
       }
     }
 
+    // 2. CARI DARI DAFTAR ARTIKEL (ID ATAU SLUG)
     if (!articleData && Array.isArray(allArticlesList)) {
       articleData = allArticlesList.find(item =>
         item.id === articleId || item.slug === articleId
       );
     }
 
-    // CARI DI DATA MITIGASI
+    // 3. CARI DARI DATA MITIGASI JIKA MERUPAKAN LANGKAH MITIGASI
     if (!articleData) {
       const allMitigasi = await fetchMitigasi().catch(() => []);
-
       const mitigation = Array.isArray(allMitigasi)
         ? allMitigasi.find(item => item.id === articleId)
         : null;
@@ -299,13 +1031,11 @@ export async function renderArticlePage(container, articleId, onBack) {
         };
       }
     }
-
   } catch (error) {
     console.error('Gagal memuat artikel:', error);
   }
 
-
-  // ARTIKEL DEFAULT
+  // 4. DATA CADANGAN JIKA TIDAK DITEMUKAN
   if (!articleData) {
     articleData = {
       title: 'Memahami Gempa Megathrust dan Potensi Tsunami',
@@ -315,64 +1045,21 @@ export async function renderArticlePage(container, articleId, onBack) {
         name: 'Tim Edukasi SAMUDRA',
         role: 'EDUKASI KEBENCANAAN'
       },
-      content: `Gempa megathrust merupakan gempa bumi yang terjadi pada zona pertemuan lempeng tektonik yang saling menunjam.
+      content: `Gempa megathrust merupakan gempa bumi yang terjadi pada zona pertemuan lempeng tektonik yang saling menunjam di dasar samudra.
 
-Jika gempa bawah laut menyebabkan perubahan vertikal dasar laut, perpindahan massa air dapat menghasilkan gelombang tsunami.
+Jika gempa bawah laut menyebabkan perubahan deformasi vertikal pada dasar laut, perpindahan massa air laut yang masif dapat menghasilkan rangkaian gelombang tsunami dahsyat yang melaju dengan kecepatan tinggi menuju daratan pesisir.
 
-Masyarakat yang tinggal di wilayah pesisir perlu memahami risiko bencana, mengenali tanda-tanda alam, serta mengetahui jalur evakuasi terdekat.
+Masyarakat yang tinggal dan beraktivitas di wilayah pesisir wajib memahami potensi ancaman, mengenali tanda-tanda alam seperti surutnya air laut secara drastis setelah gempa kuat, serta mengetahui jalur evakuasi menuju tempat aman yang lebih tinggi.
 
-Informasi potensi tsunami dan peringatan dini harus selalu merujuk pada informasi resmi BMKG.`
+Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kanal resmi BMKG dan BPBD setempat guna memastikan tindakan evakuasi berjalan tertib, cepat, dan terarah.`
     };
   }
 
-
-  // NORMALISASI DATA
-  const title = articleData.title || 'Artikel SAMUDRA';
-
-  // URL KHUSUS UNTUK DIBAGIKAN
-  const shareArticleId = articleData.id || articleData.slug || articleId;
-
-  const shareUrl = new URL(window.location.href);
-  shareUrl.searchParams.set('article', shareArticleId);
-
-  const articleShareUrl = shareUrl.toString();
-
-
-  // TOMBOL BAGIKAN ARTIKEL
-  shareBtn.onclick = async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: title,
-          text: `Baca artikel ini di SAMUDRA: ${title}`,
-          url: articleShareUrl
-        });
-      } else {
-        const success = await copyLink(articleShareUrl);
-
-        if (success) {
-          shareLabel.textContent = 'Tautan Disalin ✓';
-
-          setTimeout(() => {
-            shareLabel.textContent = 'Bagikan';
-          }, 2500);
-        } else {
-          alert('Gagal menyalin tautan artikel. Silakan salin alamat halaman secara manual.');
-        }
-      }
-    } catch (error) {
-      if (error.name !== 'AbortError') {
-        console.error('Gagal membagikan artikel:', error);
-        alert('Gagal membagikan artikel.');
-      }
-    }
-  };
-
-
+  // NORMALISASI PROPERTI ARTIKEL
+  const title = articleData.title || 'Publikasi Edukasi SAMUDRA';
   const category = articleData.category
     ? articleData.category.replace(/_/g, ' ').toUpperCase()
     : 'EDUKASI TSUNAMI';
-
   const dateStr = formatDate(articleData.publishedAt);
 
   const authorName = articleData.author?.name
@@ -386,763 +1073,379 @@ Informasi potensi tsunami dan peringatan dini harus selalu merujuk pada informas
   const avatarUrl = safeImageUrl(articleData.author?.avatarUrl);
   const coverImage = safeImageUrl(articleData.coverImageUrl);
 
-  const paragraphs = (
-    articleData.content ||
-    'Konten edukasi dan panduan resmi dari SAMUDRA.'
-  )
+  // URL UNTUK DIBAGIKAN
+  const shareArticleId = articleData.id || articleData.slug || articleId;
+  const shareUrl = new URL(window.location.href);
+  shareUrl.searchParams.set('article', shareArticleId);
+  const articleShareUrl = shareUrl.toString();
+
+  // EVENT SHARE TOP BUTTON
+  if (shareBtn) {
+    shareBtn.onclick = async () => {
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: title,
+            text: `Baca artikel kebencanaan ini di SAMUDRA: ${title}`,
+            url: articleShareUrl
+          });
+        } else {
+          const success = await copyLink(articleShareUrl);
+          if (success && shareLabel) {
+            shareLabel.textContent = 'Disalin ✓';
+            setTimeout(() => {
+              shareLabel.textContent = 'Bagikan';
+            }, 2500);
+          } else {
+            alert('Tautan disalin ke clipboard: ' + articleShareUrl);
+          }
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Gagal membagikan artikel:', err);
+        }
+      }
+    };
+  }
+
+  // PEMBAGIAN KONTEN PARAGRAF EDITORIAL
+  const rawContent = articleData.content || 'Konten edukasi dan panduan resmi dari SAMUDRA.';
+  const paragraphs = rawContent
     .split(/\n\n+/)
-    .map(text => text.trim())
+    .map(p => p.trim())
     .filter(Boolean);
 
-  const sections = paragraphs.map((text, index) => ({
-    id: `article-section-${index + 1}`,
-    title: [
-      'Ikhtisar Situasi',
-      'Mengenal Risiko',
-      'Langkah Mitigasi',
-      'Informasi Tambahan'
-    ][index] || `Pembahasan ${index + 1}`,
-    content: text
-  }));
-
-
-  // ARTIKEL TERKAIT
+  // ARTIKEL TERKAIT (DARI DATA ASLI API, MENGECUALIKAN ARTIKEL INI)
   const relatedArticles = Array.isArray(allArticlesList)
     ? allArticlesList
-        .filter(item => item.id !== articleData.id)
-        .slice(0, 3)
+      .filter(item => item.id !== articleData.id && item.slug !== articleData.slug)
+      .slice(0, 3)
     : [];
 
   const defaultRelated = [
     {
       id: 'rel-1',
       title: 'Langkah Evakuasi Mandiri Saat Ancaman Tsunami',
-      category: 'Panduan Evakuasi',
-      excerpt: 'Ketahui tindakan yang harus dilakukan ketika merasakan gempa kuat di wilayah pesisir.',
-      author: 'Tim Mitigasi SAMUDRA'
+      category: 'PANDUAN EVAKUASI',
+      excerpt: 'Ketahui tindakan taktis yang harus segera dilakukan ketika merasakan gempa kuat di wilayah pesisir.',
+      dateStr: 'Informasi SAMUDRA',
+      coverImg: ''
     },
     {
       id: 'rel-2',
       title: 'Bagaimana Sistem Peringatan Dini Tsunami Bekerja?',
-      category: 'Teknologi Kebencanaan',
-      excerpt: 'Mengenal teknologi pemantauan gempa dan informasi peringatan dini tsunami.',
-      author: 'Tim Edukasi SAMUDRA'
+      category: 'TEKNOLOGI KEBENCANAAN',
+      excerpt: 'Mengenal teknologi sensor seismik pemantauan gempa dan sistem diseminasi peringatan dini BMKG.',
+      dateStr: 'Informasi SAMUDRA',
+      coverImg: ''
     },
     {
       id: 'rel-3',
       title: 'Persiapkan Tas Siaga Bencana untuk Keluarga',
-      category: 'Kesiapsiagaan',
-      excerpt: 'Kenali perlengkapan penting yang perlu disiapkan untuk menghadapi keadaan darurat.',
-      author: 'Tim Edukasi SAMUDRA'
+      category: 'KESIAPSIAGAAN',
+      excerpt: 'Kenali perlengkapan penting dan dokumen darurat yang wajib disiapkan untuk menghadapi bencana.',
+      dateStr: 'Informasi SAMUDRA',
+      coverImg: ''
     }
   ];
 
-  const displayRelated = relatedArticles.length
+  const displayRelated = relatedArticles.length > 0
     ? relatedArticles.map(item => ({
-        id: item.id,
-        title: item.title || 'Artikel SAMUDRA',
-        category: (item.category || 'Artikel').replace(/_/g, ' '),
-        excerpt: item.content
-          ? item.content.slice(0, 120) +
-            (item.content.length > 120 ? '...' : '')
-          : 'Informasi dan edukasi kebencanaan dari SAMUDRA.',
-        author: item.author?.name || 'Tim SAMUDRA',
-        coverImg: item.coverImageUrl
-      }))
+      id: item.id || item.slug,
+      title: item.title || 'Artikel SAMUDRA',
+      category: (item.category || 'Artikel').replace(/_/g, ' ').toUpperCase(),
+      excerpt: item.content
+        ? item.content.slice(0, 115) + (item.content.length > 115 ? '...' : '')
+        : 'Informasi dan edukasi kebencanaan resmi dari SAMUDRA.',
+      dateStr: formatDate(item.publishedAt),
+      coverImg: item.coverImageUrl
+    }))
     : defaultRelated;
 
-
-  // RENDER DETAIL ARTIKEL
+  // RENDER KONTEN DETAIL
   contentSlot.innerHTML = `
+    <!-- BREADCRUMB SEDERHANA -->
+    <nav class="artp-breadcrumb" aria-label="Breadcrumb">
+      <a href="/" class="artp-bc-link artp-bc-home">Beranda</a>
+      <span class="artp-bc-sep">/</span>
+      <a href="#berita" class="artp-bc-link artp-bc-news">Berita</a>
+      <span class="artp-bc-sep">/</span>
+      <span class="artp-bc-current">${escapeHTML(title)}</span>
+    </nav>
 
-    <!-- ARTICLE HEADER -->
-    <section style="
-      max-width:850px;
-      margin:0 auto 45px;
-      text-align:center;
-    ">
+    <!-- 1. HERO ARTIKEL -->
+    <header class="artp-hero-header">
+      <div class="artp-category-badge">
+        <span class="artp-badge-dot"></span>
+        <span>${escapeHTML(category)}</span>
+      </div>
 
-      <span style="
-        display:inline-block;
-        padding:10px 18px;
-        background:rgba(85,191,183,0.12);
-        border:1px solid rgba(138,219,211,0.25);
-        color:${C.aqua};
-        border-radius:30px;
-        font-size:11px;
-        font-weight:bold;
-        letter-spacing:1.5px;
-        backdrop-filter:blur(12px);
-        -webkit-backdrop-filter:blur(12px);
-      ">
-        ${escapeHTML(category)}
-      </span>
-
-      <h1 style="
-        color:${C.text};
-        font-size:clamp(30px,4.5vw,48px);
-        line-height:1.25;
-        margin:25px 0 20px;
-      ">
+      <h1 class="artp-title">
         ${escapeHTML(title)}
       </h1>
 
-      <p style="
-        color:${C.muted};
-        font-size:14px;
-        line-height:1.8;
-        margin-bottom:22px;
-      ">
-        Informasi dan edukasi kebencanaan bersama SAMUDRA.
-      </p>
-
-      <div style="
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:12px;
-        flex-wrap:wrap;
-        color:${C.soft};
-        font-size:12px;
-      ">
-
-        ${
-          avatarUrl
-            ? `<img src="${avatarUrl}" alt="${escapeHTML(authorName)}"
-                style="
-                  width:40px;
-                  height:40px;
-                  border-radius:50%;
-                  object-fit:cover;
-                  border:2px solid ${C.border};
-                ">`
-            : `<div style="
-                width:40px;
-                height:40px;
-                border-radius:50%;
-                background:rgba(85,191,183,0.18);
-                border:1px solid rgba(138,219,211,0.3);
-                color:${C.aqua};
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                font-weight:bold;
-                font-size:16px;
-              ">${escapeHTML(authorName.charAt(0).toUpperCase())}</div>`
-        }
-
-        <div style="text-align:left;">
-          <strong style="display:block;color:${C.text};font-size:13px;">
-            ${escapeHTML(authorName)}
-          </strong>
-          <span>${escapeHTML(authorRole)}</span>
+      <div class="artp-meta-bar">
+        <div class="artp-author-box">
+          ${avatarUrl
+      ? `<img src="${avatarUrl}" alt="${escapeHTML(authorName)}" class="artp-avatar">`
+      : `<div class="artp-avatar-placeholder">${escapeHTML(authorName.charAt(0).toUpperCase())}</div>`
+    }
+          <div>
+            <p class="artp-author-name">${escapeHTML(authorName)}</p>
+            <span class="artp-author-role">${escapeHTML(authorRole)}</span>
+          </div>
         </div>
 
-        <span>•</span>
-        <span>${escapeHTML(dateStr)}</span>
-        <span>•</span>
-        <span>5 menit baca</span>
-
+        <div class="artp-meta-details">
+          <span>${escapeHTML(dateStr)}</span>
+          <span class="artp-meta-dot">&bull;</span>
+          <span>Edukasi Resmi</span>
+        </div>
       </div>
+    </header>
 
-    </section>
-
-
-    <!-- FEATURED IMAGE -->
-    <section style="
-      width:100%;
-      margin:0 auto 65px;
-      position:relative;
-    ">
-
-      <div style="
-        position:absolute;
-        inset:10% 5%;
-        background:${C.accent};
-        filter:blur(80px);
-        opacity:0.13;
-        z-index:0;
-      "></div>
-
-      <div style="
-        position:relative;
-        z-index:1;
-        height:clamp(240px,42vw,480px);
-        overflow:hidden;
-        border-radius:24px;
-        background:rgba(255,255,255,0.05);
-        border:1px solid ${C.border};
-        box-shadow:0 15px 45px rgba(0,0,0,0.25);
-      ">
-
-        ${
-          coverImage
-            ? `<img src="${coverImage}" alt="${escapeHTML(title)}"
-                style="
-                  width:100%;
-                  height:100%;
-                  object-fit:cover;
-                  display:block;
-                  filter:brightness(0.82);
-                ">`
-            : `
-              <div style="
-                height:100%;
-                display:flex;
-                flex-direction:column;
-                align-items:center;
-                justify-content:center;
-                color:white;
-                gap:15px;
-                background:
-                  radial-gradient(circle at center,rgba(85,191,183,0.25),transparent 55%),
-                  rgba(255,255,255,0.035);
-              ">
-                <span style="font-size:90px;">🌊</span>
-                <span style="
-                  letter-spacing:4px;
-                  font-size:13px;
-                  font-weight:bold;
-                  color:${C.aqua};
-                ">
-                  SAMUDRA INFORMATION
-                </span>
+    <!-- GAMBAR UTAMA LANDSCAPE -->
+    <div class="artp-hero-media">
+      ${coverImage
+      ? `
+            <img
+              src="${coverImage}"
+              alt="${escapeHTML(title)}"
+              class="artp-hero-img"
+              loading="lazy"
+            >
+          `
+      : `
+            <div class="artp-media-fallback" aria-hidden="true">
+              <div class="artp-fallback-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                  <path d="M2 7c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                  <path d="M2 17c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                </svg>
               </div>
-            `
-        }
+              <span class="artp-fallback-label">SAMUDRA INFORMATION</span>
+            </div>
+          `
+    }
+    </div>
 
-      </div>
-    </section>
+    <!-- 2. KONTEN ARTIKEL EDITORIAL -->
+    <article class="artp-editorial-wrapper">
+      ${paragraphs.map((para, index) => {
+      let blockHtml = `<p class="artp-paragraph">${escapeHTML(para)}</p>`;
 
+      // Sisipkan callout penekanan edukasi mitigasi di paragraf awal
+      if (index === 0 && paragraphs.length > 1) {
+        blockHtml += `
+            <div class="artp-callout">
+              <div class="artp-callout-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+              </div>
+              <div class="artp-callout-body">
+                <strong>Prinsip Utama Keselamatan</strong>
+                Jika merasakan guncangan gempa kuat atau berlangsung lama di tepi pantai, segera lakukan evakuasi mandiri menuju wilayah yang lebih tinggi tanpa menunggu sirine atau peringatan resmi.
+              </div>
+            </div>
+          `;
+      }
 
-    <!-- ARTICLE BODY -->
-    <section style="
-      display:flex;
-      align-items:flex-start;
-      flex-wrap:wrap;
-      gap:35px;
-      margin-bottom:80px;
-    ">
+      return blockHtml;
+    }).join('')}
 
-      <!-- TABLE OF CONTENTS -->
-      <aside style="
-        flex:0 1 230px;
-        min-width:210px;
-        position:sticky;
-        top:95px;
-        padding:24px;
-        ${glass}
-        border-radius:20px;
-      ">
-
-        <h3 style="
-          color:${C.text};
-          font-size:15px;
-          margin:0 0 20px;
-        ">
-          Daftar Isi
-        </h3>
-
-        <nav style="
-          display:flex;
-          flex-direction:column;
-          gap:15px;
-        ">
-          ${sections.map((section, index) => `
-            <a href="#${section.id}" style="
-              color:${index === 0 ? C.aqua : C.muted};
-              text-decoration:none;
-              font-size:12px;
-              line-height:1.6;
-              transition:color .2s;
-            ">
-              ${String(index + 1).padStart(2, '0')}.
-              ${escapeHTML(section.title)}
-            </a>
-          `).join('')}
-        </nav>
-
-        <div style="
-          border-top:1px solid ${C.border};
-          margin-top:25px;
-          padding-top:18px;
-        ">
-          <p style="
-            color:${C.text};
-            font-size:12px;
-            font-weight:bold;
-            margin-bottom:12px;
-          ">
-            Bagikan artikel
-          </p>
-
-          <button id="share-copy-btn" style="
-            border:1px solid rgba(138,219,211,0.25);
-            background:rgba(85,191,183,0.17);
-            color:${C.aqua};
-            border-radius:30px;
-            padding:11px 13px;
-            font-size:12px;
-            cursor:pointer;
-            width:100%;
-            margin-bottom:9px;
-            font-weight:bold;
-          ">
-            Salin Tautan
-          </button>
-
-          <button id="share-wa-btn" style="
-            border:1px solid ${C.border};
-            background:rgba(255,255,255,0.07);
-            color:${C.text};
-            border-radius:30px;
-            padding:11px 13px;
-            font-size:12px;
-            cursor:pointer;
-            width:100%;
-            font-weight:bold;
-          ">
-            WhatsApp ↗
-          </button>
+      <!-- 3. NAVIGASI BERBAGI & INFORMASI TAMBAHAN -->
+      <div class="artp-share-section">
+        <div>
+          <h3 class="artp-share-title">Bagikan Informasi Ini</h3>
+          <p class="artp-share-desc">Tingkatkan kesiapsiagaan keluarga dan rekan di sekitar Anda.</p>
         </div>
 
-      </aside>
+        <div class="artp-share-buttons">
+          <button id="share-copy-btn" class="artp-action-btn artp-btn-copy" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            <span id="copy-btn-label">Salin Tautan</span>
+          </button>
 
+          <button id="share-wa-btn" class="artp-action-btn artp-btn-wa" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+            </svg>
+            <span>WhatsApp</span>
+          </button>
+        </div>
+      </div>
+    </article>
 
-      <!-- ARTICLE CONTENT -->
-      <div style="
-        flex:1 1 500px;
-        min-width:0;
-        max-width:760px;
-        ${glass}
-        border-radius:22px;
-        padding:clamp(22px,4vw,38px);
-      ">
-
-        ${sections.map((section, index) => `
-          <section id="${section.id}" style="
-            margin-bottom:38px;
-            scroll-margin-top:110px;
-          ">
-
-            <span style="
-              color:${C.aqua};
-              font-size:11px;
-              font-weight:bold;
-              letter-spacing:1.5px;
-            ">
-              BAGIAN ${String(index + 1).padStart(2, '0')}
-            </span>
-
-            <h2 style="
-              color:${C.text};
-              font-size:25px;
-              line-height:1.4;
-              margin:10px 0 18px;
-            ">
-              ${escapeHTML(section.title)}
-            </h2>
-
-            <p style="
-              color:${C.muted};
-              font-size:15px;
-              line-height:2;
-              white-space:pre-line;
-              margin:0;
-            ">
-              ${escapeHTML(section.content)}
-            </p>
-
-            ${
-              index === 1
-                ? `
-                  <blockquote style="
-                    margin:30px 0;
-                    padding:23px 25px;
-                    background:rgba(85,191,183,0.08);
-                    border:1px solid rgba(138,219,211,0.2);
-                    border-left:4px solid ${C.accent};
-                    border-radius:0 16px 16px 0;
-                    color:${C.muted};
-                    line-height:1.9;
-                    font-size:14px;
-                  ">
-                    <strong style="
-                      display:block;
-                      margin-bottom:8px;
-                      color:${C.aqua};
-                    ">
-                      Ingat!
-                    </strong>
-                    Keselamatan di wilayah pesisir membutuhkan kesiapsiagaan.
-                    Kenali tanda bahaya dan segera lakukan evakuasi ketika
-                    terdapat ancaman tsunami.
-                  </blockquote>
-                `
-                : ''
-            }
-
-          </section>
-        `).join('')}
-
+    <!-- BANNER CTA EDUKASI -->
+    <section class="artp-cta-banner">
+      <div class="artp-cta-eyebrow">
+        <span class="artp-badge-dot"></span>
+        <span>SIAGA & TANGGAP</span>
       </div>
 
-    </section>
-
-
-    <!-- CTA SIMULASI -->
-    <section style="
-      position:relative;
-      overflow:hidden;
-      padding:55px 8%;
-      border-radius:25px;
-      background:
-        radial-gradient(circle at 10% 10%,rgba(138,219,211,0.16),transparent 38%),
-        rgba(255,255,255,0.07);
-      border:1px solid ${C.border};
-      color:${C.text};
-      margin-bottom:80px;
-      text-align:center;
-      backdrop-filter:blur(20px);
-      -webkit-backdrop-filter:blur(20px);
-      box-shadow:0 15px 40px rgba(0,0,0,0.2);
-    ">
-
-      <span style="
-        position:relative;
-        color:${C.aqua};
-        font-size:11px;
-        font-weight:bold;
-        letter-spacing:2px;
-      ">
-        SAMUDRA • KESIAPSIAGAAN MANDIRI
-      </span>
-
-      <h2 style="
-        position:relative;
-        font-size:clamp(23px,3vw,34px);
-        line-height:1.4;
-        margin:18px 0;
-        color:${C.text};
-      ">
+      <h2 class="artp-cta-title">
         Kenali Risiko, Persiapkan Evakuasi.
       </h2>
 
-      <p style="
-        position:relative;
-        max-width:650px;
-        margin:0 auto;
-        color:${C.muted};
-        font-size:14px;
-        line-height:1.9;
-      ">
-        Pelajari kondisi wilayah dan tingkatkan kesiapsiagaan
-        melalui simulasi serta informasi mitigasi SAMUDRA.
+      <p class="artp-cta-desc">
+        Tingkatkan pemahaman spasial wilayah pesisir dan pelajari jalur penyelamatan melalui modul simulasi 3D interaktif SAMUDRA.
       </p>
 
-      <div style="
-        position:relative;
-        display:flex;
-        justify-content:center;
-        flex-wrap:wrap;
-        gap:12px;
-        margin-top:25px;
-      ">
-
-        <button id="banner-action-home" style="
-          padding:14px 23px;
-          border:1px solid rgba(138,219,211,0.3);
-          border-radius:30px;
-          background:rgba(85,191,183,0.2);
-          color:${C.aqua};
-          font-weight:bold;
-          cursor:pointer;
-        ">
-          Buka Simulasi 3D →
+      <div class="artp-cta-actions">
+        <button id="banner-action-home" class="artp-btn-primary" type="button">
+          <span>Buka Simulasi 3D</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
         </button>
 
-        <button id="banner-action-back" style="
-          padding:14px 23px;
-          border:1px solid ${C.border};
-          border-radius:30px;
-          background:rgba(255,255,255,0.07);
-          color:${C.text};
-          font-weight:bold;
-          cursor:pointer;
-          backdrop-filter:blur(12px);
-          -webkit-backdrop-filter:blur(12px);
-        ">
-          Kembali ke Beranda
+        <button id="banner-action-back" class="artp-btn-secondary" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+          <span>Kembali ke Berita</span>
         </button>
-
       </div>
-
     </section>
 
+    <!-- 4. ARTIKEL TERKAIT -->
+    <section class="artp-related-section">
+      <div class="artp-related-header">
+        <div class="artp-related-eyebrow">
+          <span class="artp-badge-dot"></span>
+          <span>JELAJAHI INFORMASI</span>
+        </div>
 
-    <!-- RELATED ARTICLES -->
-    <section style="margin-bottom:75px;">
-
-      <div style="margin-bottom:28px;">
-
-        <span style="
-          color:${C.aqua};
-          font-size:11px;
-          font-weight:bold;
-          letter-spacing:2px;
-        ">
-          JELAJAHI INFORMASI
-        </span>
-
-        <h2 style="
-          color:${C.text};
-          font-size:30px;
-          margin:12px 0;
-        ">
-          Riset & Warta Terkait
+        <h2 class="artp-related-title">
+          Artikel Terkait
         </h2>
 
-        <p style="
-          color:${C.muted};
-          font-size:14px;
-          line-height:1.8;
-        ">
-          Temukan informasi lain untuk memperluas pengetahuan
-          mengenai mitigasi dan kesiapsiagaan tsunami.
+        <p class="artp-related-desc">
+          Rekomendasi warta dan publikasi kebencanaan pilihan untuk memperluas pemahaman mitigasi tsunami.
         </p>
-
       </div>
 
-
-      <div style="
-        display:grid;
-        grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-        gap:22px;
-      ">
-
+      <div class="artp-related-grid">
         ${displayRelated.map(card => {
-          const image = safeImageUrl(card.coverImg);
+      const image = safeImageUrl(card.coverImg);
 
-          return `
-            <a href="?article=${encodeURIComponent(card.id)}"
+      return `
+            <a
+              href="?article=${encodeURIComponent(card.id)}"
               data-rel-id="${escapeHTML(card.id)}"
-              style="
-                display:flex;
-                flex-direction:column;
-                overflow:hidden;
-                border:1px solid ${C.border};
-                border-radius:20px;
-                background:rgba(255,255,255,0.065);
-                backdrop-filter:blur(16px);
-                -webkit-backdrop-filter:blur(16px);
-                text-decoration:none;
-                color:inherit;
-                box-shadow:0 8px 25px rgba(0,0,0,0.16);
-                transition:transform .2s,box-shadow .2s;
-              "
+              class="artp-related-card"
+              aria-label="Buka artikel terkait: ${escapeHTML(card.title)}"
             >
-
-              <div style="
-                height:170px;
-                overflow:hidden;
-                background:rgba(85,191,183,0.12);
-                display:flex;
-                justify-content:center;
-                align-items:center;
-              ">
-                ${
-                  image
-                    ? `<img src="${image}" alt="${escapeHTML(card.title)}"
+              <div class="artp-related-thumb">
+                ${image
+          ? `
+                      <img
+                        src="${image}"
+                        alt="${escapeHTML(card.title)}"
                         loading="lazy"
-                        style="
-                          width:100%;
-                          height:100%;
-                          object-fit:cover;
-                          display:block;
-                          filter:brightness(0.82);
-                        ">`
-                    : `<span style="font-size:55px;">🌊</span>`
-                }
+                        class="artp-related-img"
+                      >
+                    `
+          : `
+                      <div class="artp-media-fallback" aria-hidden="true">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                          <path d="M2 7c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                          <path d="M2 17c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                        </svg>
+                      </div>
+                    `
+        }
+                <span class="artp-related-badge">${escapeHTML(card.category)}</span>
               </div>
 
-              <div style="
-                padding:20px;
-                display:flex;
-                flex-direction:column;
-                flex:1;
-              ">
+              <div class="artp-related-body">
+                <span class="artp-related-date">${escapeHTML(card.dateStr || 'Informasi SAMUDRA')}</span>
+                <h4 class="artp-related-card-title">${escapeHTML(card.title)}</h4>
+                <p class="artp-related-card-desc">${escapeHTML(card.excerpt)}</p>
 
-                <span style="
-                  color:${C.aqua};
-                  font-size:10px;
-                  font-weight:bold;
-                  letter-spacing:1px;
-                  text-transform:uppercase;
-                ">
-                  ${escapeHTML(card.category)}
-                </span>
-
-                <h3 style="
-                  color:${C.text};
-                  font-size:17px;
-                  line-height:1.5;
-                  margin:12px 0;
-                ">
-                  ${escapeHTML(card.title)}
-                </h3>
-
-                <p style="
-                  color:${C.muted};
-                  font-size:12px;
-                  line-height:1.8;
-                  flex:1;
-                ">
-                  ${escapeHTML(card.excerpt)}
-                </p>
-
-                <span style="
-                  border-top:1px solid ${C.border};
-                  padding-top:14px;
-                  margin-top:15px;
-                  color:${C.aqua};
-                  font-size:12px;
-                  font-weight:bold;
-                ">
-                  Baca Selengkapnya →
-                </span>
-
+                <div class="artp-related-action">
+                  <span>Baca Selengkapnya</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </div>
               </div>
-
             </a>
           `;
-        }).join('')}
-
+    }).join('')}
       </div>
-
     </section>
-
-
-    <!-- INFORMATION CTA -->
-    <section style="
-      padding:40px 25px;
-      ${glass}
-      border-radius:22px;
-      text-align:center;
-    ">
-
-      <span style="
-        color:${C.aqua};
-        font-size:11px;
-        font-weight:bold;
-        letter-spacing:2px;
-      ">
-        SAMUDRA INFORMATION
-      </span>
-
-      <h2 style="
-        color:${C.text};
-        font-size:25px;
-        margin:13px 0;
-      ">
-        Tetap Waspada Bersama SAMUDRA
-      </h2>
-
-      <p style="
-        color:${C.muted};
-        font-size:13px;
-        line-height:1.8;
-        max-width:570px;
-        margin:0 auto;
-      ">
-        Terus tingkatkan pengetahuan mengenai bencana tsunami
-        dan ikuti informasi resmi dari BMKG.
-      </p>
-
-      <a href="https://www.bmkg.go.id"
-        target="_blank"
-        rel="noopener"
-        style="
-          display:inline-block;
-          margin-top:20px;
-          padding:13px 23px;
-          background:linear-gradient(135deg,#55BFB7,#268D8A);
-          color:white;
-          text-decoration:none;
-          border-radius:30px;
-          font-size:13px;
-          font-weight:bold;
-          border:1px solid rgba(255,255,255,0.2);
-          box-shadow:0 7px 18px rgba(38,159,169,0.18);
-        ">
-        Kunjungi BMKG →
-      </a>
-
-    </section>
-
   `;
 
+  // BREADCRUMB EVENT LISTENERS
+  const bcHome = contentSlot.querySelector('.artp-bc-home');
+  const bcNews = contentSlot.querySelector('.artp-bc-news');
 
-  // TOMBOL CTA
-  const bannerHomeBtn = contentSlot.querySelector('#banner-action-home');
-  const bannerBackBtn = contentSlot.querySelector('#banner-action-back');
-
-  bannerHomeBtn.onclick = () => {
-    goHome();
-
-    setTimeout(() => {
-      const simulation = document.getElementById('simulasi');
-
-      if (simulation) {
-        simulation.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    }, 300);
-  };
-
-  bannerBackBtn.onclick = goHome;
-
+  if (bcHome) bcHome.onclick = goHome;
+  if (bcNews) bcNews.onclick = goHome;
 
   // SALIN LINK
   const copyBtn = contentSlot.querySelector('#share-copy-btn');
+  const copyBtnLabel = contentSlot.querySelector('#copy-btn-label');
 
-  copyBtn.onclick = async () => {
-    const success = await copyLink(articleShareUrl);
+  if (copyBtn) {
+    copyBtn.onclick = async () => {
+      const success = await copyLink(articleShareUrl);
+      if (success && copyBtnLabel) {
+        copyBtnLabel.textContent = 'Tautan Disalin ✓';
+        setTimeout(() => {
+          copyBtnLabel.textContent = 'Salin Tautan';
+        }, 2500);
+      } else {
+        alert('Tautan artikel: ' + articleShareUrl);
+      }
+    };
+  }
 
-    if (success) {
-      copyBtn.textContent = 'Tautan Berhasil Disalin ✓';
-
-      setTimeout(() => {
-        copyBtn.textContent = 'Salin Tautan';
-      }, 2500);
-    } else {
-      alert('Tidak dapat menyalin tautan. Silakan salin alamat halaman secara manual.');
-    }
-  };
-
-
-  // SHARE WHATSAPP
+  // SHARE KE WHATSAPP
   const waBtn = contentSlot.querySelector('#share-wa-btn');
 
-  waBtn.onclick = () => {
-    const text = `Baca artikel ini di SAMUDRA!\n\n${title}\n\n${articleShareUrl}`;
+  if (waBtn) {
+    waBtn.onclick = () => {
+      const shareText = `Baca publikasi mitigasi bencana di SAMUDRA:\n\n*${title}*\n\n${articleShareUrl}`;
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    };
+  }
 
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  // CTA SIMULASI & KEMBALI
+  const bannerHomeBtn = contentSlot.querySelector('#banner-action-home');
+  const bannerBackBtn = contentSlot.querySelector('#banner-action-back');
 
-    window.open(
-      whatsappUrl,
-      '_blank',
-      'noopener,noreferrer'
-    );
-  };
+  if (bannerHomeBtn) {
+    bannerHomeBtn.onclick = () => {
+      goHome();
+      setTimeout(() => {
+        const simulation = document.getElementById('simulasi');
+        if (simulation) {
+          simulation.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }, 300);
+    };
+  }
 
+  if (bannerBackBtn) {
+    bannerBackBtn.onclick = goHome;
+  }
 
   // NAVIGASI ARTIKEL TERKAIT
   contentSlot.querySelectorAll('[data-rel-id]').forEach(card => {
-
     card.addEventListener('click', event => {
-
       if (
         event.metaKey ||
         event.ctrlKey ||
@@ -1154,33 +1457,17 @@ Informasi potensi tsunami dan peringatan dini harus selalu merujuk pada informas
       }
 
       event.preventDefault();
-
       const relatedId = card.getAttribute('data-rel-id');
 
       if (typeof window.__navigateToArticle === 'function') {
         window.__navigateToArticle(relatedId);
       }
-
     });
-
-    // EFEK HOVER CARD
-    card.addEventListener('mouseenter', () => {
-      card.style.transform = 'translateY(-5px)';
-      card.style.boxShadow = '0 15px 35px rgba(0,0,0,0.28)';
-    });
-
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = 'translateY(0)';
-      card.style.boxShadow = '0 8px 25px rgba(0,0,0,0.16)';
-    });
-
   });
 
-
-  // KEMBALI KE ATAS
+  // SCROLL OTOMATIS KE PALING ATAS SETELAH RENDER
   window.scrollTo({
     top: 0,
     behavior: 'instant'
   });
-
 }
