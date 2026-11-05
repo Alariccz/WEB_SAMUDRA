@@ -1,6 +1,6 @@
 import { fetchArticles, fetchArticleById } from '../api.js';
 
-// SVG Graphics matching the Morgana dark / Electric Azure Cyber Blue aesthetic
+// SVG Graphics matching the Morgana / SAMUDRA aesthetic
 const SVGS = {
   hero: `
     <svg viewBox="0 0 540 540" fill="none" xmlns="http://www.w3.org/2000/svg" class="morgana-hero__svg">
@@ -25,20 +25,14 @@ const SVGS = {
       <rect width="540" height="540" fill="#051021"/>
       <rect width="540" height="540" fill="url(#heroGlow)"/>
       <rect width="540" height="540" fill="url(#dotPattern)"/>
-      
-      <!-- Sonar Radar Arc (matching Morgana circular headset/radar contour) -->
       <circle cx="270" cy="270" r="205" stroke="#00d2ff" stroke-width="40" stroke-opacity="0.8" stroke-dasharray="14 6" fill="none"/>
       <circle cx="270" cy="270" r="205" stroke="#051021" stroke-width="12" fill="none"/>
-      
-      <!-- Three 3D Extruded Depth & Seismic Pulse Bars -->
       <polygon points="125,230 185,210 185,410 125,430" fill="url(#barGrad1)"/>
       <polygon points="185,210 210,225 210,420 185,410" fill="url(#barGrad2)"/>
       <polygon points="125,230 150,215 210,225 185,210" fill="#bae6fd"/>
-
       <polygon points="220,260 275,240 275,410 220,430" fill="url(#barGrad1)"/>
       <polygon points="275,240 300,255 300,420 275,410" fill="url(#barGrad2)"/>
       <polygon points="220,260 245,245 300,255 275,240" fill="#bae6fd"/>
-
       <polygon points="310,300 360,280 360,410 310,430" fill="url(#barGrad1)"/>
       <polygon points="360,280 382,295 382,420 360,410" fill="url(#barGrad2)"/>
       <polygon points="310,300 332,285 382,295 360,280" fill="#bae6fd"/>
@@ -105,6 +99,15 @@ const SVGS = {
   `
 };
 
+// Lucide ExternalLink icon (12x12) matching InfoCardDemo
+const EXTERNAL_LINK_ICON = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="info-card__ext-icon">
+    <path d="M15 3h6v6"/>
+    <path d="M10 14 21 3"/>
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+  </svg>
+`;
+
 export function renderArticles(container) {
   const section = document.createElement('section');
   section.id = 'artikel';
@@ -119,34 +122,35 @@ export function renderArticles(container) {
       </div>
       <div class="morgana-header__right">
         <p class="morgana-lede">
-          Artikel, edukasi, dan dokumentasi mitigasi bencana resmi yang tersinkronisasi langsung dari database server SAMUDRA. Klik artikel untuk membaca selengkapnya.
+          Artikel, edukasi, dan dokumentasi mitigasi bencana resmi yang tersinkronisasi langsung dari database server SAMUDRA. Arahkan kursor pada kartu untuk melihat pratinjau visual dan baca selengkapnya.
         </p>
+        <button type="button" class="info-card-restore-btn" id="info-card-restore-btn" style="display: none;">
+          Tampilkan Kembali Kartu yang Disembunyikan
+        </button>
       </div>
     </div>
 
-    <!-- Main Showcase Grid (Big Hero Card on Left, 3 Stacked Cards on Right) -->
-    <div class="morgana-hero-grid">
-      <!-- Left Hero Card Container -->
-      <div id="morgana-hero-container">
-        <!-- Will be populated dynamically by backend data -->
-      </div>
-
-      <!-- Right 3 Stacked Cards Container -->
-      <div class="morgana-stack" id="morgana-stack-container">
-        <!-- Will be populated dynamically by backend data -->
-      </div>
+    <!-- Primary InfoCard News Grid (Sorotan Utama) -->
+    <div class="info-card-news-grid" id="morgana-hero-container">
+      <!-- Populated dynamically with InfoCard components -->
     </div>
 
-    <!-- Second Row: Latest Insights (3-column grid) -->
+    <!-- Hidden legacy hook container for backwards compatibility -->
+    <div id="morgana-stack-container" style="display: none;"></div>
+
+    <!-- Second Row: Latest Insights (3-column InfoCard grid) -->
     <div class="morgana-latest">
       <div class="morgana-latest__header">
-        <h3 class="morgana-subheading">Mitigasi &amp; Pengetahuan Terkini</h3>
+        <div>
+          <span class="morgana-eyebrow" style="margin-bottom: 8px;">Eksplorasi Lapangan</span>
+          <h3 class="morgana-subheading">Mitigasi &amp; Pengetahuan Terkini</h3>
+        </div>
         <p class="morgana-sublede">
           Instruksi kesiapsiagaan, panduan lapangan, dan dokumentasi tindakan saat krisis tiba.
         </p>
       </div>
-      <div class="morgana-latest__grid" id="morgana-latest-container">
-        <!-- Will be populated dynamically by backend data -->
+      <div class="info-card-news-grid" id="morgana-latest-container">
+        <!-- Populated dynamically with InfoCard components -->
       </div>
     </div>
 
@@ -221,14 +225,25 @@ export function renderArticles(container) {
   const heroContainer = section.querySelector('#morgana-hero-container');
   const stackContainer = section.querySelector('#morgana-stack-container');
   const latestContainer = section.querySelector('#morgana-latest-container');
+  const restoreBtn = section.querySelector('#info-card-restore-btn');
+
+  if (restoreBtn) {
+    restoreBtn.addEventListener('click', () => {
+      section.querySelectorAll('.info-card--dismissed').forEach(card => {
+        card.classList.remove('info-card--dismissed');
+        card.style.display = '';
+      });
+      restoreBtn.style.display = 'none';
+    });
+  }
 
   // Load from real backend API: /api/articles
   fetchArticles()
     .then(articles => {
-      renderRealContent(heroContainer, stackContainer, latestContainer, Array.isArray(articles) ? articles : []);
+      renderRealContent(heroContainer, stackContainer, latestContainer, Array.isArray(articles) ? articles : [], restoreBtn);
     })
     .catch(() => {
-      renderRealContent(heroContainer, stackContainer, latestContainer, []);
+      renderRealContent(heroContainer, stackContainer, latestContainer, [], restoreBtn);
     });
 }
 
@@ -259,8 +274,235 @@ function initAccordion(section) {
   });
 }
 
-function renderRealContent(heroContainer, stackContainer, latestContainer, apiArticles) {
-  // Fallback guides only if backend is empty
+// Curated 3-image media stacks for InfoCardMedia fan animation
+const MEDIA_GALLERIES = [
+  [
+    '/img/step-1-bmkg-monitor.jpg',
+    '/img/bento-buoy-warning.jpg',
+    '/img/cover-1.jpg',
+  ],
+  [
+    '/img/step-2-emergency-alert.jpg',
+    '/img/bento-emergency-dispatch.jpg',
+    '/img/cover-2.jpg',
+  ],
+  [
+    '/img/step-3-evacuation-route.jpg',
+    '/img/bento-evacuation-route.jpg',
+    '/img/cover-3.jpg',
+  ],
+  [
+    '/img/bento-buoy-warning.jpg',
+    '/img/step-1-bmkg-monitor.jpg',
+    '/img/cover-4.jpg',
+  ],
+  [
+    '/img/bento-offline-navigation.jpg',
+    '/img/step-3-evacuation-route.jpg',
+    '/img/bg-misty-coast.jpg',
+  ],
+  [
+    '/img/bento-shelter-tes.jpg',
+    '/img/bg-shelter-lights.jpg',
+    '/img/bg-misty-hills.jpg',
+  ],
+];
+
+function buildMediaList(item, index) {
+  const gallery = MEDIA_GALLERIES[index % MEDIA_GALLERIES.length];
+  if (item.coverImg) {
+    return [
+      { type: 'image', src: gallery[0], alt: `${item.title} - Preview 1` },
+      { type: 'image', src: gallery[1], alt: `${item.title} - Preview 2` },
+      { type: 'image', src: item.coverImg, alt: item.title },
+    ];
+  }
+  return [
+    { type: 'image', src: gallery[0], alt: `${item.title} - Preview 1` },
+    { type: 'image', src: gallery[1], alt: `${item.title} - Preview 2` },
+    { type: 'image', src: gallery[2], alt: item.title },
+  ];
+}
+
+/**
+ * Creates a DOM element matching the exact structure and spring hover mechanics
+ * of `components/ui/info-card.tsx` (InfoCard, InfoCardContent, InfoCardTitle,
+ * InfoCardDescription, InfoCardMedia, InfoCardFooter, InfoCardDismiss, InfoCardAction).
+ */
+function createInfoCardHTML(item, idx, fallbackPrefix, shrinkHeight = 140, expandHeight = 210) {
+  const targetId = item.id || item.slug || `${fallbackPrefix}-${idx + 1}`;
+  const href = `?article=${encodeURIComponent(targetId)}`;
+  const mediaList = buildMediaList(item, idx).slice(0, 3);
+  const mediaCount = mediaList.length;
+
+  const mediaItemsHTML = mediaList
+    .map((m, mIdx) => {
+      const rot = mediaCount === 1 ? 0 : (mIdx - (mediaCount === 2 ? 0.5 : 1)) * 3.2;
+      const tx = mediaCount === 1 ? 0 : (mIdx - (mediaCount === 2 ? 0.5 : 1)) * 11;
+      const ty = mediaCount === 1 ? -4 : mIdx === 0 ? -9 : mIdx === 1 ? -4 : 0;
+      const sc = mediaCount === 1 ? 1 : +(0.935 + mIdx * 0.03).toFixed(3);
+      const restSc = mediaCount === 1 ? 1 : +(0.94 + mIdx * 0.03).toFixed(3);
+      const restTy = mediaCount === 1 ? 0 : (2 - mIdx) * -3;
+      const restOp = mIdx === mediaCount - 1 ? 1 : mIdx === 1 ? 0.72 : 0.45;
+
+      return `
+        <div
+          class="info-card__media-item"
+          data-media-idx="${mIdx}"
+          style="--rest-sc: ${restSc}; --rest-ty: ${restTy}px; --rest-op: ${restOp}; --hover-rot: ${rot}deg; --hover-tx: ${tx}px; --hover-ty: ${ty}px; --hover-sc: ${sc}; z-index: ${mIdx + 1};"
+        >
+          <img
+            src="${m.src}"
+            alt="${m.alt || item.title}"
+            class="info-card__media-img"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      `;
+    })
+    .join('');
+
+  return `
+    <article
+      class="info-card"
+      data-card-id="${targetId}"
+      style="--shrink-h: ${shrinkHeight}px; --expand-h: ${expandHeight}px;"
+      tabindex="0"
+      role="article"
+      aria-label="${item.title}"
+    >
+      <div class="info-card__content">
+        <div class="info-card__meta">
+          <span class="morgana-badge">${item.category}</span>
+          <span class="morgana-read-time">${item.readTime}</span>
+        </div>
+        <div class="info-card__title">${item.title}</div>
+        <div class="info-card__description">${item.excerpt}</div>
+
+        <div class="info-card__media">
+          <div class="info-card__media-stack">
+            ${mediaItemsHTML}
+          </div>
+          <div class="info-card__media-fade"></div>
+        </div>
+
+        <div class="info-card__footer">
+          <div class="info-card__footer-inner">
+            <button type="button" class="info-card__dismiss" aria-label="Sembunyikan berita ini">
+              Dismiss
+            </button>
+            <div class="info-card__action">
+              <a href="${href}" class="info-card__action-link">
+                <span>Baca selengkapnya</span>
+                ${EXTERNAL_LINK_ICON}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function attachInfoCardInteractions(container, items, fallbackPrefix, restoreBtn) {
+  if (!container) return;
+  const cards = container.querySelectorAll('.info-card');
+
+  cards.forEach((card, idx) => {
+    const item = items[idx];
+    if (!item) return;
+    const targetId = item.id || item.slug || `${fallbackPrefix}-${idx + 1}`;
+    const mediaContainer = card.querySelector('.info-card__media');
+    const dismissBtn = card.querySelector('.info-card__dismiss');
+    const actionLink = card.querySelector('.info-card__action-link');
+    const mainImg = card.querySelector('.info-card__media-item:last-child .info-card__media-img');
+
+    const updateNaturalHeight = () => {
+      if (!mainImg || !mainImg.naturalWidth || !mainImg.naturalHeight || !mediaContainer) return;
+      const ratio = mainImg.naturalHeight / mainImg.naturalWidth;
+      // Keep resting height compact (140px) and hover expansion moderate (205px - 225px) so cards never stretch excessively downward
+      const expandH = ratio > 1 ? 225 : 205;
+      card.style.setProperty('--shrink-h', '140px');
+      card.style.setProperty('--expand-h', `${expandH}px`);
+    };
+
+    if (mainImg) {
+      if (mainImg.complete && mainImg.naturalWidth) {
+        updateNaturalHeight();
+      } else {
+        mainImg.addEventListener('load', updateNaturalHeight, { once: true });
+      }
+    }
+
+    const handleEnter = () => {
+      card.classList.add('is-hovered');
+    };
+
+    const handleLeave = () => {
+      card.classList.remove('is-hovered');
+    };
+
+    card.addEventListener('mouseenter', handleEnter);
+    card.addEventListener('mouseleave', handleLeave);
+    card.addEventListener('focusin', handleEnter);
+    card.addEventListener('focusout', e => {
+      if (!card.contains(e.relatedTarget)) {
+        handleLeave();
+      }
+    });
+
+    // Dismiss button behavior (matching InfoCardDismiss)
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        card.classList.add('info-card--dismissing');
+        setTimeout(() => {
+          card.classList.remove('info-card--dismissing');
+          card.classList.add('info-card--dismissed');
+          card.style.display = 'none';
+          if (restoreBtn) {
+            restoreBtn.style.display = 'inline-flex';
+          }
+        }, 220);
+      });
+    }
+
+    const triggerOpen = e => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (e.button !== undefined && e.button !== 0)) {
+        return;
+      }
+      e.preventDefault();
+      if (typeof window.__navigateToArticle === 'function') {
+        window.__navigateToArticle(targetId);
+      } else {
+        openArticleModal(item);
+      }
+    };
+
+    if (actionLink) {
+      actionLink.addEventListener('click', e => {
+        e.stopPropagation();
+        triggerOpen(e);
+      });
+    }
+
+    card.addEventListener('click', e => {
+      if (e.target.closest('.info-card__dismiss')) return;
+      triggerOpen(e);
+    });
+
+    card.addEventListener('keydown', e => {
+      if (e.target.closest('.info-card__dismiss')) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        triggerOpen(e);
+      }
+    });
+  });
+}
+
+function renderRealContent(heroContainer, stackContainer, latestContainer, apiArticles, restoreBtn) {
   const defaultGuides = [
     {
       category: 'Riset Seismik',
@@ -274,6 +516,7 @@ Ketika deformasi ini mengangkat kolom air laut dalam hitungan detik, terciptalah
 Sistem pemantauan InaTEWS menggunakan kombinasi seismometer broadband di darat dan sensor tekanan dasar laut (DART/CBT) untuk memverifikasi apakah anomali gelombang benar-benar tercipta dalam waktu kurang dari 5 menit pascagempa.`,
       authorName: 'Pusat Studi Seismologi',
       authorRole: 'TIM RISET SAMUDRA',
+      coverImg: '/img/cover-1.jpg',
       svgThumb: SVGS.waveSlices,
     },
     {
@@ -291,6 +534,7 @@ Prinsip 20-20-20:
 Gunakan selalu rute darat terbuka dan hindari jembatan muara atau jalan tepi tebing yang berisiko runtuh akibat likuifaksi atau guncangan susulan.`,
       authorName: 'SOP Evakuasi Lapangan',
       authorRole: 'PROTOKOL KESELAMATAN',
+      coverImg: '/img/cover-2.jpg',
       svgThumb: SVGS.controlCenter,
     },
     {
@@ -303,6 +547,7 @@ Gunakan selalu rute darat terbuka dan hindari jembatan muara atau jalan tepi teb
 Data diubah menjadi sinyal akustik bawah air menuju pelampung (buoy) di permukaan, diteruskan ke satelit komunikasi geodesi, lalu dikonfirmasi ke pusat analisis komputasi BMKG dalam hitungan mikrodetik sebelum disebarkan ke publik lewat push notification.`,
       authorName: 'Divisi Instrumentasi Kelautan',
       authorRole: 'ENGINEERING LAB',
+      coverImg: '/img/cover-3.jpg',
       svgThumb: SVGS.matrixBars,
     },
     {
@@ -315,6 +560,7 @@ Data diubah menjadi sinyal akustik bawah air menuju pelampung (buoy) di permukaa
 SAMUDRA mengintegrasikan data elevasi topografi digital terbaru (DEMNAS) agar zona risiko genangan selalu merefleksikan kontur ketinggian daratan riil saat ini.`,
       authorName: 'Analisis Geospasial',
       authorRole: 'DATA SCIENTIST',
+      coverImg: '/img/cover-4.jpg',
       svgThumb: SVGS.radarDial,
     },
     {
@@ -327,6 +573,7 @@ SAMUDRA mengintegrasikan data elevasi topografi digital terbaru (DEMNAS) agar zo
 Jika Anda berada di zona merah pantai dan merasakan lindhu hebat, mulailah bergerak ke elevasi aman sambil memantau peta offline yang sudah terunduh di aplikasi SAMUDRA. Prioritaskan keselamatan fisik sebelum memeriksa gawai.`,
       authorName: 'Pendidikan Kebencanaan',
       authorRole: 'EDUKATOR RESMI',
+      coverImg: '/img/bento-evacuation-route.jpg',
       svgThumb: SVGS.satelliteOrbit,
     },
     {
@@ -339,14 +586,13 @@ Jika Anda berada di zona merah pantai dan merasakan lindhu hebat, mulailah berge
 Sebaliknya, ekosistem terumbu karang penghalang yang sehat dan hutan mangrove tebal terbukti secara empiris mereduksi energi kinetik gelombang hingga 66%, menjadikannya pelindung alami tak ternilai bagi warga pesisir.`,
       authorName: 'Oseanografi Terapan',
       authorRole: 'TIM RISET SAMUDRA',
+      coverImg: '/img/bento-buoy-warning.jpg',
       svgThumb: SVGS.waveSlices,
     }
   ];
 
-  // Convert all items from backend into standardized card objects
   const allCards = [];
 
-  // 1. First add articles from /api/articles
   if (Array.isArray(apiArticles)) {
     apiArticles.forEach(item => {
       const cat = item.category ? item.category.replace(/_/g, ' ').toUpperCase() : 'ARTIKEL RESMI';
@@ -372,125 +618,29 @@ Sebaliknya, ekosistem terumbu karang penghalang yang sehat dan hutan mangrove te
     });
   }
 
-
-
-  // If cards count < 7, pad with defaultGuides
   defaultGuides.forEach(guide => {
-    if (allCards.length < 7) {
+    if (allCards.length < 6) {
       allCards.push(guide);
     }
   });
 
-  // Hero Card is the 1st card (Backend article if exists!)
-  const heroCard = allCards[0] || defaultGuides[0];
-  const heroHref = `?article=${encodeURIComponent(heroCard.id || heroCard.slug || 'riset-megathrust')}`;
-  heroContainer.innerHTML = `
-    <a class="morgana-hero-card" href="${heroHref}" aria-label="Buka artikel: ${heroCard.title}">
-      <div class="morgana-hero-card__visual">
-        ${heroCard.coverImg ? `<img src="${heroCard.coverImg}" alt="${heroCard.title}" loading="lazy">` : SVGS.hero}
-        <div class="morgana-hero-card__overlay">
-          <span class="morgana-badge">${heroCard.category}</span>
-          <span class="morgana-read-time">${heroCard.readTime}</span>
-        </div>
-      </div>
-      <div class="morgana-hero-card__content">
-        <h3 class="morgana-hero-card__title">${heroCard.title}</h3>
-        <p class="morgana-hero-card__desc">${heroCard.excerpt}</p>
-        <span class="morgana-read-more">Buka artikel selengkapnya &rarr;</span>
-      </div>
-    </a>
-  `;
-
-  // Stack Cards (Cards index 1, 2, 3)
-  const stackCards = allCards.slice(1, 4);
-  stackContainer.innerHTML = stackCards.map((item, idx) => {
-    const href = `?article=${encodeURIComponent(item.id || item.slug || 'panduan-' + (idx + 1))}`;
-    return `
-      <a class="morgana-card" href="${href}" data-idx="${idx}" aria-label="Buka artikel: ${item.title}">
-        <div class="morgana-card__body">
-          <div class="morgana-card__top">
-            <span class="morgana-badge">${item.category}</span>
-            <span class="morgana-read-time">${item.readTime}</span>
-          </div>
-          <h4 class="morgana-card__title">${item.title}</h4>
-          <p class="morgana-card__excerpt">${item.excerpt}</p>
-          <span class="morgana-read-more">Baca &rarr;</span>
-        </div>
-        <div class="morgana-card__thumb">
-          ${item.coverImg ? `<img src="${item.coverImg}" alt="${item.title}" loading="lazy">` : (item.svgThumb || SVGS.waveSlices)}
-        </div>
-      </a>
-    `;
-  }).join('');
-
-  // Latest Insights Cards (Cards index 4, 5, 6)
-  const latestCards = allCards.slice(4, 7);
-  latestContainer.innerHTML = latestCards.map((item, idx) => {
-    const href = `?article=${encodeURIComponent(item.id || item.slug || 'edukasi-' + (idx + 1))}`;
-    return `
-      <a class="morgana-latest-card" href="${href}" data-idx="${idx}" aria-label="Buka artikel: ${item.title}">
-        <div class="morgana-latest-card__thumb">
-          ${item.coverImg ? `<img src="${item.coverImg}" alt="${item.title}" loading="lazy">` : (item.svgThumb || SVGS.radarDial)}
-        </div>
-        <div class="morgana-latest-card__body">
-          <div class="morgana-card__top">
-            <span class="morgana-badge">${item.category}</span>
-            <span class="morgana-read-time">${item.readTime}</span>
-          </div>
-          <h4 class="morgana-latest-card__title">${item.title}</h4>
-          <p class="morgana-latest-card__excerpt">${item.excerpt}</p>
-          <span class="morgana-read-more">Baca artikel &rarr;</span>
-        </div>
-      </a>
-    `;
-  }).join('');
-
-  // ===== NAVIGATION HANDLER (Supports Left Click for SPA & Modifier/Middle Click for New Tab) =====
-  function setupCardNavigation(el, item, fallbackId) {
-    if (!el) return;
-    const targetId = item.id || item.slug || fallbackId;
-
-    el.addEventListener('click', e => {
-      // Allow browser native middle-click, ctrl-click, cmd-click to open in new tab
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
-        return;
-      }
-      e.preventDefault();
-      if (typeof window.__navigateToArticle === 'function') {
-        window.__navigateToArticle(targetId);
-      } else {
-        openArticleModal(item);
-      }
-    });
-
-    el.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        if (typeof window.__navigateToArticle === 'function') {
-          window.__navigateToArticle(targetId);
-        } else {
-          openArticleModal(item);
-        }
-      }
-    });
+  // Top Row: 3 Featured InfoCards
+  const topCards = allCards.slice(0, 3);
+  if (heroContainer) {
+    heroContainer.innerHTML = topCards
+      .map((item, idx) => createInfoCardHTML(item, idx, 'sorotan', 140, 210))
+      .join('');
+    attachInfoCardInteractions(heroContainer, topCards, 'sorotan', restoreBtn);
   }
 
-  const heroEl = heroContainer.querySelector('.morgana-hero-card');
-  setupCardNavigation(heroEl, heroCard, 'riset-megathrust');
-
-  const stackEls = stackContainer.querySelectorAll('.morgana-card');
-  stackEls.forEach((el, idx) => {
-    if (stackCards[idx]) {
-      setupCardNavigation(el, stackCards[idx], 'panduan-' + (idx + 1));
-    }
-  });
-
-  const latestEls = latestContainer.querySelectorAll('.morgana-latest-card');
-  latestEls.forEach((el, idx) => {
-    if (latestCards[idx]) {
-      setupCardNavigation(el, latestCards[idx], 'edukasi-' + (idx + 1));
-    }
-  });
+  // Second Row: 3 Latest Insight InfoCards
+  const latestCards = allCards.slice(3, 6);
+  if (latestContainer) {
+    latestContainer.innerHTML = latestCards
+      .map((item, idx) => createInfoCardHTML(item, idx + 3, 'edukasi', 140, 210))
+      .join('');
+    attachInfoCardInteractions(latestContainer, latestCards, 'edukasi', restoreBtn);
+  }
 }
 
 // ===== ARTICLE READER MODAL POPUP =====

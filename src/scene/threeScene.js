@@ -53,14 +53,25 @@ function th(x, z) {
   const ridgeShape = Math.pow(m, 1.25) * 3.5 * (1.0 - Math.abs(2.0 * fb(x * 0.12 + 5.0, z * 0.08) - 1.0));
   const detailNoise = (dist > 3.0 ? (fb(x * 0.3, z * 0.3) - 0.5) * 0.5 * Math.min(1.0, (dist - 3.0) / 5.0) : 0);
 
-  // Shelter plateau at (41.6, -8.6)
-  const dShelter = Math.hypot(x - 41.6, z - (-8.6));
-  const shelterPlateau = smoothstep(5.0, 1.5, dShelter) * 1.6;
+  const baseInland = (beachRise + sandRipples + terraceRise + mountainMain + ridgeShape + detailNoise);
 
-  const inlandElevation = (beachRise + sandRipples + terraceRise + mountainMain + ridgeShape + detailNoise + shelterPlateau);
+  // Level summit plaza around shelter (x: 37..45, z: -12..-5) at elevation 18.8m for a smooth, unobstructed approach
+  const dShelter = Math.hypot((x - 41.0) * 0.72, z - (-8.6));
+  const flatFactor = smoothstep(6.8, 3.2, dShelter);
+  const inlandElevation = baseInland * (1.0 - flatFactor) + 18.8 * flatFactor;
 
   // Blend with island boundaries so edges meet sea level smoothly
   return inlandElevation * islandBoundMask + (1.0 - islandBoundMask) * (-smoothstep(0, 5, dist) * 4.0);
+}
+
+function getWalkSurfaceY(x, z) {
+  const baseH = th(x, z);
+  // Smoothly rise up the shelter entrance steps/ramp (x: 36.2..37.8) onto the shelter deck & interior floor (+0.45m)
+  if (z > -12.2 && z < -5.0 && x > 36.2 && x < 45.8) {
+    const rampT = smoothstep(36.2, 37.8, x);
+    return baseH + rampT * 0.45;
+  }
+  return baseH;
 }
 
 const calm = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.25 : 1;
@@ -213,15 +224,15 @@ export function createScene(canvas) {
 
   window.__samudra_renderer = renderer;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
-  renderer.setClearColor(0x020512);
+  renderer.setClearColor(0x0a1d30);
 
   const scene = new THREE.Scene();
   const cam = new THREE.PerspectiveCamera(50, 1, 0.1, 400);
   const world = new THREE.Group();
   scene.add(world);
 
-  const amb = new THREE.AmbientLight(0x6688bb, 0.9);
-  const sun = new THREE.DirectionalLight(0xffe6c0, 1.2);
+  const amb = new THREE.AmbientLight(0x8ec3ea, 1.1);
+  const sun = new THREE.DirectionalLight(0xffedd5, 1.35);
   scene.add(amb, sun);
 
   // ---- Height texture (widened to 80x80) ----
@@ -645,7 +656,7 @@ void main(){
 
   // Evac path texture
   const FP = [
-    [[8.8, 9.4], [10.2, 7.4], [12.2, 8.4], [15, 5.4], [17.6, 2.4], [20.6, 3.8], [23.6, 0.6], [26.4, -2.6], [29.4, -0.8], [32.4, -4], [35.4, -7], [38.6, -5.4], [41.6, -8.6]],
+    [[8.8, 9.4], [10.2, 7.4], [12.2, 8.4], [15, 5.4], [17.6, 2.4], [20.6, 3.8], [23.6, 0.6], [26.4, -2.6], [29.4, -0.8], [32.4, -4.2], [35.0, -7.4], [37.2, -8.6], [39.4, -8.6], [41.4, -8.6]],
     [[8.6, -7.4], [10, -5.6], [12.4, -4.8], [15.4, -6.8], [18.6, -8.6], [22, -7.4], [25.4, -9.6], [29, -8.4], [32.4, -11], [36, -12.6], [39.6, -11.4]]
   ];
   const FS = FP.map(pts => new THREE.CatmullRomCurve3(pts.map(q => new THREE.Vector3(q[0], 0, q[1])), false, 'catmullrom', 0.5).getPoints(160));
@@ -680,11 +691,11 @@ void main(){
   }));
   landGroup.add(land);
 
-  // Evac path ribbon + tube (full span from beach to summit shelter)
-  const curvePts = FS[0].filter((_, i) => i % 4 === 0 || i === FS[0].length - 1).map(p => new THREE.Vector3(p.x, th(p.x, p.z) + 0.35, p.z));
+  // Evac path ribbon + tube (full span from beach up the ramp, through the shelter doorway, and into the interior)
+  const curvePts = FS[0].filter((_, i) => i % 4 === 0 || i === FS[0].length - 1).map(p => new THREE.Vector3(p.x, getWalkSurfaceY(p.x, p.z) + 0.05, p.z));
   const curve = new THREE.CatmullRomCurve3(curvePts, false, 'catmullrom', 0.5);
   const pm = new THREE.MeshBasicMaterial({ color: 0x00d2ff, transparent: true, opacity: 0 });
-  const tubeMesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 100, 0.12, 8), pm);
+  const tubeMesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 120, 0.035, 8), pm);
   landGroup.add(tubeMesh);
 
   function ribbon(w, y, col, po) {
@@ -693,25 +704,28 @@ void main(){
       const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
       const dx = b.x - a.x, dz = b.z - a.z, l = Math.hypot(dx, dz) || 1, nx = -dz / l, nz = dx / l;
       const p = pts[i];
-      pos.push(p.x + nx * w, th(p.x + nx * w, p.z + nz * w) + y, p.z + nz * w, p.x - nx * w, th(p.x - nx * w, p.z - nz * w) + y, p.z - nz * w);
+      pos.push(
+        p.x + nx * w, getWalkSurfaceY(p.x + nx * w, p.z + nz * w) + y, p.z + nz * w,
+        p.x - nx * w, getWalkSurfaceY(p.x - nx * w, p.z - nz * w) + y, p.z - nz * w
+      );
       if (i < pts.length - 1) { const k = i * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx);
     return new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0, side: 2, polygonOffset: true, polygonOffsetFactor: po, polygonOffsetUnits: po }));
   }
-  const trail = ribbon(0.65, 0.12, 0x00d2ff, -2), trail2 = ribbon(0.2, 0.16, 0xe9dcb4, -4);
+  const trail = ribbon(0.55, 0.03, 0x00d2ff, -2), trail2 = ribbon(0.16, 0.045, 0xe9dcb4, -4);
   landGroup.add(trail, trail2);
 
   const dots = [];
   for (let i = 0; i < 11; i++) {
-    const d = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthTest: false }));
+    const d = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthTest: true }));
     d.renderOrder = 6; landGroup.add(d); dots.push(d);
   }
-  const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.65, 16, 16), new THREE.MeshBasicMaterial({ color: 0x00d2ff, transparent: true, opacity: 0, depthTest: false }));
+  const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.45, 16, 16), new THREE.MeshBasicMaterial({ color: 0x00d2ff, transparent: true, opacity: 0, depthTest: true }));
   beacon.renderOrder = 6; beacon.position.copy(curve.getPoint(1)); landGroup.add(beacon);
 
-  // Trail waymarker posts along the mountain evacuation route
+  // Trail waymarker posts along the mountain evacuation route (stopping before the shelter plaza)
   const waymarkerGroup = new THREE.Group();
   const wmPostGeo = new THREE.CylinderGeometry(0.045, 0.055, 0.85, 8);
   wmPostGeo.translate(0, 0.425, 0);
@@ -720,7 +734,7 @@ void main(){
   wmRingGeo.translate(0, 0.72, 0);
   const wmRingMat = new THREE.MeshStandardMaterial({ color: 0x00d2ff, emissive: 0x00d2ff, emissiveIntensity: 0.75 });
 
-  const waymarkerPoints = [0.06, 0.14, 0.22, 0.30, 0.38, 0.46, 0.54, 0.62, 0.70, 0.78, 0.86, 0.94];
+  const waymarkerPoints = [0.06, 0.14, 0.22, 0.30, 0.38, 0.46, 0.54, 0.62, 0.70, 0.78];
   waymarkerPoints.forEach(u => {
     const pt = curve.getPoint(u);
     const tan = curve.getTangent(u);
@@ -876,8 +890,8 @@ void main(){
       const ry = th(rx, rz);
       if (ry < 1.0) continue;
 
-      // Don't place tree directly on summit shelter pavilion
-      if (Math.hypot(rx - 41.6, rz - (-8.6)) < 3.2) continue;
+      // Don't place tree directly on summit shelter pavilion or approach plaza
+      if (Math.hypot(rx - 41.0, rz - (-8.6)) < 6.2) continue;
 
       // Don't place tree inside village clearings
       let nearVillage = false;
@@ -2051,110 +2065,287 @@ void main(){
   if (rockMesh.instanceColor) rockMesh.instanceColor.needsUpdate = true;
   landGroup.add(rockMesh);
 
-  // ---- 4. Modern Highland Disaster Evacuation Shelter & Telemetry Station ----
+  // ---- 4. Modern Highland Disaster Evacuation Shelter & Walk-In Interior Hall ----
   const shelterGroup = new THREE.Group();
   const sy = th(41.6, -8.6);
   shelterGroup.position.set(41.6, sy, -8.6);
 
-  // A. Heavy Reinforced Concrete Foundation Slab
+  const deckH = 0.45;
+  const wallMatExt = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.62, metalness: 0.18 });
+  const wallMatInt = new THREE.MeshStandardMaterial({ color: 0x273549, roughness: 0.70, metalness: 0.10 });
+  const trimCyanMat = new THREE.MeshStandardMaterial({ color: 0x00d2ff, emissive: 0x00d2ff, emissiveIntensity: 0.85, roughness: 0.25 });
+  const trimEmeraldMat = new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 0.90, roughness: 0.25 });
+  const glassPaneMat = new THREE.MeshStandardMaterial({
+    color: 0xe0f2fe,
+    emissive: 0x38bdf8,
+    emissiveIntensity: 0.18,
+    roughness: 0.12,
+    metalness: 0.25,
+    transparent: true,
+    opacity: 0.42,
+    side: THREE.DoubleSide
+  });
+  const steelFrameMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.30, metalness: 0.82 });
+
+  // A. Heavy Reinforced Concrete Foundation Slab & Approach Steps
   const deckMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(8.2, 0.55, 7.2),
-    new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.88, metalness: 0.05, flatShading: false })
+    new THREE.BoxGeometry(8.2, deckH, 7.2),
+    new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.85, metalness: 0.08 })
   );
-  deckMesh.position.y = 0.275;
+  deckMesh.position.set(0.2, deckH * 0.5, 0);
 
-  // Deck edge safety curb (dark charcoal perimeter)
-  const curbMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(8.35, 0.15, 7.35),
-    new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.70, flatShading: false })
+  // Interior Non-Slip Rescue Floor + Glowing Guide Strip
+  const intFloor = new THREE.Mesh(
+    new THREE.BoxGeometry(5.5, 0.04, 4.7),
+    new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.75, metalness: 0.12 })
   );
-  curbMesh.position.y = 0.58;
+  intFloor.position.set(0.6, deckH + 0.02, 0);
 
-  // Access stairs leading up from the hiking trail arrival side (west edge)
-  const step1 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.18, 2.2), new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9 }));
-  step1.position.set(-4.5, 0.09, 0);
-  const step2 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.36, 2.2), new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9 }));
-  step2.position.set(-3.7, 0.18, 0);
+  const floorGuideL = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.045, 0.06), trimCyanMat);
+  floorGuideL.position.set(-0.2, deckH + 0.025, -0.52);
+  const floorGuideR = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.045, 0.06), trimCyanMat);
+  floorGuideR.position.set(-0.2, deckH + 0.025, 0.52);
 
-  // Safety Perimeter Railings (High-tensile steel guard rails)
+  // Wide Approach Stairs & Ramp leading up to the front doorway (west edge x: -5.4 to -3.8)
+  const stepMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.88 });
+  const step1 = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.15, 2.6), stepMat);
+  step1.position.set(-5.05, 0.075, 0);
+  const step2 = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.30, 2.6), stepMat);
+  step2.position.set(-4.45, 0.15, 0);
+  const step3 = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.45, 2.6), stepMat);
+  step3.position.set(-3.95, 0.225, 0);
+  const stepGlow1 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 2.5), trimCyanMat);
+  stepGlow1.position.set(-5.36, 0.15, 0);
+  const stepGlow2 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 2.5), trimCyanMat);
+  stepGlow2.position.set(-4.76, 0.30, 0);
+
+  // Safety Perimeter Railings (High-tensile steel guard rails with wide entrance opening at z: -1.35..1.35)
   const railingGroup = new THREE.Group();
   const railMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.35, metalness: 0.75 });
   const railPostGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.95, 8);
   const railPosts = [
-    [-4.0, -3.5], [0.0, -3.5], [4.0, -3.5],
-    [4.0, 0.0], [4.0, 3.5],
-    [0.0, 3.5], [-4.0, 3.5],
-    [-4.0, 1.4], [-4.0, -1.4]
+    [-3.8, -3.5], [0.2, -3.5], [4.2, -3.5],
+    [4.2, 0.0], [4.2, 3.5],
+    [0.2, 3.5], [-3.8, 3.5],
+    [-3.8, 1.35], [-3.8, -1.35]
   ];
   railPosts.forEach(([rx, rz]) => {
     const post = new THREE.Mesh(railPostGeo, railMat);
-    post.position.set(rx, 0.55 + 0.475, rz);
+    post.position.set(rx, deckH + 0.475, rz);
     railingGroup.add(post);
   });
   function addHandrail(x1, z1, x2, z2) {
     const len = Math.hypot(x2 - x1, z2 - z1);
     const r = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, len, 8), railMat);
-    r.position.set((x1 + x2) / 2, 1.45, (z1 + z2) / 2);
+    r.position.set((x1 + x2) / 2, deckH + 0.90, (z1 + z2) / 2);
     r.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(x2 - x1, 0, z2 - z1).normalize());
     railingGroup.add(r);
   }
-  addHandrail(-4.0, -3.5, 4.0, -3.5);
-  addHandrail(4.0, -3.5, 4.0, 3.5);
-  addHandrail(4.0, 3.5, -4.0, 3.5);
-  addHandrail(-4.0, 3.5, -4.0, 1.4);
-  addHandrail(-4.0, -1.4, -4.0, -3.5);
+  addHandrail(-3.8, -3.5, 4.2, -3.5);
+  addHandrail(4.2, -3.5, 4.2, 3.5);
+  addHandrail(4.2, 3.5, -3.8, 3.5);
+  addHandrail(-3.8, 3.5, -3.8, 1.35);
+  addHandrail(-3.8, -1.35, -3.8, -3.5);
 
-  // B. Main Emergency Rescue Hall & Operations Center
+  // B. Walk-In Emergency Rescue Hall (Hollow Architectural Room with Open Front Doorway)
   const bldGroup = new THREE.Group();
-  const bldWall = new THREE.Mesh(
-    new THREE.BoxGeometry(4.8, 2.5, 3.8),
-    new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.65, metalness: 0.15, flatShading: false })
+  const wallH = 2.85;
+  const doorH = 2.22;
+
+  // 1. FRONT WALL (x = -2.2) WITH WIDE OPEN DOORWAY (z: -0.95 to +0.95)
+  const frontWallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.22, wallH, 1.50), wallMatExt);
+  frontWallLeft.position.set(-2.2, deckH + wallH * 0.5, -1.70);
+  const frontWallRight = new THREE.Mesh(new THREE.BoxGeometry(0.22, wallH, 1.50), wallMatExt);
+  frontWallRight.position.set(-2.2, deckH + wallH * 0.5, 1.70);
+  const frontWallLintel = new THREE.Mesh(new THREE.BoxGeometry(0.22, wallH - doorH, 1.90), wallMatExt);
+  frontWallLintel.position.set(-2.2, deckH + doorH + (wallH - doorH) * 0.5, 0);
+
+  // Illuminated Doorway Portal Frame (Pintu Masuk)
+  const jambL = new THREE.Mesh(new THREE.BoxGeometry(0.26, doorH, 0.08), trimCyanMat);
+  jambL.position.set(-2.2, deckH + doorH * 0.5, -0.95);
+  const jambR = new THREE.Mesh(new THREE.BoxGeometry(0.26, doorH, 0.08), trimCyanMat);
+  jambR.position.set(-2.2, deckH + doorH * 0.5, 0.95);
+  const lintelGlow = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.08, 1.98), trimCyanMat);
+  lintelGlow.position.set(-2.2, deckH + doorH, 0);
+
+  // Entrance Canopy Overhang above Front Door
+  const entranceCanopy = new THREE.Mesh(
+    new THREE.BoxGeometry(1.15, 0.10, 2.60),
+    new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.45, metalness: 0.30 })
   );
-  bldWall.position.set(0.4, 0.55 + 1.25, 0);
+  entranceCanopy.position.set(-2.72, deckH + doorH + 0.12, 0);
 
-  // Forward Panoramic Observation Windows (Warm amber illuminated interior)
-  const winMat = new THREE.MeshStandardMaterial({
-    color: 0xffedd5,
-    emissive: 0xf59e0b,
-    emissiveIntensity: 0.72,
-    roughness: 0.20,
-    metalness: 0.10,
-    transparent: true,
-    opacity: 0.88
+  // Swung-Open Double Glass Doors (Welcoming user into the shelter)
+  function createDoorLeaf(isRight) {
+    const leafGroup = new THREE.Group();
+    const leafW = 0.88;
+    const leafH = doorH - 0.06;
+    const zSign = isRight ? -1 : 1;
+
+    const glass = new THREE.Mesh(new THREE.BoxGeometry(0.04, leafH - 0.12, leafW - 0.10), glassPaneMat);
+    glass.position.set(0, leafH * 0.5, zSign * (leafW * 0.5));
+
+    const topBar = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.07, leafW), steelFrameMat);
+    topBar.position.set(0, leafH - 0.035, zSign * (leafW * 0.5));
+    const botBar = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.09, leafW), steelFrameMat);
+    botBar.position.set(0, 0.045, zSign * (leafW * 0.5));
+    const outerStile = new THREE.Mesh(new THREE.BoxGeometry(0.06, leafH, 0.06), steelFrameMat);
+    outerStile.position.set(0, leafH * 0.5, zSign * (leafW - 0.03));
+    const pushBar = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.04, leafW * 0.72), trimEmeraldMat);
+    pushBar.position.set(0, 1.05, zSign * (leafW * 0.5));
+
+    leafGroup.add(glass, topBar, botBar, outerStile, pushBar);
+    return leafGroup;
+  }
+
+  const leftDoor = createDoorLeaf(false);
+  leftDoor.position.set(-2.2, deckH + 0.02, -0.91);
+  leftDoor.rotation.y = -1.18; // Swung wide open inward/outward clear of path
+
+  const rightDoor = createDoorLeaf(true);
+  rightDoor.position.set(-2.2, deckH + 0.02, 0.91);
+  rightDoor.rotation.y = 1.18; // Swung wide open clear of path
+
+  // Green Emergency Evacuation Cross Emblem (+) above the front doorway
+  const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.16, 0.52), trimEmeraldMat);
+  const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.52, 0.16), trimEmeraldMat);
+  crossH.position.set(-2.34, deckH + doorH + 0.34, 0);
+  crossV.position.set(-2.34, deckH + doorH + 0.34, 0);
+
+  // 2. LEFT & RIGHT SIDE WALLS WITH PANORAMIC OBSERVATION WINDOWS (z = -2.40 and z = +2.40)
+  const sideLen = 5.6;
+  const sideCenterX = 0.6;
+  [-2.40, 2.40].forEach(zPos => {
+    const lowWall = new THREE.Mesh(new THREE.BoxGeometry(sideLen, 0.95, 0.20), wallMatExt);
+    lowWall.position.set(sideCenterX, deckH + 0.475, zPos);
+    const highWall = new THREE.Mesh(new THREE.BoxGeometry(sideLen, 0.65, 0.20), wallMatExt);
+    highWall.position.set(sideCenterX, deckH + wallH - 0.325, zPos);
+    const midPillar = new THREE.Mesh(new THREE.BoxGeometry(0.32, wallH, 0.22), wallMatExt);
+    midPillar.position.set(sideCenterX, deckH + wallH * 0.5, zPos);
+    const backPillar = new THREE.Mesh(new THREE.BoxGeometry(0.35, wallH, 0.22), wallMatExt);
+    backPillar.position.set(3.30, deckH + wallH * 0.5, zPos);
+    const sideGlass = new THREE.Mesh(new THREE.BoxGeometry(sideLen - 0.4, 1.25, 0.06), glassPaneMat);
+    sideGlass.position.set(sideCenterX, deckH + 0.95 + 0.625, zPos);
+    bldGroup.add(lowWall, highWall, midPillar, backPillar, sideGlass);
   });
-  const winMesh = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.15, 2.6), winMat);
-  winMesh.position.set(-2.02, 0.55 + 1.35, 0);
 
-  // Side Communications Window
-  const sideWin = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.85, 0.12), winMat);
-  sideWin.position.set(0.4, 0.55 + 1.45, 1.92);
+  // 3. BACK WALL (x = 3.35) & BMKG COMMAND / TELEMETRY CENTER INSIDE THE HALL
+  const backWall = new THREE.Mesh(new THREE.BoxGeometry(0.22, wallH, 4.95), wallMatInt);
+  backWall.position.set(3.35, deckH + wallH * 0.5, 0);
 
-  // Overhang Storm Roof Canopy
+  // Large Illuminated BMKG Tsunami & Safe-Zone Wall Display Screen (facing the doorway)
+  const screenBezel = new THREE.Mesh(
+    new THREE.BoxGeometry(0.08, 1.35, 2.50),
+    new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.3, metalness: 0.6 })
+  );
+  screenBezel.position.set(3.21, deckH + 1.62, 0);
+
+  const screenDisplay = new THREE.Mesh(
+    new THREE.BoxGeometry(0.04, 1.18, 2.34),
+    new THREE.MeshStandardMaterial({ color: 0x082f49, emissive: 0x0284c7, emissiveIntensity: 0.75, roughness: 0.15 })
+  );
+  screenDisplay.position.set(3.18, deckH + 1.62, 0);
+
+  // Safe-Zone Status Header Bar on Screen (Glowing Emerald)
+  const screenHeader = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.16, 2.18), trimEmeraldMat);
+  screenHeader.position.set(3.17, deckH + 2.06, 0);
+
+  // Radar Ring & Telemetry Bars on the Main Wall Screen
+  const radarRing = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.025, 8, 24), trimCyanMat);
+  radarRing.rotation.y = Math.PI / 2;
+  radarRing.position.set(3.16, deckH + 1.52, -0.52);
+  const radarCore = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), trimEmeraldMat);
+  radarCore.position.set(3.16, deckH + 1.52, -0.52);
+
+  for (let b = 0; b < 5; b++) {
+    const barH = 0.22 + (b % 3) * 0.14;
+    const bar = new THREE.Mesh(
+      new THREE.BoxGeometry(0.05, barH, 0.12),
+      b === 4 ? trimEmeraldMat : trimCyanMat
+    );
+    bar.position.set(3.16, deckH + 1.22 + barH * 0.5, 0.18 + b * 0.18);
+    bldGroup.add(bar);
+  }
+
+  // Operations Console Desk & Dual Operator Monitors in front of the Back Wall
+  const deskTop = new THREE.Mesh(
+    new THREE.BoxGeometry(0.75, 0.08, 2.10),
+    new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.3 })
+  );
+  deskTop.position.set(2.45, deckH + 0.82, 0);
+  const deskBase = new THREE.Mesh(
+    new THREE.BoxGeometry(0.55, 0.80, 1.80),
+    new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.7 })
+  );
+  deskBase.position.set(2.50, deckH + 0.40, 0);
+
+  const monL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.34, 0.55), trimCyanMat);
+  monL.position.set(2.38, deckH + 1.05, -0.42);
+  monL.rotation.y = 0.18;
+  const monR = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.34, 0.55), trimEmeraldMat);
+  monR.position.set(2.38, deckH + 1.05, 0.42);
+  monR.rotation.y = -0.18;
+
+  // 4. INTERIOR EVACUATION SEATING BENCHES & FIRST-AID / SUPPLY STATION
+  const benchSeatMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.65, metalness: 0.08 });
+  [-1.58, 1.58].forEach(zSide => {
+    [-0.65, 0.95].forEach(xBench => {
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.07, 0.46), benchSeatMat);
+      seat.position.set(xBench, deckH + 0.46, zSide);
+      const leg1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.44, 0.42), steelFrameMat);
+      leg1.position.set(xBench - 0.50, deckH + 0.22, zSide);
+      const leg2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.44, 0.42), steelFrameMat);
+      leg2.position.set(xBench + 0.50, deckH + 0.22, zSide);
+      bldGroup.add(seat, leg1, leg2);
+    });
+  });
+
+  // First-Aid Medical Cabinet on Left Interior Wall
+  const medBox = new THREE.Mesh(
+    new THREE.BoxGeometry(0.55, 0.55, 0.16),
+    new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3 })
+  );
+  medBox.position.set(0.15, deckH + 1.55, -2.22);
+  const medCrossH = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.08, 0.04), trimEmeraldMat);
+  medCrossH.position.set(0.15, deckH + 1.55, -2.12);
+  const medCrossV = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.28, 0.04), trimEmeraldMat);
+  medCrossV.position.set(0.15, deckH + 1.55, -2.12);
+
+  // 5. OVERHANG ROOF CANOPY, WARM LED CEILING PANELS & INTERIOR POINT LIGHT
   const roofMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(5.4, 0.22, 4.4),
+    new THREE.BoxGeometry(6.2, 0.22, 5.4),
     new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.50, metalness: 0.20 })
   );
-  roofMesh.position.set(0.4, 0.55 + 2.55, 0);
+  roofMesh.position.set(0.6, deckH + wallH + 0.11, 0);
+
+  const ceilingLightMat = new THREE.MeshStandardMaterial({
+    color: 0xfffbeb,
+    emissive: 0xfde68a,
+    emissiveIntensity: 0.95,
+    roughness: 0.2
+  });
+  [-0.9, 0.6, 2.1].forEach(lx => {
+    const lightStrip = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.05, 2.8), ceilingLightMat);
+    lightStrip.position.set(lx, deckH + wallH - 0.03, 0);
+    bldGroup.add(lightStrip);
+  });
+
+  const interiorLight = new THREE.PointLight(0xfff7ed, 2.2, 12);
+  interiorLight.position.set(0.8, deckH + 2.35, 0);
+  bldGroup.add(interiorLight);
 
   // Rooftop Photovoltaic Solar Panels
   const solarMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.15, metalness: 0.85, emissive: 0x001529, emissiveIntensity: 0.2 });
-  const solar1 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.08, 3.2), solarMat);
-  solar1.position.set(-0.6, 0.55 + 2.72, 0);
+  const solar1 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.08, 3.6), solarMat);
+  solar1.position.set(-0.5, deckH + wallH + 0.26, 0);
   solar1.rotation.z = -0.08;
-  const solar2 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.08, 3.2), solarMat);
-  solar2.position.set(1.4, 0.55 + 2.72, 0);
+  const solar2 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.08, 3.6), solarMat);
+  solar2.position.set(1.7, deckH + wallH + 0.26, 0);
   solar2.rotation.z = -0.08;
-
-  // Green Emergency Evacuation Cross Emblem (+)
-  const crossMat = new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 0.85 });
-  const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.22, 0.06), crossMat);
-  const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.72, 0.06), crossMat);
-  crossH.position.set(-2.04, 0.55 + 2.22, 0);
-  crossV.position.set(-2.04, 0.55 + 2.22, 0);
 
   // C. BMKG Telecommunication & Early Warning Lattice Mast
   const mastGroup = new THREE.Group();
-  mastGroup.position.set(2.4, 0.55, 1.4);
+  mastGroup.position.set(3.2, deckH, 2.8);
   const mastLegGeo = new THREE.CylinderGeometry(0.04, 0.05, 5.8, 6);
   const mastMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.40, metalness: 0.75 });
   const mastLegs = [[-0.3, -0.3], [0.3, -0.3], [0.3, 0.3], [-0.3, 0.3]];
@@ -2168,7 +2359,6 @@ void main(){
     brace.position.y = b * 1.15;
     mastGroup.add(brace);
   }
-  // Parabolic Satellite Telemetry Dish pointing seaward
   const dish = new THREE.Mesh(
     new THREE.CylinderGeometry(0.55, 0.12, 0.22, 16),
     new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3, metalness: 0.6 })
@@ -2178,11 +2368,20 @@ void main(){
   dish.position.set(-0.2, 4.6, -0.2);
   mastGroup.add(dish);
 
-  // Position summit beacon at the apex of the communication mast
-  beacon.position.set(41.6 + 2.4, sy + 0.55 + 5.85, -8.6 + 1.4);
+  // Position summit beacon above the shelter entrance/roof
+  beacon.position.set(41.6 + 3.2, sy + deckH + 5.85, -8.6 + 2.8);
 
-  bldGroup.add(bldWall, winMesh, sideWin, roofMesh, solar1, solar2, crossH, crossV);
-  shelterGroup.add(deckMesh, curbMesh, step1, step2, railingGroup, bldGroup, mastGroup);
+  bldGroup.add(
+    intFloor, floorGuideL, floorGuideR,
+    frontWallLeft, frontWallRight, frontWallLintel,
+    jambL, jambR, lintelGlow, entranceCanopy,
+    leftDoor, rightDoor, crossH, crossV,
+    backWall, screenBezel, screenDisplay, screenHeader, radarRing, radarCore,
+    deskTop, deskBase, monL, monR,
+    medBox, medCrossH, medCrossV,
+    roofMesh, solar1, solar2
+  );
+  shelterGroup.add(deckMesh, step1, step2, step3, stepGlow1, stepGlow2, railingGroup, bldGroup, mastGroup);
   landGroup.add(shelterGroup);
 
   // ---- 5. Crisp Shoreline Wave Splash (Lightweight, zero-lag 110 droplets) ----

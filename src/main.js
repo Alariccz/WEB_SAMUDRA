@@ -123,7 +123,7 @@ stage.innerHTML = `
     </div>
 
     <div class="hud">
-      <label class="hud__slider">Waktu <input id="tod" type="range" min="0" max="1" step=".01" value=".5"></label>
+      <label class="hud__slider">Waktu <input id="tod" type="range" min="0" max="1" step=".01" value=".36"></label>
       <button class="hud__btn" id="risk" aria-pressed="true">Zona risiko</button>
     </div>
 
@@ -513,8 +513,9 @@ const sceneNavBtns = Array.from(document.querySelectorAll('.scene-nav__btn'));
 
 function scrollToScene(n) {
   const s = document.querySelector('.stage');
+  const ratio = n === 2 ? 0.96 : (n + 0.25) / 3;
   window.scrollTo({
-    top: s.offsetTop + (s.offsetHeight - window.innerHeight) * (n + 0.25) / 3,
+    top: s.offsetTop + (s.offsetHeight - window.innerHeight) * ratio,
     behavior: 'smooth'
   });
 }
@@ -601,12 +602,17 @@ canvas.addEventListener('click', () => {
 });
 
 // ===== SCROLL PROGRESS =====
+let isStageVisible = true;
 function fromScroll() {
-  if (homeView.style.display === 'none') return;
+  if (homeView.style.display === 'none') {
+    isStageVisible = false;
+    return;
+  }
   const s = document.querySelector('.stage');
   if (!s || s.offsetParent === null) return;
   const r = s.getBoundingClientRect();
   const vh = window.innerHeight || document.documentElement.clientHeight;
+  isStageVisible = r.bottom > -80 && r.top < vh + 80;
   const q = -r.top / Math.max(1, (r.height - vh));
   threeCtx.setState({ pt: isFinite(q) ? Math.max(0, Math.min(1, q)) : 0 });
 }
@@ -639,29 +645,33 @@ let dispScale = 0;
 
 const A = new THREE.Vector3(), B = new THREE.Vector3();
 
-// ===== EVACUATION ROUTE FIRST-PERSON WALKING POV =====
+// ===== EVACUATION ROUTE FIRST-PERSON WALKING POV (THROUGH SHELTER DOOR & INTO INTERIOR) =====
 function getEvacWalkPose(u) {
   if (!curve) return null;
-  const clampedU = Math.max(0.005, Math.min(0.96, u));
+  const clampedU = Math.max(0.005, Math.min(0.992, u));
   const p = curve.getPoint(clampedU);
-  const groundY = th ? th(p.x, p.z) : p.y;
+  // p.y on curve already includes getWalkSurfaceY(x, z) + 0.05 (trail + shelter ramp + interior floor)
+  const floorY = p.y - 0.05;
 
-  // Eye position: ~1.80m above ground surface
-  const eyePos = new THREE.Vector3(p.x, groundY + 1.80, p.z);
+  // Eye position: ~1.62m above walking surface (clears the 2.22m doorway lintel cleanly)
+  const eyePos = new THREE.Vector3(p.x, floorY + 1.62, p.z);
 
   // Look target ahead along the curve
-  const lookDistU = Math.min(0.995, clampedU + 0.065);
+  const lookDistU = Math.min(0.998, clampedU + 0.065);
   const lookP = curve.getPoint(lookDistU);
-  const lookGroundY = th ? th(lookP.x, lookP.z) : lookP.y;
+  const lookFloorY = lookP.y - 0.05;
 
-  // Forward look point with slight uphill gaze angle (+0.45m above eye level)
-  const lookTarget = new THREE.Vector3(lookP.x, lookGroundY + 2.25, lookP.z);
+  // Forward look point along the trail
+  const lookTarget = new THREE.Vector3(lookP.x, lookFloorY + 1.68, lookP.z);
 
-  // When approaching summit shelter, gaze up at the summit shelter beacon
-  if (clampedU > 0.75) {
-    const shelterTarget = new THREE.Vector3(41.6, (th ? th(41.6, -8.6) : 15.5) + 3.2, -8.6);
-    const topBlend = Math.min(1.0, (clampedU - 0.75) / 0.20);
-    lookTarget.lerp(shelterTarget, topBlend * 0.75);
+  // When approaching the summit plaza (u > 0.68), align gaze straight through the open shelter doorway
+  // into the interior BMKG Command & Rescue Hall at (44.8, sy + 0.45 + 1.55, -8.6)
+  if (clampedU > 0.68) {
+    const sy = th ? th(41.6, -8.6) : 18.8;
+    const interiorTarget = new THREE.Vector3(44.8, sy + 0.45 + 1.55, -8.6);
+    const doorBlend = Math.min(1.0, (clampedU - 0.68) / 0.20);
+    const smoothDoorBlend = doorBlend * doorBlend * (3 - 2 * doorBlend);
+    lookTarget.lerp(interiorTarget, smoothDoorBlend);
   }
 
   return { eyePos, lookTarget };
@@ -673,6 +683,9 @@ function loop() {
   const now = performance.now();
   const dt = Math.min((now - lastTime) / 1000, 0.05);
   lastTime = now;
+
+  if (!isStageVisible || document.hidden) return;
+
   const t = U.uT.value + dt * (matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.25 : 1);
   const st = threeCtx.getState();
 
@@ -742,16 +755,17 @@ function loop() {
   const smoothBlend = blendToWalk * blendToWalk * (3 - 2 * blendToWalk);
 
   if (smoothBlend > 0) {
-    // Walking progress along the curve (starts at beach x3=1.65 up to shelter at x3=2.95)
-    const walkProg = Math.max(0, Math.min(1.0, (x3 - 1.65) / 1.30));
-    const walkU = 0.02 + walkProg * 0.92;
+    // Walking progress along the curve (starts at beach x3=1.60, enters through shelter doorway, and stops inside room at x3=2.92)
+    const walkProg = Math.max(0, Math.min(1.0, (x3 - 1.60) / 1.32));
+    const walkU = 0.02 + walkProg * 0.972;
     const walkPose = getEvacWalkPose(walkU);
 
     if (walkPose) {
-      // Natural walking footsteps head-bob
+      // Natural walking footsteps head-bob (smoothly settles to 0 once inside the shelter interior)
+      const indoorCalm = 1.0 - Math.max(0, Math.min(1.0, (walkU - 0.88) / 0.09));
       const walkFreq = walkU * 75.0;
-      const stepBob = Math.abs(Math.sin(walkFreq)) * 0.035 * smoothBlend;
-      const stepRoll = Math.sin(walkFreq * 0.5) * 0.012 * smoothBlend;
+      const stepBob = Math.abs(Math.sin(walkFreq)) * 0.035 * smoothBlend * indoorCalm;
+      const stepRoll = Math.sin(walkFreq * 0.5) * 0.012 * smoothBlend * indoorCalm;
 
       const walkCamPos = walkPose.eyePos.clone();
       walkCamPos.y += stepBob;
@@ -787,8 +801,8 @@ function loop() {
   U.uTod.value = lerp(U.uTod.value, todVal, 1 - Math.exp(-dt * 5));
   const T = U.uTod.value;
   const { sun, amb } = threeCtx;
-  if (sun) { sun.position.set(-15, Math.max(2, 30 * (0.55 - 0.51 * Math.min(T * 2, 1) - Math.max(T - 0.5, 0) * 0.6)), -24); sun.intensity = Math.max(0.2, 1.3 * (1 - T * 0.85)); }
-  if (amb) amb.intensity = 0.95 - 0.55 * T;
+  if (sun) { sun.position.set(-15, Math.max(2, 30 * (0.55 - 0.51 * Math.min(T * 2, 1) - Math.max(T - 0.5, 0) * 0.6)), -24); sun.intensity = Math.max(0.3, 1.45 * (1 - T * 0.7)); }
+  if (amb) amb.intensity = 1.1 - 0.35 * T;
 
   // Tsunami wave
   const front = -26 + (t * 6) % 56;
