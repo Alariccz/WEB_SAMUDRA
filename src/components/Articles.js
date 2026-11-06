@@ -1,1979 +1,745 @@
 import { fetchArticles, fetchArticleById } from '../api.js';
 
-// PALET WARNA (Inspirasi Dribbble Lodge / Nature Retreat)
-// Deep navy: #060E12 | Ocean blue: #2B5161 | Muted blue: #58818F
-// White: #FEFEFE | Soft grey-blue: #A5B5BC | Warm earthy accent: #BB4019
+// SVG Graphics matching the Morgana / SAMUDRA aesthetic
+const SVGS = {
+  hero: `
+    <svg viewBox="0 0 540 540" fill="none" xmlns="http://www.w3.org/2000/svg" class="morgana-hero__svg">
+      <defs>
+        <radialGradient id="heroGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#00d2ff" stop-opacity="0.25"/>
+          <stop offset="60%" stop-color="#033866" stop-opacity="0.12"/>
+          <stop offset="100%" stop-color="#030814" stop-opacity="0"/>
+        </radialGradient>
+        <pattern id="dotPattern" width="16" height="16" patternUnits="userSpaceOnUse">
+          <circle cx="8" cy="8" r="1.4" fill="#00d2ff" opacity="0.3"/>
+        </pattern>
+        <linearGradient id="barGrad1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#38bdf8"/>
+          <stop offset="100%" stop-color="#0284c7"/>
+        </linearGradient>
+        <linearGradient id="barGrad2" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0c4a6e"/>
+          <stop offset="100%" stop-color="#031b33"/>
+        </linearGradient>
+      </defs>
+      <rect width="540" height="540" fill="#051021"/>
+      <rect width="540" height="540" fill="url(#heroGlow)"/>
+      <rect width="540" height="540" fill="url(#dotPattern)"/>
+      <circle cx="270" cy="270" r="205" stroke="#00d2ff" stroke-width="40" stroke-opacity="0.8" stroke-dasharray="14 6" fill="none"/>
+      <circle cx="270" cy="270" r="205" stroke="#051021" stroke-width="12" fill="none"/>
+      <polygon points="125,230 185,210 185,410 125,430" fill="url(#barGrad1)"/>
+      <polygon points="185,210 210,225 210,420 185,410" fill="url(#barGrad2)"/>
+      <polygon points="125,230 150,215 210,225 185,210" fill="#bae6fd"/>
+      <polygon points="220,260 275,240 275,410 220,430" fill="url(#barGrad1)"/>
+      <polygon points="275,240 300,255 300,420 275,410" fill="url(#barGrad2)"/>
+      <polygon points="220,260 245,245 300,255 275,240" fill="#bae6fd"/>
+      <polygon points="310,300 360,280 360,410 310,430" fill="url(#barGrad1)"/>
+      <polygon points="360,280 382,295 382,420 360,410" fill="url(#barGrad2)"/>
+      <polygon points="310,300 332,285 382,295 360,280" fill="#bae6fd"/>
+    </svg>
+  `,
+  waveSlices: `
+    <svg viewBox="0 0 200 130" fill="none" xmlns="http://www.w3.org/2000/svg" class="morgana-thumb__svg">
+      <rect width="200" height="130" fill="#051224"/>
+      <path d="M10 25h180M10 50h180M10 75h180M10 100h180" stroke="#00d2ff" stroke-opacity="0.12" stroke-width="1"/>
+      <g transform="translate(15, 12)">
+        <polygon points="55,18 150,18 130,78 35,78" fill="#00d2ff" fill-opacity="0.12" stroke="#00d2ff" stroke-width="1.8"/>
+        <polygon points="45,32 140,32 120,92 25,92" fill="#00d2ff" fill-opacity="0.18" stroke="#00d2ff" stroke-width="1.8"/>
+        <polygon points="35,46 130,46 110,106 15,106" fill="#00d2ff" fill-opacity="0.28" stroke="#38bdf8" stroke-width="2"/>
+        <path d="M35 46 Q 75 16 130 46" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+        <path d="M25 60 Q 65 30 120 60" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+      </g>
+    </svg>
+  `,
+  controlCenter: `
+    <svg viewBox="0 0 200 130" fill="none" xmlns="http://www.w3.org/2000/svg" class="morgana-thumb__svg">
+      <rect width="200" height="130" fill="#051224"/>
+      <circle cx="100" cy="65" r="45" stroke="#00d2ff" stroke-opacity="0.18" stroke-dasharray="3 3"/>
+      <circle cx="100" cy="65" r="25" stroke="#00d2ff" stroke-opacity="0.25"/>
+      <line x1="100" y1="10" x2="100" y2="120" stroke="#00d2ff" stroke-opacity="0.15"/>
+      <line x1="45" y1="65" x2="155" y2="65" stroke="#00d2ff" stroke-opacity="0.15"/>
+      <path d="M10 65 L45 65 L55 45 L65 85 L75 32 L85 98 L95 52 L105 76 L115 65 L190 65" stroke="#00d2ff" stroke-width="2.2" fill="none"/>
+      <circle cx="85" cy="98" r="3.5" fill="#ffffff"/>
+      <rect x="135" y="16" width="50" height="32" rx="3" fill="#082b4a" stroke="#00d2ff" stroke-width="1"/>
+      <path d="M142 27h36M142 36h22" stroke="#00d2ff" stroke-width="1.2" stroke-opacity="0.8"/>
+    </svg>
+  `,
+  matrixBars: `
+    <svg viewBox="0 0 200 130" fill="none" xmlns="http://www.w3.org/2000/svg" class="morgana-thumb__svg">
+      <rect width="200" height="130" fill="#051224"/>
+      <g transform="translate(18, 16)">
+        <rect x="8"  y="55" width="15" height="48" fill="#062544" stroke="#00d2ff" stroke-width="1"/>
+        <rect x="30" y="40" width="15" height="63" fill="#083159" stroke="#00d2ff" stroke-width="1.2"/>
+        <rect x="52" y="24" width="15" height="79" fill="#0d4782" stroke="#00d2ff" stroke-width="1.4"/>
+        <rect x="74" y="10" width="15" height="93" fill="#0284c7" stroke="#38bdf8" stroke-width="1.8"/>
+        <rect x="96" y="30" width="15" height="73" fill="#0d4782" stroke="#00d2ff" stroke-width="1.4"/>
+        <rect x="118" y="46" width="15" height="57" fill="#083159" stroke="#00d2ff" stroke-width="1"/>
+        <rect x="140" y="60" width="15" height="43" fill="#062544" stroke="#00d2ff" stroke-width="1"/>
+      </g>
+    </svg>
+  `,
+  radarDial: `
+    <svg viewBox="0 0 200 130" fill="none" xmlns="http://www.w3.org/2000/svg" class="morgana-thumb__svg">
+      <rect width="200" height="130" fill="#051224"/>
+      <circle cx="100" cy="65" r="48" stroke="#00d2ff" stroke-opacity="0.3" stroke-width="1.5"/>
+      <circle cx="100" cy="65" r="32" stroke="#00d2ff" stroke-opacity="0.4" stroke-width="1"/>
+      <circle cx="100" cy="65" r="16" stroke="#00d2ff" stroke-opacity="0.5" stroke-width="1"/>
+      <path d="M100 65 L135 30 A 48 48 0 0 0 100 17 Z" fill="#00d2ff" fill-opacity="0.3"/>
+      <line x1="100" y1="65" x2="135" y2="30" stroke="#38bdf8" stroke-width="2"/>
+    </svg>
+  `,
+  satelliteOrbit: `
+    <svg viewBox="0 0 200 130" fill="none" xmlns="http://www.w3.org/2000/svg" class="morgana-thumb__svg">
+      <rect width="200" height="130" fill="#051224"/>
+      <ellipse cx="100" cy="65" rx="75" ry="32" stroke="#00d2ff" stroke-width="1.5" stroke-opacity="0.4" transform="rotate(-15 100 65)"/>
+      <circle cx="100" cy="65" r="16" fill="#0b3866" stroke="#00d2ff" stroke-width="2"/>
+      <circle cx="145" cy="45" r="4.5" fill="#ffffff" stroke="#00d2ff" stroke-width="2"/>
+      <line x1="145" y1="45" x2="100" y2="65" stroke="#00d2ff" stroke-width="1" stroke-dasharray="3 3"/>
+    </svg>
+  `
+};
 
-// KONFIGURASI PAGINATION
-const ITEMS_PER_PAGE = 8;
-let currentCatalogPage = 1;
+// Lucide ExternalLink icon (12x12) matching InfoCardDemo
+const EXTERNAL_LINK_ICON = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="info-card__ext-icon">
+    <path d="M15 3h6v6"/>
+    <path d="M10 14 21 3"/>
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+  </svg>
+`;
 
-// MENGAMANKAN TEKS DARI API
-function escapeHTML(value = '') {
-  return String(value).replace(/[&<>"']/g, char => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  })[char]);
-}
-
-// MEMASTIKAN URL GAMBAR AMAN
-function safeImageUrl(url) {
-  if (!url) return '';
-
-  try {
-    const parsed = new URL(url, window.location.origin);
-
-    if (['http:', 'https:'].includes(parsed.protocol)) {
-      return escapeHTML(parsed.href);
-    }
-  } catch {
-    return '';
-  }
-
-  return '';
-}
-
-// DATA ARTIKEL CADANGAN (Hanya digunakan jika koneksi API gagal total)
-const DEFAULT_GUIDES = [
-  {
-    id: 'default-guide-1',
-    category: 'Edukasi Tsunami',
-    title: 'Memahami Gempa Megathrust dan Potensi Tsunami',
-    excerpt: 'Mengenal proses terjadinya gempa megathrust serta kaitannya dengan potensi terbentuknya gelombang tsunami.',
-    content: `Gempa megathrust merupakan gempa bumi yang terjadi pada zona pertemuan lempeng tektonik yang saling menunjam.
-
-Jika gempa bawah laut menyebabkan perubahan vertikal dasar laut, perpindahan massa air dapat menghasilkan gelombang tsunami.
-
-Masyarakat yang tinggal di wilayah pesisir perlu memahami risiko bencana, mengenali tanda-tanda alam, serta mengetahui jalur evakuasi terdekat.
-
-Informasi potensi tsunami dan peringatan dini harus selalu merujuk pada informasi resmi BMKG.`,
-    authorName: 'Tim Edukasi SAMUDRA',
-    authorRole: 'EDUKASI KEBENCANAAN',
-    readTime: 'Edukasi'
-  },
-  {
-    id: 'default-guide-2',
-    category: 'Panduan Evakuasi',
-    title: 'Langkah Cepat Menyelamatkan Diri Saat Ancaman Tsunami',
-    excerpt: 'Ketahui tindakan yang harus dilakukan ketika merasakan gempa kuat di wilayah pesisir.',
-    content: `Jika merasakan gempa kuat atau berlangsung lama di wilayah pesisir, segera lakukan perlindungan diri ketika guncangan terjadi.
-
-Setelah guncangan berhenti, segera menjauh dari pantai dan menuju tempat yang lebih tinggi atau lokasi evakuasi yang telah ditentukan.
-
-Jangan menunggu sirene jika terdapat tanda alami tsunami. Ikuti arahan petugas dan informasi resmi dari BMKG.`,
-    authorName: 'Tim Mitigasi SAMUDRA',
-    authorRole: 'PANDUAN KESELAMATAN',
-    readTime: 'Panduan'
-  },
-  {
-    id: 'default-guide-3',
-    category: 'Kesiapsiagaan',
-    title: 'Persiapkan Tas Siaga Bencana untuk Keluarga',
-    excerpt: 'Kenali perlengkapan penting yang sebaiknya tersedia untuk menghadapi kondisi darurat.',
-    content: `Tas siaga bencana merupakan perlengkapan yang disiapkan untuk membantu kebutuhan dasar ketika terjadi keadaan darurat.
-
-Beberapa perlengkapan yang dapat disiapkan antara lain air minum, makanan tahan lama, obat-obatan pribadi, senter, baterai, peluit, pakaian, dokumen penting, dan perlengkapan kebersihan.
-
-Simpan tas di tempat yang mudah dijangkau dan pastikan seluruh anggota keluarga mengetahui lokasinya.`,
-    authorName: 'Tim Edukasi SAMUDRA',
-    authorRole: 'KESIAPSIAGAAN',
-    readTime: 'Tips'
-  },
-  {
-    id: 'default-guide-4',
-    category: 'Informasi Bencana',
-    title: 'Pentingnya Mengenali Jalur Evakuasi di Wilayah Pesisir',
-    excerpt: 'Jalur evakuasi membantu masyarakat bergerak menuju lokasi aman ketika terjadi ancaman tsunami.',
-    content: `Jalur evakuasi merupakan rute yang digunakan untuk mencapai lokasi aman ketika terjadi bencana.
-
-Masyarakat di wilayah pesisir perlu mengetahui jalur evakuasi, titik kumpul, dan lokasi tempat yang lebih tinggi.
-
-Pelajari rute sebelum bencana terjadi agar tidak kebingungan ketika harus melakukan evakuasi.`,
-    authorName: 'Tim Mitigasi SAMUDRA',
-    authorRole: 'INFORMASI KEBENCANAAN',
-    readTime: 'Edukasi'
-  },
-  {
-    id: 'default-guide-5',
-    category: 'Teknologi Kebencanaan',
-    title: 'Bagaimana Sistem Peringatan Dini Tsunami Bekerja?',
-    excerpt: 'Mengenal peran teknologi pemantauan gempa dan sistem peringatan dini tsunami.',
-    content: `Sistem peringatan dini tsunami menggunakan informasi gempa bumi dan pemantauan kondisi laut untuk memperkirakan potensi tsunami.
-
-BMKG menganalisis parameter gempa dan informasi pendukung untuk menentukan apakah peringatan tsunami perlu disampaikan kepada masyarakat.
-
-Informasi resmi perlu diperhatikan agar masyarakat dapat mengambil tindakan yang tepat.`,
-    authorName: 'Tim Edukasi SAMUDRA',
-    authorRole: 'TEKNOLOGI KEBENCANAAN',
-    readTime: 'Edukasi'
-  },
-  {
-    id: 'default-guide-6',
-    category: 'Lingkungan Pesisir',
-    title: 'Peran Ekosistem Pesisir dalam Mengurangi Risiko Bencana',
-    excerpt: 'Mengenal fungsi mangrove dan ekosistem pesisir dalam mendukung perlindungan wilayah pantai.',
-    content: `Ekosistem pesisir seperti hutan mangrove dan terumbu karang memiliki peran penting dalam menjaga keseimbangan lingkungan.
-
-Mangrove dapat membantu mengurangi energi gelombang dalam kondisi tertentu serta memberikan perlindungan alami bagi wilayah pesisir.
-
-Pelestarian lingkungan pesisir perlu dilakukan bersama dengan upaya mitigasi dan kesiapsiagaan masyarakat.`,
-    authorName: 'Tim Edukasi SAMUDRA',
-    authorRole: 'LINGKUNGAN PESISIR',
-    readTime: 'Edukasi'
-  },
-  {
-    id: 'default-guide-7',
-    category: 'Pemulihan Komunitas',
-    title: 'Tahapan Pemulihan dan Dukungan Pasca Bencana Tsunami',
-    excerpt: 'Langkah pemulihan komunitas pesisir dan pentingnya pendampingan psikososial bagi penyintas.',
-    content: `Pasca bencana tsunami, pemulihan fisik dan mental menjadi prioritas penting bagi masyarakat terdampak.
-
-Dukungan fasilitas medis darurat, air bersih, serta pemulihan tempat tinggal darurat harus segera dilaksanakan.
-
-Pendampingan psikososial juga penting untuk membantu masyarakat mengatasi trauma dan membangun kembali ketangguhan wilayah pesisir.`,
-    authorName: 'Tim Edukasi SAMUDRA',
-    authorRole: 'PEMULIHAN KEBENCANAAN',
-    readTime: 'Edukasi'
-  }
-];
-
-// MAIN RENDER
 export function renderArticles(container) {
   const section = document.createElement('section');
-
   section.id = 'artikel';
-  section.className = 'articles-section';
+  section.className = 'morgana-section';
 
   section.innerHTML = `
-    <style>
-      #artikel.articles-section {
-        position: relative;
-        width: 100%;
-        background-color: #060E12;
-        color: #FEFEFE;
-        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        overflow: hidden;
-        padding: 0;
-        border-top: 1px solid rgba(88, 129, 143, 0.22);
-      }
-
-      #artikel.articles-section::before {
-        content: '';
-        position: absolute;
-        top: -1px;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: linear-gradient(90deg, transparent 0%, rgba(88, 129, 143, 0.45) 50%, transparent 100%);
-        opacity: 0.5;
-        pointer-events: none;
-      }
-
-      .art-container {
-        width: 100%;
-        max-width: 1240px;
-        margin: 0 auto;
-        padding: 0 clamp(20px, 4vw, 48px);
-        box-sizing: border-box;
-      }
-
-      /* EYEBROW / BADGES */
-      .art-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: #58818F;
-        margin-bottom: 12px;
-      }
-
-      .art-eyebrow-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background-color: #BB4019;
-        display: inline-block;
-      }
-
-      .art-badge-cat {
-        display: inline-block;
-        font-size: 10.5px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: #58818F;
-      }
-
-      .art-date-text {
-        font-size: 11.5px;
-        color: #A5B5BC;
-        white-space: nowrap;
-      }
-
-      /* HERO INTRO BANNER */
-      .art-hero-intro {
-        padding: clamp(64px, 8vw, 96px) 0 clamp(36px, 5vw, 56px);
-      }
-
-      .art-hero-intro-grid {
-        display: grid;
-        grid-template-columns: 1.15fr 0.85fr;
-        gap: clamp(36px, 5vw, 64px);
-        align-items: center;
-      }
-
-      .art-hero-title {
-        font-size: clamp(34px, 4.4vw, 54px);
-        font-weight: 700;
-        line-height: 1.15;
-        letter-spacing: -0.025em;
-        color: #FEFEFE;
-        margin: 0 0 18px;
-      }
-
-      .art-hero-title-accent {
-        color: #58818F;
-      }
-
-      .art-hero-desc {
-        font-size: clamp(15px, 1.2vw, 16px);
-        line-height: 1.8;
-        color: #A5B5BC;
-        max-width: 520px;
-        margin: 0 0 32px;
-      }
-
-      .art-btn-explore {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        background-color: #BB4019;
-        color: #FEFEFE;
-        padding: 14px 26px;
-        border-radius: 999px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-        border: 1px solid rgba(254, 254, 254, 0.15);
-        box-shadow: 0 8px 20px -4px rgba(187, 64, 25, 0.35);
-        transition: all 0.25s ease;
-        cursor: pointer;
-      }
-
-      .art-btn-explore:hover {
-        background-color: #a33512;
-        transform: translateY(-2px);
-        box-shadow: 0 12px 24px -4px rgba(187, 64, 25, 0.45);
-      }
-
-      .art-btn-explore svg {
-        transition: transform 0.25s ease;
-      }
-
-      .art-btn-explore:hover svg {
-        transform: translateX(4px);
-      }
-
-      .art-hero-media {
-        position: relative;
-        border-radius: 24px;
-        overflow: hidden;
-        border: 1px solid rgba(88, 129, 143, 0.25);
-        background-color: #0B171D;
-        box-shadow: 0 20px 48px -12px rgba(6, 14, 18, 0.8);
-      }
-
-      .art-hero-img {
-        width: 100%;
-        height: 360px;
-        object-fit: cover;
-        display: block;
-        filter: brightness(0.85) contrast(1.05);
-        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      .art-hero-media:hover .art-hero-img {
-        transform: scale(1.03);
-      }
-
-      .art-hero-overlay-card {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        right: 20px;
-        padding: 18px 22px;
-        background: rgba(6, 14, 18, 0.85);
-        border: 1px solid rgba(165, 181, 188, 0.18);
-        border-radius: 16px;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
-      }
-
-      .art-overlay-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 10.5px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        color: #58818F;
-        margin-bottom: 6px;
-      }
-
-      .art-tag-pulse {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background-color: #BB4019;
-      }
-
-      .art-overlay-title {
-        font-size: 14.5px;
-        font-weight: 600;
-        color: #FEFEFE;
-        line-height: 1.45;
-        margin: 0;
-      }
-
-      /* SECTION 1: BERITA TERKINI (EDITORIAL 3-KOLOM) */
-      .art-featured-section {
-        padding: clamp(56px, 7vw, 84px) 0;
-        background: linear-gradient(180deg, rgba(11, 23, 29, 0.45) 0%, rgba(6, 14, 18, 0.8) 100%);
-        border-top: 1px solid rgba(88, 129, 143, 0.16);
-        border-bottom: 1px solid rgba(88, 129, 143, 0.16);
-        scroll-margin-top: 80px;
-      }
-
-      .art-section-header {
-        margin-bottom: clamp(28px, 4vw, 40px);
-      }
-
-      .art-section-title {
-        font-size: clamp(26px, 3.5vw, 36px);
-        font-weight: 700;
-        color: #FEFEFE;
-        letter-spacing: -0.02em;
-        margin: 0 0 10px;
-      }
-
-      .art-section-desc {
-        font-size: 15px;
-        line-height: 1.7;
-        color: #A5B5BC;
-        max-width: 620px;
-        margin: 0;
-      }
-
-      /* 3-COLUMN EDITORIAL GRID */
-      .art-featured-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.85fr) minmax(0, 1.05fr);
-        gap: 24px;
-        align-items: stretch;
-      }
-
-      .art-col-left,
-      .art-col-right {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        justify-content: space-between;
-      }
-
-      /* SMALL CARD (KOLOM KIRI & KANAN) */
-      .art-small-card {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.2);
-        border-radius: 18px;
-        padding: 14px;
-        text-decoration: none;
-        color: inherit;
-        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-        box-shadow: 0 6px 18px -4px rgba(6, 14, 18, 0.45);
-        cursor: pointer;
-        flex: 1;
-      }
-
-      .art-small-card:hover {
-        transform: translateY(-3px);
-        border-color: rgba(165, 181, 188, 0.4);
-        box-shadow: 0 12px 28px -6px rgba(6, 14, 18, 0.65);
-      }
-
-      .art-small-thumb {
-        width: 90px;
-        height: 90px;
-        border-radius: 12px;
-        overflow: hidden;
-        flex-shrink: 0;
-        background: #10242D;
-        position: relative;
-      }
-
-      .art-small-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        filter: brightness(0.85);
-        transition: transform 0.35s ease;
-      }
-
-      .art-small-card:hover .art-small-img {
-        transform: scale(1.06);
-      }
-
-      .art-small-content {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-
-      .art-small-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: #FEFEFE;
-        line-height: 1.4;
-        margin: 0;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-
-      /* MAIN HERO CARD (KOLOM TENGAH) */
-      .art-col-center {
-        display: flex;
-      }
-
-      .art-main-card {
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.28);
-        border-radius: 22px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        box-shadow: 0 16px 40px -8px rgba(6, 14, 18, 0.7);
-        transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
-      }
-
-      .art-main-card:hover {
-        transform: translateY(-4px);
-        border-color: rgba(165, 181, 188, 0.45);
-        box-shadow: 0 22px 48px -10px rgba(6, 14, 18, 0.85);
-      }
-
-      .art-main-media {
-        position: relative;
-        height: 290px;
-        background: #10242D;
-        overflow: hidden;
-      }
-
-      .art-main-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        filter: brightness(0.85);
-        transition: transform 0.45s ease;
-      }
-
-      .art-main-card:hover .art-main-img {
-        transform: scale(1.03);
-      }
-
-      .art-main-badge {
-        position: absolute;
-        top: 16px;
-        left: 16px;
-        background: rgba(6, 14, 18, 0.88);
-        border: 1px solid rgba(88, 129, 143, 0.35);
-        padding: 6px 14px;
-        border-radius: 999px;
-        font-size: 10.5px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        color: #FEFEFE;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-      }
-
-      .art-badge-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background-color: #BB4019;
-      }
-
-      .art-main-body {
-        padding: clamp(22px, 3vw, 30px);
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
-      }
-
-      .art-main-meta-top {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 12px;
-      }
-
-      .art-meta-divider {
-        color: #58818F;
-        font-size: 12px;
-      }
-
-      .art-main-title {
-        font-size: clamp(20px, 2.3vw, 28px);
-        font-weight: 700;
-        line-height: 1.35;
-        letter-spacing: -0.015em;
-        color: #FEFEFE;
-        margin: 0 0 14px;
-      }
-
-      .art-main-title-link {
-        color: inherit;
-        text-decoration: none;
-        transition: color 0.2s ease;
-      }
-
-      .art-main-title-link:hover {
-        color: #FEFEFE;
-      }
-
-      .art-main-excerpt {
-        font-size: 14.5px;
-        line-height: 1.75;
-        color: #A5B5BC;
-        margin: 0 0 24px;
-        flex-grow: 1;
-      }
-
-      .art-main-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        flex-wrap: wrap;
-        border-top: 1px solid rgba(88, 129, 143, 0.18);
-        padding-top: 18px;
-      }
-
-      .art-btn-main {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background-color: #BB4019;
-        color: #FEFEFE;
-        padding: 10px 20px;
-        border-radius: 999px;
-        font-size: 13px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.25s ease;
-        border: 1px solid rgba(254, 254, 254, 0.12);
-        cursor: pointer;
-      }
-
-      .art-btn-main:hover {
-        background-color: #a33512;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px -2px rgba(187, 64, 25, 0.4);
-      }
-
-      .art-btn-main svg {
-        transition: transform 0.25s ease;
-      }
-
-      .art-btn-main:hover svg {
-        transform: translateX(4px);
-      }
-
-      .art-author-info {
-        font-size: 12px;
-        color: #58818F;
-      }
-
-      .art-author-info strong {
-        color: #A5B5BC;
-        font-weight: 600;
-      }
-
-      /* SECTION 2: MITIGASI DAN PENGETAHUAN TERKINI (UNIFORM COMPACT GRID) */
-      .art-catalog-section {
-        padding: clamp(64px, 8vw, 96px) 0;
-        scroll-margin-top: 80px;
-      }
-
-      .art-catalog-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 22px;
-      }
-
-      .art-catalog-card {
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.2);
-        border-radius: 18px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 8px 24px -4px rgba(6, 14, 18, 0.45);
-        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-        text-decoration: none;
-        color: inherit;
-        cursor: pointer;
-        height: 100%;
-      }
-
-      .art-catalog-card:hover {
-        transform: translateY(-5px);
-        border-color: rgba(165, 181, 188, 0.4);
-        box-shadow: 0 16px 34px -6px rgba(6, 14, 18, 0.75);
-      }
-
-      .art-catalog-thumb {
-        position: relative;
-        height: 160px;
-        background: #10242D;
-        overflow: hidden;
-      }
-
-      .art-catalog-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        filter: brightness(0.85);
-        transition: transform 0.4s ease;
-      }
-
-      .art-catalog-card:hover .art-catalog-img {
-        transform: scale(1.05);
-      }
-
-      .art-catalog-badge {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        background: rgba(6, 14, 18, 0.88);
-        border: 1px solid rgba(88, 129, 143, 0.35);
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 9.5px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: #58818F;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-      }
-
-      .art-catalog-body {
-        padding: 18px;
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
-      }
-
-      .art-catalog-title {
-        font-size: 15px;
-        font-weight: 600;
-        color: #FEFEFE;
-        line-height: 1.45;
-        margin: 8px 0 16px;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        flex-grow: 1;
-      }
-
-      .art-catalog-action {
-        border-top: 1px solid rgba(88, 129, 143, 0.16);
-        padding-top: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        color: #58818F;
-        font-size: 12px;
-        font-weight: 600;
-        transition: color 0.2s ease;
-      }
-
-      .art-catalog-card:hover .art-catalog-action {
-        color: #FEFEFE;
-      }
-
-      .art-catalog-action svg {
-        transition: transform 0.25s ease, color 0.25s ease;
-      }
-
-      .art-catalog-card:hover .art-catalog-action svg {
-        transform: translateX(4px);
-        color: #BB4019;
-      }
-
-      /* PAGINATION */
-      .art-pagination {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        margin-top: 40px;
-        flex-wrap: wrap;
-      }
-
-      .art-page-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.25);
-        color: #A5B5BC;
-        padding: 8px 16px;
-        border-radius: 999px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-
-      .art-page-btn:hover:not(:disabled) {
-        background: #2B5161;
-        color: #FEFEFE;
-        border-color: rgba(165, 181, 188, 0.4);
-      }
-
-      .art-page-btn:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-      }
-
-      .art-page-numbers {
-        display: flex;
-        gap: 8px;
-      }
-
-      .art-page-num {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.25);
-        color: #A5B5BC;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-      }
-
-      .art-page-num:hover:not(.is-active) {
-        background: #2B5161;
-        color: #FEFEFE;
-      }
-
-      .art-page-num.is-active {
-        background: #BB4019;
-        border-color: #BB4019;
-        color: #FEFEFE;
-        box-shadow: 0 4px 12px rgba(187, 64, 25, 0.35);
-      }
-
-      /* FALLBACK THUMBNAILS (SVG, NO EMOJI) */
-      .art-thumb-fallback {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: radial-gradient(circle at 50% 40%, rgba(43, 81, 97, 0.35) 0%, #0B171D 70%);
-        color: #58818F;
-      }
-
-      .art-main-fallback {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        background: radial-gradient(circle at 50% 40%, rgba(43, 81, 97, 0.35) 0%, #0B171D 70%);
-      }
-
-      .art-fallback-icon-box {
-        width: 56px;
-        height: 56px;
-        border-radius: 14px;
-        background: rgba(43, 81, 97, 0.4);
-        border: 1px solid rgba(88, 129, 143, 0.35);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #58818F;
-      }
-
-      .art-fallback-label {
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        color: #58818F;
-        text-transform: uppercase;
-      }
-
-      .art-empty-box {
-        padding: 48px;
-        text-align: center;
-        color: #A5B5BC;
-        background: #0B171D;
-        border-radius: 20px;
-        border: 1px solid rgba(88, 129, 143, 0.2);
-        grid-column: 1 / -1;
-      }
-
-      /* SECTION 3: FAQ ACCORDION */
-      .art-faq-section {
-        padding: clamp(60px, 8vw, 92px) 0;
-        background: linear-gradient(180deg, rgba(11, 23, 29, 0.4) 0%, rgba(6, 14, 18, 0.8) 100%);
-        border-top: 1px solid rgba(88, 129, 143, 0.16);
-      }
-
-      .art-faq-card {
-        max-width: 820px;
-        margin: 0 auto;
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.22);
-        border-radius: 24px;
-        padding: clamp(28px, 4vw, 44px);
-        box-shadow: 0 16px 40px -8px rgba(6, 14, 18, 0.6);
-      }
-
-      .art-faq-header {
-        text-align: center;
-        margin-bottom: 32px;
-      }
-
-      .art-faq-title {
-        font-size: clamp(24px, 3.2vw, 30px);
-        font-weight: 700;
-        color: #FEFEFE;
-        margin: 0 0 10px;
-      }
-
-      .art-faq-desc {
-        color: #A5B5BC;
-        font-size: 14.5px;
-        line-height: 1.7;
-        margin: 0;
-      }
-
-      .art-faq-item {
-        border-bottom: 1px solid rgba(88, 129, 143, 0.18);
-        padding: 18px 0;
-      }
-
-      .art-faq-item:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-      }
-
-      .art-faq-trigger {
-        width: 100%;
-        border: none;
-        background: none;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        text-align: left;
-        cursor: pointer;
-        color: #FEFEFE;
-        font-size: 15.5px;
-        font-weight: 600;
-        line-height: 1.5;
-        padding: 0;
-        transition: color 0.2s ease;
-      }
-
-      .art-faq-trigger:hover {
-        color: #58818F;
-      }
-
-      .art-faq-icon {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background: rgba(43, 81, 97, 0.25);
-        border: 1px solid rgba(88, 129, 143, 0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #58818F;
-        flex-shrink: 0;
-        transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease;
-      }
-
-      .art-faq-trigger:hover .art-faq-icon {
-        background: rgba(43, 81, 97, 0.5);
-        color: #FEFEFE;
-      }
-
-      .art-faq-content {
-        color: #A5B5BC;
-        line-height: 1.8;
-        font-size: 14px;
-        padding-top: 14px;
-      }
-
-      /* SECTION 4: CTA BANNER */
-      .art-cta-section {
-        padding: 0 0 clamp(64px, 8vw, 100px);
-      }
-
-      .art-cta-card {
-        background: linear-gradient(135deg, #0B171D 0%, #10242D 100%);
-        border: 1px solid rgba(88, 129, 143, 0.25);
-        border-left: 4px solid #BB4019;
-        border-radius: 22px;
-        padding: clamp(32px, 5vw, 52px);
-        text-align: center;
-        box-shadow: 0 16px 44px -8px rgba(6, 14, 18, 0.65);
-      }
-
-      .art-cta-title {
-        font-size: clamp(22px, 3.2vw, 30px);
-        font-weight: 700;
-        color: #FEFEFE;
-        line-height: 1.35;
-        margin: 12px 0 16px;
-      }
-
-      .art-cta-desc {
-        color: #A5B5BC;
-        line-height: 1.8;
-        font-size: 15px;
-        max-width: 620px;
-        margin: 0 auto;
-      }
-
-      /* RESPONSIVE LAYOUT */
-      @media (min-width: 768px) and (max-width: 1080px) {
-        .art-featured-layout {
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
-        }
-        .art-col-center {
-          grid-column: 1 / -1;
-          order: 1;
-        }
-        .art-col-left {
-          order: 2;
-        }
-        .art-col-right {
-          order: 3;
-        }
-      }
-
-      @media (max-width: 1200px) {
-        .art-catalog-grid {
-          grid-template-columns: repeat(3, 1fr);
-        }
-      }
-
-      @media (max-width: 960px) {
-        .art-hero-intro-grid {
-          grid-template-columns: 1fr;
-          gap: 36px;
-        }
-        .art-hero-media {
-          max-width: 600px;
-        }
-      }
-
-      @media (max-width: 860px) {
-        .art-catalog-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
-
-      @media (max-width: 767px) {
-        .art-featured-layout {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-        .art-col-center {
-          order: 1;
-        }
-        .art-col-left {
-          order: 2;
-        }
-        .art-col-right {
-          order: 3;
-        }
-        .art-small-thumb {
-          width: 76px;
-          height: 76px;
-        }
-        .art-small-title {
-          font-size: 13.5px;
-        }
-      }
-
-      @media (max-width: 540px) {
-        .art-catalog-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
-
-    <main>
-      <!-- HERO BANNER -->
-      <section class="art-hero-intro">
-        <div class="art-container">
-          <div class="art-hero-intro-grid">
-            <div>
-              <div class="art-eyebrow">
-                <span class="art-eyebrow-dot"></span>
-                <span>SAMUDRA &bull; WARTA & PUBLIKASI</span>
-              </div>
-
-              <h1 class="art-hero-title">
-                Berita & Edukasi<br><span class="art-hero-title-accent">Kebencanaan Tsunami.</span>
-              </h1>
-
-              <p class="art-hero-desc">
-                Temukan informasi terkini, analisis riset geologis, dan panduan mitigasi tsunami resmi untuk meningkatkan kesiapsiagaan masyarakat di wilayah pesisir.
-              </p>
-
-              <a href="#berita" data-explore-button class="art-btn-explore">
-                <span>Jelajahi Berita</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </a>
-            </div>
-
-            <div class="art-hero-media">
-              <img
-                src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
-                alt="Pemandangan samudra dan pesisir"
-                class="art-hero-img"
-                loading="lazy"
-              />
-
-              <div class="art-hero-overlay-card">
-                <div class="art-overlay-tag">
-                  <span class="art-tag-pulse"></span>
-                  <span>SAMUDRA INFORMATION</span>
-                </div>
-
-                <p class="art-overlay-title">
-                  Satu informasi akurat, langkah lebih siap menghadapi bencana.
-                </p>
-              </div>
-            </div>
+    <!-- Top Editorial Header -->
+    <div class="morgana-header">
+      <div class="morgana-header__left">
+        <span class="morgana-eyebrow">SAMUDRA &bull; Warta &amp; Publikasi</span>
+        <h2 class="morgana-title">Berita &amp; Edukasi Tsunami</h2>
+      </div>
+      <div class="morgana-header__right">
+        <p class="morgana-lede">
+          Artikel, edukasi, dan dokumentasi mitigasi bencana resmi yang tersinkronisasi langsung dari database server SAMUDRA. Arahkan kursor pada kartu untuk melihat pratinjau visual dan baca selengkapnya.
+        </p>
+        <button type="button" class="info-card-restore-btn" id="info-card-restore-btn" style="display: none;">
+          Tampilkan Kembali Kartu yang Disembunyikan
+        </button>
+      </div>
+    </div>
+
+    <!-- Primary InfoCard News Grid (Sorotan Utama) -->
+    <div class="info-card-news-grid" id="morgana-hero-container">
+      <!-- Populated dynamically with InfoCard components -->
+    </div>
+
+    <!-- Hidden legacy hook container for backwards compatibility -->
+    <div id="morgana-stack-container" style="display: none;"></div>
+
+    <!-- Second Row: Latest Insights (3-column InfoCard grid) -->
+    <div class="morgana-latest">
+      <div class="morgana-latest__header">
+        <div>
+          <span class="morgana-eyebrow" style="margin-bottom: 8px;">Eksplorasi Lapangan</span>
+          <h3 class="morgana-subheading">Mitigasi &amp; Pengetahuan Terkini</h3>
+        </div>
+        <p class="morgana-sublede">
+          Instruksi kesiapsiagaan, panduan lapangan, dan dokumentasi tindakan saat krisis tiba.
+        </p>
+      </div>
+      <div class="info-card-news-grid" id="morgana-latest-container">
+        <!-- Populated dynamically with InfoCard components -->
+      </div>
+    </div>
+
+    <!-- Interactive FAQ Section (With Azure Blue Accent) -->
+    <div class="morgana-faq">
+      <div class="morgana-faq__header">
+        <span class="morgana-eyebrow">Informasi Populer</span>
+        <h3 class="morgana-faq__title">Pertanyaan Umum Seputar SAMUDRA</h3>
+        <p class="morgana-faq__desc">Mekanisme pemantauan gempa BMKG, pemodelan 3D tsunami, dan kepastian evakuasi.</p>
+      </div>
+
+      <div class="morgana-accordion" id="morgana-accordion">
+        <div class="morgana-accordion__item" data-index="0">
+          <button class="morgana-accordion__trigger">
+            <span>Bagaimana SAMUDRA menerima informasi gempa &amp; potensi tsunami?</span>
+            <span class="morgana-accordion__icon">+</span>
+          </button>
+          <div class="morgana-accordion__content">
+            <p>SAMUDRA terhubung dengan sistem diseminasi BMKG (InaTEWS), menangkap data magnitudo, episenter, kedalaman, dan perkiraan waktu tiba gelombang dalam hitungan detik setelah gempa terdeteksi.</p>
           </div>
         </div>
-      </section>
 
-
-      <!-- SECTION 1: BERITA TERKINI (3-KOLOM EDITORIAL) -->
-      <section id="berita" class="art-featured-section">
-        <div class="art-container">
-          <div class="art-section-header">
-            <div class="art-eyebrow">
-              <span class="art-eyebrow-dot"></span>
-              <span>SOROTAN UTAMA</span>
-            </div>
-
-            <h2 class="art-section-title">
-              Berita Terkini
-            </h2>
-
-            <p class="art-section-desc">
-              Warta dan perkembangan informasi kebencanaan terkini di wilayah pesisir nusantara.
-            </p>
-          </div>
-
-          <!-- KONTENER 3-KOLOM -->
-          <div id="articles-featured">
-            <div class="art-empty-box">
-              Memuat berita terkini...
-            </div>
+        <div class="morgana-accordion__item morgana-accordion__item--active" data-index="1">
+          <button class="morgana-accordion__trigger">
+            <span>Alat pemantauan, simulasi 3D, dan panduan evakuasi.</span>
+            <span class="morgana-accordion__icon">&minus;</span>
+          </button>
+          <div class="morgana-accordion__content" style="display: block;">
+            <p>Aplikasi SAMUDRA mengintegrasikan pemodelan ketinggian air laut 3D interaktif, perhitungan elevasi topografi pesisir, dan panduan rute tercepat ke shelter tinggi yang aman dari jembatan dan zona merah.</p>
           </div>
         </div>
-      </section>
 
-
-      <!-- SECTION 2: MITIGASI DAN PENGETAHUAN TERKINI (UNIFORM GRID) -->
-      <section id="berita-terbaru" class="art-catalog-section">
-        <div class="art-container">
-          <div class="art-section-header">
-            <div class="art-eyebrow">
-              <span class="art-eyebrow-dot"></span>
-              <span>PUBLIKASI SAMUDRA</span>
-            </div>
-
-            <h2 class="art-section-title">
-              Mitigasi dan Pengetahuan Terkini
-            </h2>
-
-            <p class="art-section-desc">
-              Seluruh kumpulan artikel edukasi, panduan kesiapsiagaan, dan riset mitigasi bencana tsunami.
-            </p>
-          </div>
-
-          <!-- KONTENER MULTI-KOLOM UNIFORM DENGAN PAGINATION -->
-          <div id="articles-latest">
-            <div class="art-empty-box">
-              Memuat artikel...
-            </div>
+        <div class="morgana-accordion__item" data-index="2">
+          <button class="morgana-accordion__trigger">
+            <span>Apakah simulasi 3D dapat dijalankan secara offline?</span>
+            <span class="morgana-accordion__icon">+</span>
+          </button>
+          <div class="morgana-accordion__content">
+            <p>Ya, rute evakuasi dan peta topografi offline disimpan secara lokal di perangkat Anda sehingga tetap dapat diakses saat jaringan telekomunikasi seluler mengalami pemadaman pasca-gempa.</p>
           </div>
         </div>
-      </section>
 
-
-      <!-- SECTION 3: FAQ -->
-      <section class="art-faq-section">
-        <div class="art-container">
-          <div class="art-faq-card">
-            <div class="art-faq-header">
-              <div class="art-eyebrow">
-                <span class="art-eyebrow-dot"></span>
-                <span>INFORMASI POPULER</span>
-              </div>
-
-              <h2 class="art-faq-title">
-                Pertanyaan Umum
-              </h2>
-
-              <p class="art-faq-desc">
-                Temukan jawaban atas pertanyaan seputar ancaman tsunami dan kesiapsiagaan darurat.
-              </p>
-            </div>
-
-            <div id="articles-faq">
-              ${[
-      {
-        question: 'Apa yang harus dilakukan saat merasakan gempa di wilayah pesisir?',
-        answer: 'Lindungi diri saat guncangan berlangsung (Drop, Cover, Hold On). Setelah guncangan berhenti, segera menjauh dari pantai menuju tempat yang lebih tinggi jika gempa terasa kuat atau berlangsung lama.'
-      },
-      {
-        question: 'Bagaimana cara mengetahui informasi peringatan tsunami?',
-        answer: 'Masyarakat dapat memantau informasi melalui kanal resmi BMKG (aplikasi InfoBMKG, situs resmi, radio darurat) dan mengikuti arahan petugas kebencanaan setempat.'
-      },
-      {
-        question: 'Apa saja perlengkapan yang perlu disiapkan dalam Tas Siaga Bencana?',
-        answer: 'Siapkan air minum, makanan tahan lama, kotak obat pribadi, senter, baterai cadangan, peluit darurat, pakaian ganti, serta dokumen penting yang terbungkus kantong tahan air.'
-      },
-      {
-        question: 'Kapan masyarakat boleh kembali ke rumah setelah ancaman tsunami?',
-        answer: 'Masyarakat hanya boleh kembali setelah pihak berwenang (BMKG dan BPBD) secara resmi mencabut status peringatan tsunami dan menyatakan wilayah aman.'
-      }
-    ].map(item => `
-                <div data-faq-item class="art-faq-item">
-                  <button data-faq-trigger class="art-faq-trigger" type="button">
-                    <span>${item.question}</span>
-                    <span data-faq-icon class="art-faq-icon" aria-hidden="true">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                      </svg>
-                    </span>
-                  </button>
-
-                  <div data-faq-content hidden class="art-faq-content">
-                    ${item.answer}
-                  </div>
-                </div>
-              `).join('')}
-            </div>
+        <div class="morgana-accordion__item" data-index="3">
+          <button class="morgana-accordion__trigger">
+            <span>Apa arti tingkat peringatan Waspada, Siaga, dan Awas?</span>
+            <span class="morgana-accordion__icon">+</span>
+          </button>
+          <div class="morgana-accordion__content">
+            <p>Waspada: potensi tinggi gelombang &lt; 0.5 meter (jauhi pantai). Siaga: potensi tinggi 0.5 &ndash; 3 meter (segera evakuasi ke tempat tinggi). Awas: potensi tinggi &gt; 3 meter (evakuasi menyeluruh ke shelter daratan tinggi).</p>
           </div>
         </div>
-      </section>
 
-
-      <!-- SECTION 4: CTA BANNER -->
-      <section class="art-cta-section">
-        <div class="art-container">
-          <div class="art-cta-card">
-            <div class="art-eyebrow">
-              <span class="art-eyebrow-dot"></span>
-              <span>SAMUDRA &bull; SIAGA BENCANA</span>
-            </div>
-
-            <h2 class="art-cta-title">
-              Pengetahuan Adalah Langkah Awal Keselamatan.
-            </h2>
-
-            <p class="art-cta-desc">
-              Tingkatkan pengetahuan kebencanaan dan kesiapsiagaan menghadapi potensi tsunami bersama portal informasi terpadu SAMUDRA.
-            </p>
+        <div class="morgana-accordion__item" data-index="4">
+          <button class="morgana-accordion__trigger">
+            <span>Bagaimana cara menyusun rencana darurat keluarga?</span>
+            <span class="morgana-accordion__icon">+</span>
+          </button>
+          <div class="morgana-accordion__content">
+            <p>Tentukan titik kumpul di luar zona rendaman merah, sepakati kontak darurat di luar kota, dan lengkapi tas siaga bencana dengan persediaan minimal untuk 72 jam pertama.</p>
           </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
   `;
 
   container.appendChild(section);
 
+  // Setup Accordion Interactions
+  initAccordion(section);
 
-  // TOMBOL JELAJAHI BERITA
-  const exploreButton = section.querySelector('[data-explore-button]');
+  // Containers
+  const heroContainer = section.querySelector('#morgana-hero-container');
+  const stackContainer = section.querySelector('#morgana-stack-container');
+  const latestContainer = section.querySelector('#morgana-latest-container');
+  const restoreBtn = section.querySelector('#info-card-restore-btn');
 
-  if (exploreButton) {
-    exploreButton.addEventListener('click', event => {
-      event.preventDefault();
-
-      const target = section.querySelector('#berita');
-
-      if (target) {
-        target.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
+  if (restoreBtn) {
+    restoreBtn.addEventListener('click', () => {
+      section.querySelectorAll('.info-card--dismissed').forEach(card => {
+        card.classList.remove('info-card--dismissed');
+        card.style.display = '';
+      });
+      restoreBtn.style.display = 'none';
     });
   }
 
-  initFAQ(section);
-
-  const featuredContainer = section.querySelector('#articles-featured');
-  const latestContainer = section.querySelector('#articles-latest');
-
+  // Load from real backend API: /api/articles
   fetchArticles()
     .then(articles => {
-      renderRealContent(
-        featuredContainer,
-        latestContainer,
-        Array.isArray(articles) ? articles : []
-      );
+      renderRealContent(heroContainer, stackContainer, latestContainer, Array.isArray(articles) ? articles : [], restoreBtn);
     })
-    .catch(err => {
-      console.warn('Gagal memuat artikel dari API, menggunakan data cadangan:', err);
-
-      renderRealContent(
-        featuredContainer,
-        latestContainer,
-        []
-      );
+    .catch(() => {
+      renderRealContent(heroContainer, stackContainer, latestContainer, [], restoreBtn);
     });
 }
 
-
-// FAQ ACCORDION
-function initFAQ(section) {
-  const items = section.querySelectorAll('[data-faq-item]');
-
+function initAccordion(section) {
+  const items = section.querySelectorAll('.morgana-accordion__item');
   items.forEach(item => {
-    const trigger = item.querySelector('[data-faq-trigger]');
-    const content = item.querySelector('[data-faq-content]');
-    const icon = item.querySelector('[data-faq-icon]');
-
-    if (!trigger || !content || !icon) return;
+    const trigger = item.querySelector('.morgana-accordion__trigger');
+    const content = item.querySelector('.morgana-accordion__content');
+    const icon = item.querySelector('.morgana-accordion__icon');
 
     trigger.onclick = () => {
-      const isOpen = !content.hidden;
+      const isActive = item.classList.contains('morgana-accordion__item--active');
 
       items.forEach(other => {
-        const otherContent = other.querySelector('[data-faq-content]');
-        const otherIcon = other.querySelector('[data-faq-icon]');
-        if (otherContent) otherContent.hidden = true;
-        if (otherIcon) otherIcon.style.transform = 'rotate(0deg)';
+        other.classList.remove('morgana-accordion__item--active');
+        const otherContent = other.querySelector('.morgana-accordion__content');
+        if (otherContent) otherContent.style.display = 'none';
+        const otherIcon = other.querySelector('.morgana-accordion__icon');
+        if (otherIcon) otherIcon.innerHTML = '+';
       });
 
-      if (!isOpen) {
-        content.hidden = false;
-        icon.style.transform = 'rotate(45deg)';
+      if (!isActive) {
+        item.classList.add('morgana-accordion__item--active');
+        if (content) content.style.display = 'block';
+        if (icon) icon.innerHTML = '&minus;';
       }
     };
   });
 }
 
+// Curated 3-image media stacks for InfoCardMedia fan animation
+const MEDIA_GALLERIES = [
+  [
+    '/img/step-1-bmkg-monitor.jpg',
+    '/img/bento-buoy-warning.jpg',
+    '/img/cover-1.jpg',
+  ],
+  [
+    '/img/step-2-emergency-alert.jpg',
+    '/img/bento-emergency-dispatch.jpg',
+    '/img/cover-2.jpg',
+  ],
+  [
+    '/img/step-3-evacuation-route.jpg',
+    '/img/bento-evacuation-route.jpg',
+    '/img/cover-3.jpg',
+  ],
+  [
+    '/img/bento-buoy-warning.jpg',
+    '/img/step-1-bmkg-monitor.jpg',
+    '/img/cover-4.jpg',
+  ],
+  [
+    '/img/bento-offline-navigation.jpg',
+    '/img/step-3-evacuation-route.jpg',
+    '/img/bg-misty-coast.jpg',
+  ],
+  [
+    '/img/bento-shelter-tes.jpg',
+    '/img/bg-shelter-lights.jpg',
+    '/img/bg-misty-hills.jpg',
+  ],
+];
 
-// RENDER KONTEN REAL ARTIKEL
-function renderRealContent(featuredContainer, latestContainer, apiArticles) {
-  const allCards = [];
-
-  // 1. DATA ASLI DARI API
-  if (Array.isArray(apiArticles) && apiArticles.length > 0) {
-    apiArticles.forEach(item => {
-      const category = item.category
-        ? item.category.replace(/_/g, ' ').toUpperCase()
-        : 'ARTIKEL SAMUDRA';
-
-      const dateStr = item.publishedAt
-        ? new Date(item.publishedAt).toLocaleDateString('id-ID', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
-        })
-        : 'Informasi terbaru';
-
-      const authorName = item.author?.name
-        ? item.author.name.split('_').pop()
-        : 'Tim SAMUDRA';
-
-      const authorRole = item.author?.role
-        ? item.author.role.replace(/_/g, ' ').toUpperCase()
-        : 'KONTRIBUTOR SAMUDRA';
-
-      allCards.push({
-        isBackend: true,
-        id: item.id,
-        slug: item.slug,
-        title: item.title || 'Artikel SAMUDRA',
-        content: item.content || 'Konten edukasi dari SAMUDRA.',
-        excerpt: item.content
-          ? item.content.length > 150
-            ? item.content.slice(0, 150) + '...'
-            : item.content
-          : 'Konten edukasi dan panduan kebencanaan dari SAMUDRA.',
-        category,
-        dateStr,
-        readTime: dateStr,
-        authorName,
-        authorRole,
-        authorAvatar: item.author?.avatarUrl,
-        coverImg: item.coverImageUrl
-      });
-    });
-  } else {
-    // 2. CADANGAN JIKA API KOSONG ATAU GAGAL
-    DEFAULT_GUIDES.forEach(guide => {
-      allCards.push({
-        ...guide,
-        isBackend: false
-      });
-    });
+function buildMediaList(item, index) {
+  const gallery = MEDIA_GALLERIES[index % MEDIA_GALLERIES.length];
+  if (item.coverImg) {
+    return [
+      { type: 'image', src: gallery[0], alt: `${item.title} - Preview 1` },
+      { type: 'image', src: gallery[1], alt: `${item.title} - Preview 2` },
+      { type: 'image', src: item.coverImg, alt: item.title },
+    ];
   }
+  return [
+    { type: 'image', src: gallery[0], alt: `${item.title} - Preview 1` },
+    { type: 'image', src: gallery[1], alt: `${item.title} - Preview 2` },
+    { type: 'image', src: gallery[2], alt: item.title },
+  ];
+}
 
-  // KONDISI JIKA TIDAK ADA DATA SAMA SEKALI
-  if (allCards.length === 0) {
-    if (featuredContainer) {
-      featuredContainer.innerHTML = `
-        <div class="art-empty-box">
-          Belum ada artikel yang tersedia saat ini.
+/**
+ * Creates a DOM element matching the exact structure and spring hover mechanics
+ * of `components/ui/info-card.tsx` (InfoCard, InfoCardContent, InfoCardTitle,
+ * InfoCardDescription, InfoCardMedia, InfoCardFooter, InfoCardDismiss, InfoCardAction).
+ */
+function createInfoCardHTML(item, idx, fallbackPrefix, shrinkHeight = 140, expandHeight = 210) {
+  const targetId = item.id || item.slug || `${fallbackPrefix}-${idx + 1}`;
+  const href = `?article=${encodeURIComponent(targetId)}`;
+  const mediaList = buildMediaList(item, idx).slice(0, 3);
+  const mediaCount = mediaList.length;
+
+  const mediaItemsHTML = mediaList
+    .map((m, mIdx) => {
+      const rot = mediaCount === 1 ? 0 : (mIdx - (mediaCount === 2 ? 0.5 : 1)) * 3.2;
+      const tx = mediaCount === 1 ? 0 : (mIdx - (mediaCount === 2 ? 0.5 : 1)) * 11;
+      const ty = mediaCount === 1 ? -4 : mIdx === 0 ? -9 : mIdx === 1 ? -4 : 0;
+      const sc = mediaCount === 1 ? 1 : +(0.935 + mIdx * 0.03).toFixed(3);
+      const restSc = mediaCount === 1 ? 1 : +(0.94 + mIdx * 0.03).toFixed(3);
+      const restTy = mediaCount === 1 ? 0 : (2 - mIdx) * -3;
+      const restOp = mIdx === mediaCount - 1 ? 1 : mIdx === 1 ? 0.72 : 0.45;
+
+      return `
+        <div
+          class="info-card__media-item"
+          data-media-idx="${mIdx}"
+          style="--rest-sc: ${restSc}; --rest-ty: ${restTy}px; --rest-op: ${restOp}; --hover-rot: ${rot}deg; --hover-tx: ${tx}px; --hover-ty: ${ty}px; --hover-sc: ${sc}; z-index: ${mIdx + 1};"
+        >
+          <img
+            src="${m.src}"
+            alt="${m.alt || item.title}"
+            class="info-card__media-img"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       `;
-    }
-
-    if (latestContainer) {
-      latestContainer.innerHTML = '';
-    }
-    return;
-  }
-
-  // 3. PEMBAGIAN KARTU UNTUK BAGIAN 1: "BERITA TERKINI" (3-KOLOM: 3 KIRI, 1 TENGAH, 3 KANAN)
-  const heroCard = allCards[0];
-  const subArticles = allCards.slice(1, 7);
-
-  let leftCards = [];
-  let rightCards = [];
-
-  if (subArticles.length === 6) {
-    leftCards = subArticles.slice(0, 3);
-    rightCards = subArticles.slice(3, 6);
-  } else {
-    const mid = Math.ceil(subArticles.length / 2);
-    leftCards = subArticles.slice(0, mid);
-    rightCards = subArticles.slice(mid);
-  }
-
-  // RENDER BAGIAN 1: "BERITA TERKINI" (3-KOLOM EDITORIAL)
-  if (featuredContainer) {
-    const hasSideCards = leftCards.length > 0 || rightCards.length > 0;
-
-    featuredContainer.innerHTML = `
-      <div class="art-featured-layout ${!hasSideCards ? 'has-no-sides' : ''}">
-        ${leftCards.length > 0 ? `
-          <div class="art-col-left">
-            ${leftCards.map((item, idx) => renderSmallCard(item, 'featured-left-' + idx)).join('')}
-          </div>
-        ` : ''}
-
-        <div class="art-col-center">
-          ${renderHeroCard(heroCard)}
-        </div>
-
-        ${rightCards.length > 0 ? `
-          <div class="art-col-right">
-            ${rightCards.map((item, idx) => renderSmallCard(item, 'featured-right-' + idx)).join('')}
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }
-
-  // 4. MAP DATA UNTUK NAVIGASI
-  const articleMap = new Map();
-  allCards.forEach(item => {
-    const key = item.id || item.slug;
-    if (key) articleMap.set(String(key), item);
-  });
-
-  const attachNav = (root) => {
-    if (!root) return;
-
-    root.querySelectorAll('[data-article-id]').forEach(element => {
-      const targetId = element.getAttribute('data-article-id');
-      const item = articleMap.get(targetId) || allCards.find(c => c.id === targetId || c.slug === targetId);
-
-      element.addEventListener('click', event => {
-        if (
-          event.metaKey ||
-          event.ctrlKey ||
-          event.shiftKey ||
-          event.altKey ||
-          event.button !== 0
-        ) {
-          return;
-        }
-
-        event.preventDefault();
-
-        if (typeof window.__navigateToArticle === 'function') {
-          window.__navigateToArticle(targetId);
-        } else if (item) {
-          openArticleModal(item);
-        }
-      });
-    });
-  };
-
-  // 5. RENDER BAGIAN 2: "MITIGASI DAN PENGETAHUAN TERKINI" (UNIFORM GRID SELURUH ARTIKEL DENGAN PAGINATION)
-  if (latestContainer) {
-    renderCatalogGrid(latestContainer, allCards, currentCatalogPage, attachNav);
-  }
-
-  attachNav(featuredContainer);
-}
-
-
-// RENDER KATALOG GRID UNIFORM ("MITIGASI DAN PENGETAHUAN TERKINI")
-function renderCatalogGrid(container, cards, page, attachNav) {
-  if (!container) return;
-
-  if (cards.length === 0) {
-    container.innerHTML = `
-      <div class="art-empty-box">
-        Belum ada artikel yang tersedia saat ini.
-      </div>
-    `;
-    return;
-  }
-
-  const totalPages = Math.ceil(cards.length / ITEMS_PER_PAGE);
-  const validPage = Math.max(1, Math.min(page, totalPages));
-  const startIndex = (validPage - 1) * ITEMS_PER_PAGE;
-  const pageCards = cards.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  const gridHtml = `
-    <div class="art-catalog-grid">
-      ${pageCards.map((item, idx) => renderCatalogCard(item, startIndex + idx)).join('')}
-    </div>
-  `;
-
-  let paginationHtml = '';
-  if (totalPages > 1) {
-    paginationHtml = `
-      <div class="art-pagination">
-        <button
-          type="button"
-          class="art-page-btn art-page-prev"
-          data-page="${validPage - 1}"
-          ${validPage === 1 ? 'disabled' : ''}
-          aria-label="Halaman sebelumnya"
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m15 18-6-6 6-6"/>
-          </svg>
-          <span>Sebelumnya</span>
-        </button>
-
-        <div class="art-page-numbers">
-          ${Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
-            <button
-              type="button"
-              class="art-page-num ${p === validPage ? 'is-active' : ''}"
-              data-page="${p}"
-              aria-label="Halaman ${p}"
-            >
-              ${p}
-            </button>
-          `).join('')}
-        </div>
-
-        <button
-          type="button"
-          class="art-page-btn art-page-next"
-          data-page="${validPage + 1}"
-          ${validPage === totalPages ? 'disabled' : ''}
-          aria-label="Halaman selanjutnya"
-        >
-          <span>Selanjutnya</span>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m9 18 6-6-6-6"/>
-          </svg>
-        </button>
-      </div>
-    `;
-  }
-
-  container.innerHTML = gridHtml + paginationHtml;
-
-  // Pasang listener navigasi artikel pada kartu yang baru dirender
-  if (typeof attachNav === 'function') {
-    attachNav(container);
-  }
-
-  // Pasang event listener untuk tombol pagination
-  container.querySelectorAll('[data-page]').forEach(button => {
-    button.addEventListener('click', event => {
-      event.preventDefault();
-      const targetPage = parseInt(button.getAttribute('data-page'), 10);
-
-      if (targetPage && targetPage !== validPage && targetPage >= 1 && targetPage <= totalPages) {
-        currentCatalogPage = targetPage;
-        renderCatalogGrid(container, cards, targetPage, attachNav);
-
-        const sectionTarget = document.getElementById('berita-terbaru');
-        if (sectionTarget) {
-          sectionTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }
-    });
-  });
-}
-
-
-// KOMPONEN: KARTU KECIL (KOLOM KIRI & KANAN DI "BERITA TERKINI")
-function renderSmallCard(item, fallbackId) {
-  const image = safeImageUrl(item.coverImg);
-  const targetId = item.id || item.slug || fallbackId;
-  const href = `?article=${encodeURIComponent(targetId)}`;
+    })
+    .join('');
 
   return `
-    <a
-      class="art-small-card"
-      href="${href}"
-      data-article-id="${escapeHTML(targetId)}"
-      aria-label="Buka berita: ${escapeHTML(item.title)}"
+    <article
+      class="info-card"
+      data-card-id="${targetId}"
+      style="--shrink-h: ${shrinkHeight}px; --expand-h: ${expandHeight}px;"
+      tabindex="0"
+      role="article"
+      aria-label="${item.title}"
     >
-      <div class="art-small-thumb">
-        ${image
-      ? `
-              <img
-                src="${image}"
-                alt="${escapeHTML(item.title)}"
-                loading="lazy"
-                class="art-small-img"
-              >
-            `
-      : `
-              <div class="art-thumb-fallback" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                  <path d="M2 7c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                  <path d="M2 17c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                </svg>
-              </div>
-            `
-    }
-      </div>
+      <div class="info-card__content">
+        <div class="info-card__meta">
+          <span class="morgana-badge">${item.category}</span>
+          <span class="morgana-read-time">${item.readTime}</span>
+        </div>
+        <div class="info-card__title">${item.title}</div>
+        <div class="info-card__description">${item.excerpt}</div>
 
-      <div class="art-small-content">
-        <span class="art-badge-cat">${escapeHTML(item.category)}</span>
-        <h4 class="art-small-title">${escapeHTML(item.title)}</h4>
-        <span class="art-date-text">${escapeHTML(item.dateStr || item.readTime)}</span>
-      </div>
-    </a>
-  `;
-}
-
-
-// KOMPONEN: KARTU UTAMA (KOLOM TENGAH DI "BERITA TERKINI")
-function renderHeroCard(item) {
-  const image = safeImageUrl(item.coverImg);
-  const targetId = item.id || item.slug || 'riset-megathrust';
-  const href = `?article=${encodeURIComponent(targetId)}`;
-
-  return `
-    <article class="art-main-card">
-      <div class="art-main-media">
-        ${image
-      ? `
-              <img
-                src="${image}"
-                alt="${escapeHTML(item.title)}"
-                loading="lazy"
-                class="art-main-img"
-              >
-            `
-      : `
-              <div class="art-main-fallback" aria-hidden="true">
-                <div class="art-fallback-icon-box">
-                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                    <path d="M2 7c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                    <path d="M2 17c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                  </svg>
-                </div>
-                <span class="art-fallback-label">BERITA UTAMA</span>
-              </div>
-            `
-    }
-
-        <span class="art-main-badge">
-          <span class="art-badge-dot"></span>
-          <span>BERITA UTAMA</span>
-        </span>
-      </div>
-
-      <div class="art-main-body">
-        <div class="art-main-meta-top">
-          <span class="art-badge-cat">${escapeHTML(item.category)}</span>
-          <span class="art-meta-divider">&bull;</span>
-          <span class="art-date-text">${escapeHTML(item.dateStr || item.readTime)}</span>
+        <div class="info-card__media">
+          <div class="info-card__media-stack">
+            ${mediaItemsHTML}
+          </div>
+          <div class="info-card__media-fade"></div>
         </div>
 
-        <h3 class="art-main-title">
-          <a
-            href="${href}"
-            data-article-id="${escapeHTML(targetId)}"
-            class="art-main-title-link"
-          >
-            ${escapeHTML(item.title)}
-          </a>
-        </h3>
-
-        <p class="art-main-excerpt">
-          ${escapeHTML(item.excerpt)}
-        </p>
-
-        <div class="art-main-footer">
-          <a
-            href="${href}"
-            data-article-id="${escapeHTML(targetId)}"
-            class="art-btn-main"
-          >
-            <span>Baca Selengkapnya</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </a>
-
-          ${item.authorName ? `
-            <span class="art-author-info">Oleh <strong>${escapeHTML(item.authorName)}</strong></span>
-          ` : ''}
+        <div class="info-card__footer">
+          <div class="info-card__footer-inner">
+            <button type="button" class="info-card__dismiss" aria-label="Sembunyikan berita ini">
+              Dismiss
+            </button>
+            <div class="info-card__action">
+              <a href="${href}" class="info-card__action-link">
+                <span>Baca selengkapnya</span>
+                ${EXTERNAL_LINK_ICON}
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </article>
   `;
 }
 
+function attachInfoCardInteractions(container, items, fallbackPrefix, restoreBtn) {
+  if (!container) return;
+  const cards = container.querySelectorAll('.info-card');
 
-// KOMPONEN: KARTU SERAGAM DI "MITIGASI DAN PENGETAHUAN TERKINI" (KATALOG GRID)
-function renderCatalogCard(item, idx) {
-  const image = safeImageUrl(item.coverImg);
-  const targetId = item.id || item.slug || 'katalog-' + (idx + 1);
-  const href = `?article=${encodeURIComponent(targetId)}`;
+  cards.forEach((card, idx) => {
+    const item = items[idx];
+    if (!item) return;
+    const targetId = item.id || item.slug || `${fallbackPrefix}-${idx + 1}`;
+    const mediaContainer = card.querySelector('.info-card__media');
+    const dismissBtn = card.querySelector('.info-card__dismiss');
+    const actionLink = card.querySelector('.info-card__action-link');
+    const mainImg = card.querySelector('.info-card__media-item:last-child .info-card__media-img');
 
-  return `
-    <a
-      class="art-catalog-card"
-      href="${href}"
-      data-article-id="${escapeHTML(targetId)}"
-      aria-label="Buka artikel: ${escapeHTML(item.title)}"
-    >
-      <div class="art-catalog-thumb">
-        ${image
-      ? `
-              <img
-                src="${image}"
-                alt="${escapeHTML(item.title)}"
-                loading="lazy"
-                class="art-catalog-img"
-              >
-            `
-      : `
-              <div class="art-thumb-fallback" aria-hidden="true">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                  <path d="M2 7c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                  <path d="M2 17c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                </svg>
-              </div>
-            `
+    const updateNaturalHeight = () => {
+      if (!mainImg || !mainImg.naturalWidth || !mainImg.naturalHeight || !mediaContainer) return;
+      const ratio = mainImg.naturalHeight / mainImg.naturalWidth;
+      // Keep resting height compact (140px) and hover expansion moderate (205px - 225px) so cards never stretch excessively downward
+      const expandH = ratio > 1 ? 225 : 205;
+      card.style.setProperty('--shrink-h', '140px');
+      card.style.setProperty('--expand-h', `${expandH}px`);
+    };
+
+    if (mainImg) {
+      if (mainImg.complete && mainImg.naturalWidth) {
+        updateNaturalHeight();
+      } else {
+        mainImg.addEventListener('load', updateNaturalHeight, { once: true });
+      }
     }
 
-        <span class="art-catalog-badge">
-          ${escapeHTML(item.category)}
-        </span>
-      </div>
+    const handleEnter = () => {
+      card.classList.add('is-hovered');
+    };
 
-      <div class="art-catalog-body">
-        <span class="art-date-text">
-          ${escapeHTML(item.dateStr || item.readTime)}
-        </span>
+    const handleLeave = () => {
+      card.classList.remove('is-hovered');
+    };
 
-        <h4 class="art-catalog-title">
-          ${escapeHTML(item.title)}
-        </h4>
+    card.addEventListener('mouseenter', handleEnter);
+    card.addEventListener('mouseleave', handleLeave);
+    card.addEventListener('focusin', handleEnter);
+    card.addEventListener('focusout', e => {
+      if (!card.contains(e.relatedTarget)) {
+        handleLeave();
+      }
+    });
 
-        <div class="art-catalog-action">
-          <span>Baca Selengkapnya</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </div>
-      </div>
-    </a>
-  `;
+    // Dismiss button behavior (matching InfoCardDismiss)
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        card.classList.add('info-card--dismissing');
+        setTimeout(() => {
+          card.classList.remove('info-card--dismissing');
+          card.classList.add('info-card--dismissed');
+          card.style.display = 'none';
+          if (restoreBtn) {
+            restoreBtn.style.display = 'inline-flex';
+          }
+        }, 220);
+      });
+    }
+
+    const triggerOpen = e => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (e.button !== undefined && e.button !== 0)) {
+        return;
+      }
+      e.preventDefault();
+      if (typeof window.__navigateToArticle === 'function') {
+        window.__navigateToArticle(targetId);
+      } else {
+        openArticleModal(item);
+      }
+    };
+
+    if (actionLink) {
+      actionLink.addEventListener('click', e => {
+        e.stopPropagation();
+        triggerOpen(e);
+      });
+    }
+
+    card.addEventListener('click', e => {
+      if (e.target.closest('.info-card__dismiss')) return;
+      triggerOpen(e);
+    });
+
+    card.addEventListener('keydown', e => {
+      if (e.target.closest('.info-card__dismiss')) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        triggerOpen(e);
+      }
+    });
+  });
 }
 
+function renderRealContent(heroContainer, stackContainer, latestContainer, apiArticles, restoreBtn) {
+  const defaultGuides = [
+    {
+      category: 'Riset Seismik',
+      readTime: '8 Menit Baca',
+      title: 'Memahami Siklus Gempa Megathrust & Potensi Gelombang',
+      excerpt: 'Analisis mendalam mengenai dinamika lempeng tektonik aktif, pemetaan rekahan dasar laut, dan transmisi sinyal tekanan dasar samudra.',
+      content: `Zona megathrust merupakan bidang kontak pertemuan lempeng samudra yang menunjam ke bawah lempeng benua. Akumulasi deformasi elastis selama ratusan tahun dapat terlepas secara tiba-tiba dalam bentuk gempa bermagnitudo besar.
 
-// MODAL PEMBACA ARTIKEL (FALLBACK CADANGAN JIKA TIDAK MENGGUNAKAN ARTICLEPAGE)
+Ketika deformasi ini mengangkat kolom air laut dalam hitungan detik, terciptalah gelombang tsunami dengan panjang gelombang ratusan kilometer yang bergerak mendekati kecepatan jet komersial di perairan terbuka.
+
+Sistem pemantauan InaTEWS menggunakan kombinasi seismometer broadband di darat dan sensor tekanan dasar laut (DART/CBT) untuk memverifikasi apakah anomali gelombang benar-benar tercipta dalam waktu kurang dari 5 menit pascagempa.`,
+      authorName: 'Pusat Studi Seismologi',
+      authorRole: 'TIM RISET SAMUDRA',
+      coverImg: '/img/cover-1.jpg',
+      svgThumb: SVGS.waveSlices,
+    },
+    {
+      category: 'Strategi Evakuasi',
+      readTime: '7 Menit Baca',
+      title: 'Membangun Respons Cepat Warga di Detik-Detik Kritis',
+      excerpt: 'Kerangka disiplin evakuasi mandiri berbasis tanda-tanda alam dan peringatan dini BMKG sebelum gelombang pertama tiba.',
+      content: `Kunci keselamatan utama di kawasan pesisir adalah reaksi instan tanpa menunggu sirene resmi jika guncangan gempa berlangsung lebih dari 20 detik atau membuat Anda sulit berdiri tegak.
+
+Prinsip 20-20-20:
+1. 20 Detik: Jika gempa terasa kuat lebih dari 20 detik,
+2. 20 Menit: Anda memiliki perkiraan waktu 20 menit sebelum gelombang rayapan tiba,
+3. 20 Meter: Segera berlari menuju shelter atau daratan berketinggian minimal 20 meter di atas permukaan laut.
+
+Gunakan selalu rute darat terbuka dan hindari jembatan muara atau jalan tepi tebing yang berisiko runtuh akibat likuifaksi atau guncangan susulan.`,
+      authorName: 'SOP Evakuasi Lapangan',
+      authorRole: 'PROTOKOL KESELAMATAN',
+      coverImg: '/img/cover-2.jpg',
+      svgThumb: SVGS.controlCenter,
+    },
+    {
+      category: 'Teknologi Sensor',
+      readTime: '6 Menit Baca',
+      title: 'Sensor Buoy & Kabel Bawah Laut: Cara Kerjanya',
+      excerpt: 'Membongkar alur transmisi data tekanan hidrostatik dasar samudra ke satelit hingga menjadi notifikasi darurat di ponsel Anda.',
+      content: `Teknologi deteksi tsunami modern bertumpu pada Bottom Pressure Recorder (BPR) yang dijangkarkan di kedalaman 2.000 hingga 5.000 meter. Sensor piezoresistif presisi tinggi ini mampu mendeteksi kenaikan muka air laut setipis 1 milimeter di tengah gelombang samudra yang liar.
+
+Data diubah menjadi sinyal akustik bawah air menuju pelampung (buoy) di permukaan, diteruskan ke satelit komunikasi geodesi, lalu dikonfirmasi ke pusat analisis komputasi BMKG dalam hitungan mikrodetik sebelum disebarkan ke publik lewat push notification.`,
+      authorName: 'Divisi Instrumentasi Kelautan',
+      authorRole: 'ENGINEERING LAB',
+      coverImg: '/img/cover-3.jpg',
+      svgThumb: SVGS.matrixBars,
+    },
+    {
+      category: 'Market Intelligence',
+      readTime: '8 Menit Baca',
+      title: 'Deteksi Cepat Penurunan Muka Tanah Pesisir',
+      excerpt: 'Korelasi antara subsiden tanah dan amplifikasi tinggi rayapan tsunami di teluk tertutup.',
+      content: `Penurunan muka tanah (land subsidence) di kawasan teluk pesisir perkotaan dapat meningkatkan kedalaman genangan tsunami hingga 30-50% lebih luas dibandingkan estimasi model garis pantai statis.
+
+SAMUDRA mengintegrasikan data elevasi topografi digital terbaru (DEMNAS) agar zona risiko genangan selalu merefleksikan kontur ketinggian daratan riil saat ini.`,
+      authorName: 'Analisis Geospasial',
+      authorRole: 'DATA SCIENTIST',
+      coverImg: '/img/cover-4.jpg',
+      svgThumb: SVGS.radarDial,
+    },
+    {
+      category: 'Digital Education',
+      readTime: '6 Menit Baca',
+      title: 'Protokol Golden Time: 20-20-20 di Tepi Pantai',
+      excerpt: 'Panduan baku 20 detik guncangan gempa, 20 menit evakuasi mandiri, menuju tempat dengan ketinggian minimal 20 meter.',
+      content: `Di era teknologi digital, ponsel Anda adalah kompas evakuasi tercepat. Namun, jangan biarkan proses memverifikasi berita menunda langkah evakuasi Anda.
+
+Jika Anda berada di zona merah pantai dan merasakan lindhu hebat, mulailah bergerak ke elevasi aman sambil memantau peta offline yang sudah terunduh di aplikasi SAMUDRA. Prioritaskan keselamatan fisik sebelum memeriksa gawai.`,
+      authorName: 'Pendidikan Kebencanaan',
+      authorRole: 'EDUKATOR RESMI',
+      coverImg: '/img/bento-evacuation-route.jpg',
+      svgThumb: SVGS.satelliteOrbit,
+    },
+    {
+      category: 'Riset Oseanografi',
+      readTime: '5 Menit Baca',
+      title: 'Pemodelan Batimetri: Bagaimana Topografi Membelokkan Ombak',
+      excerpt: 'Simulasi numerik menunjukkan terumbu karang dan palung laut mampu memecah serta mengalihkan konsentrasi energi destruktif gelombang.',
+      content: `Topografi dasar laut (batimetri) berperan besar dalam mengarahkan energi tsunami. Palung laut sempit dapat memfokuskan gelombang seperti lensa cembung memfokuskan cahaya, menghasilkan kenaikan run-up yang dahsyat di ujung teluk.
+
+Sebaliknya, ekosistem terumbu karang penghalang yang sehat dan hutan mangrove tebal terbukti secara empiris mereduksi energi kinetik gelombang hingga 66%, menjadikannya pelindung alami tak ternilai bagi warga pesisir.`,
+      authorName: 'Oseanografi Terapan',
+      authorRole: 'TIM RISET SAMUDRA',
+      coverImg: '/img/bento-buoy-warning.jpg',
+      svgThumb: SVGS.waveSlices,
+    }
+  ];
+
+  const allCards = [];
+
+  if (Array.isArray(apiArticles)) {
+    apiArticles.forEach(item => {
+      const cat = item.category ? item.category.replace(/_/g, ' ').toUpperCase() : 'ARTIKEL RESMI';
+      const dateStr = item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Baru';
+      const authorName = item.author?.name ? item.author.name.split('_').pop() : 'Rizal Zaky Firmansyah';
+      const authorRole = item.author?.role ? item.author.role.replace(/_/g, ' ').toUpperCase() : 'AUTHOR SAMUDRA';
+
+      allCards.push({
+        isBackend: true,
+        id: item.id,
+        title: item.title,
+        content: item.content || 'Konten edukasi dan panduan resmi dari sistem database SAMUDRA.',
+        excerpt: item.content ? (item.content.length > 130 ? item.content.slice(0, 130) + '...' : item.content) : 'Konten edukasi dan panduan resmi dari sistem database SAMUDRA.',
+        category: cat,
+        readTime: `${dateStr} • ${authorName}`,
+        dateStr: dateStr,
+        authorName: authorName,
+        authorRole: authorRole,
+        authorAvatar: item.author?.avatarUrl,
+        coverImg: item.coverImageUrl,
+        svgThumb: SVGS.hero
+      });
+    });
+  }
+
+  defaultGuides.forEach(guide => {
+    if (allCards.length < 6) {
+      allCards.push(guide);
+    }
+  });
+
+  // Top Row: 3 Featured InfoCards
+  const topCards = allCards.slice(0, 3);
+  if (heroContainer) {
+    heroContainer.innerHTML = topCards
+      .map((item, idx) => createInfoCardHTML(item, idx, 'sorotan', 140, 210))
+      .join('');
+    attachInfoCardInteractions(heroContainer, topCards, 'sorotan', restoreBtn);
+  }
+
+  // Second Row: 3 Latest Insight InfoCards
+  const latestCards = allCards.slice(3, 6);
+  if (latestContainer) {
+    latestContainer.innerHTML = latestCards
+      .map((item, idx) => createInfoCardHTML(item, idx + 3, 'edukasi', 140, 210))
+      .join('');
+    attachInfoCardInteractions(latestContainer, latestCards, 'edukasi', restoreBtn);
+  }
+}
+
+// ===== ARTICLE READER MODAL POPUP =====
 function openArticleModal(item) {
   let modal = document.getElementById('article-modal');
-
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'article-modal';
-
-    modal.style.cssText = `
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: rgba(6, 14, 18, 0.85);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-    `;
-
+    modal.className = 'article-modal';
     modal.innerHTML = `
-      <div data-modal-dialog style="
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.3);
-        width: 100%;
-        max-width: 820px;
-        max-height: 90vh;
-        border-radius: 24px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-        box-shadow: 0 24px 64px rgba(0,0,0,0.7);
-        color: #FEFEFE;
-      ">
-        <div style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 16px 24px;
-          border-bottom: 1px solid rgba(88, 129, 143, 0.2);
-        ">
-          <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.15em; color: #58818F; text-transform: uppercase;">
-            SAMUDRA &bull; PEMBACA PUBLIKASI
-          </span>
-          <button data-modal-close style="
-            border: 1px solid rgba(88, 129, 143, 0.25);
-            background: rgba(255,255,255,0.06);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-size: 20px;
-            cursor: pointer;
-            color: #FEFEFE;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-          ">✕</button>
-        </div>
-
-        <div style="
-          padding: 32px;
-          overflow-y: auto;
-        ">
-          <span id="modal-category" style="
-            color: #58818F;
-            font-size: 11.5px;
-            font-weight: 700;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-          "></span>
-
-          <h2 id="modal-title" style="
-            color: #FEFEFE;
-            font-size: 26px;
-            font-weight: 700;
-            line-height: 1.35;
-            margin: 14px 0 10px;
-          "></h2>
-
-          <p id="modal-date" style="
-            color: #A5B5BC;
-            font-size: 12.5px;
-            margin-bottom: 16px;
-          "></p>
-
-          <div id="modal-author" style="
-            color: #58818F;
-            font-size: 13px;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(88, 129, 143, 0.18);
-          "></div>
-
-          <div id="modal-cover"></div>
-
-          <div id="modal-content" style="
-            color: #A5B5BC;
-            font-size: 15px;
-            line-height: 1.85;
-            white-space: pre-line;
-            margin-top: 24px;
-          "></div>
+      <div class="article-modal__backdrop"></div>
+      <div class="article-modal__dialog" role="dialog" aria-modal="true">
+        <button class="article-modal__close" aria-label="Tutup artikel">&times;</button>
+        <div class="article-modal__scroll">
+          <div class="article-modal__header">
+            <div class="article-modal__meta">
+              <span class="morgana-badge" id="modal-cat"></span>
+              <span class="article-modal__date" id="modal-date"></span>
+            </div>
+            <h2 class="article-modal__title" id="modal-title"></h2>
+            <div class="article-modal__author">
+              <div id="modal-avatar-slot"></div>
+              <div>
+                <div class="article-modal__author-name" id="modal-author"></div>
+                <div class="article-modal__author-role" id="modal-role"></div>
+              </div>
+            </div>
+          </div>
+          <div class="article-modal__cover" id="modal-cover-slot"></div>
+          <div class="article-modal__body" id="modal-body"></div>
+          <div class="article-modal__footer">
+            <button class="btn btn--primary article-modal__btn-close">Tutup Bacaan</button>
+          </div>
         </div>
       </div>
     `;
-
     document.body.appendChild(modal);
 
     const closeModal = () => {
-      modal.style.display = 'none';
+      modal.classList.remove('article-modal--open');
       document.body.style.overflow = '';
     };
 
-    modal.querySelector('[data-modal-close]').onclick = closeModal;
+    modal.querySelector('.article-modal__close').onclick = closeModal;
+    modal.querySelector('.article-modal__backdrop').onclick = closeModal;
+    modal.querySelector('.article-modal__btn-close').onclick = closeModal;
 
-    modal.addEventListener('click', event => {
-      if (event.target === modal) {
-        closeModal();
-      }
-    });
-
-    window.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && modal.style.display === 'flex') {
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && modal.classList.contains('article-modal--open')) {
         closeModal();
       }
     });
   }
 
-  // ISI DATA ARTIKEL
-  modal.querySelector('#modal-category').textContent =
-    item.category || 'ARTIKEL SAMUDRA';
+  // Populate data
+  modal.querySelector('#modal-cat').textContent = item.category || 'ARTIKEL';
+  modal.querySelector('#modal-date').textContent = item.dateStr || item.readTime || 'Terkini';
+  modal.querySelector('#modal-title').textContent = item.title || 'Artikel Mitigasi';
 
-  modal.querySelector('#modal-title').textContent =
-    item.title || 'Artikel Mitigasi';
-
-  modal.querySelector('#modal-date').textContent =
-    item.dateStr || item.readTime || 'Informasi SAMUDRA';
-
-  modal.querySelector('#modal-author').textContent =
-    `${item.authorName || 'Tim SAMUDRA'} • ${item.authorRole || 'KONTRIBUTOR'}`;
-
-  const cover = modal.querySelector('#modal-cover');
-  const image = safeImageUrl(item.coverImg);
-
-  if (image) {
-    cover.innerHTML = `
-      <img
-        src="${image}"
-        alt="${escapeHTML(item.title)}"
-        style="
-          width: 100%;
-          max-height: 380px;
-          object-fit: cover;
-          border-radius: 16px;
-          margin-top: 15px;
-          border: 1px solid rgba(88, 129, 143, 0.25);
-        "
-      >
-    `;
+  const avatarSlot = modal.querySelector('#modal-avatar-slot');
+  if (item.authorAvatar) {
+    avatarSlot.innerHTML = `<img class="article-modal__avatar" src="${item.authorAvatar}" alt="${item.authorName}">`;
   } else {
-    cover.innerHTML = '';
+    const initial = (item.authorName || 'S').trim().charAt(0).toUpperCase();
+    avatarSlot.innerHTML = `<div class="article-modal__avatar-placeholder">${initial}</div>`;
   }
 
-  const contentElement = modal.querySelector('#modal-content');
+  modal.querySelector('#modal-author').textContent = item.authorName || 'Tim Mitigasi SAMUDRA';
+  modal.querySelector('#modal-role').textContent = item.authorRole || 'KONTRIBUTOR RESMI';
 
-  contentElement.textContent =
-    item.content || item.excerpt || 'Belum ada isi artikel.';
+  const coverSlot = modal.querySelector('#modal-cover-slot');
+  if (item.coverImg) {
+    coverSlot.style.display = 'block';
+    coverSlot.innerHTML = `<img src="${item.coverImg}" alt="${item.title}">`;
+  } else {
+    coverSlot.style.display = 'none';
+    coverSlot.innerHTML = '';
+  }
 
-  // AMBIL DETAIL TERBARU DARI BACKEND JIKA TERSEDIA
+  const bodyEl = modal.querySelector('#modal-body');
+  bodyEl.textContent = item.content || item.excerpt || 'Tidak ada teks tambahan.';
+
+  // If this item has an ID from backend, fetch full fresh article details asynchronously
   if (item.id && item.isBackend) {
     fetchArticleById(item.id)
       .then(fresh => {
-        if (!fresh || modal.style.display !== 'flex') return;
-
-        if (fresh.title) {
-          modal.querySelector('#modal-title').textContent = fresh.title;
-        }
-
-        if (fresh.content) {
-          contentElement.textContent = fresh.content;
-        }
-
-        if (fresh.author?.name) {
-          modal.querySelector('#modal-author').textContent =
-            fresh.author.name;
-        }
-
-        if (fresh.coverImageUrl) {
-          const freshImage = safeImageUrl(fresh.coverImageUrl);
-
-          if (freshImage) {
-            cover.innerHTML = `
-              <img
-                src="${freshImage}"
-                alt="${escapeHTML(fresh.title || item.title)}"
-                style="
-                  width: 100%;
-                  max-height: 380px;
-                  object-fit: cover;
-                  border-radius: 16px;
-                  margin-top: 15px;
-                  border: 1px solid rgba(88, 129, 143, 0.25);
-                "
-              >
-            `;
+        if (fresh) {
+          if (fresh.title) modal.querySelector('#modal-title').textContent = fresh.title;
+          if (fresh.content) bodyEl.textContent = fresh.content;
+          if (fresh.author?.name) modal.querySelector('#modal-author').textContent = fresh.author.name;
+          if (fresh.author?.avatarUrl) {
+            avatarSlot.innerHTML = `<img class="article-modal__avatar" src="${fresh.author.avatarUrl}" alt="${fresh.author.name}">`;
           }
         }
       })
-      .catch(err => {
-        console.warn('Gagal memuat detail artikel:', err);
-      });
+      .catch(() => {});
   }
 
-  // TAMPILKAN MODAL
-  modal.style.display = 'flex';
+  // Show modal
+  modal.classList.add('article-modal--open');
   document.body.style.overflow = 'hidden';
 }
