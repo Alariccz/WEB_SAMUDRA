@@ -11,7 +11,6 @@ import { renderMitigasi } from './components/Mitigasi.js';
 import { renderSimulation } from './components/Simulation.js';
 import { renderWeatherSection } from './components/WeatherWidget.js';
 import { renderArticlePage } from './components/ArticlePage.js';
-import { renderAdminApp, setAdminToken, setAdminRefreshToken, getMe, getAdminUser } from './admin/index.js';
 import { createScene } from './scene/threeScene.js';
 import * as THREE from 'three';
 
@@ -25,13 +24,9 @@ const articleView = document.createElement('div');
 articleView.id = 'article-view';
 articleView.style.display = 'none';
 
-const adminView = document.createElement('div');
-adminView.id = 'admin-view';
-adminView.style.display = 'none';
 
 app.appendChild(homeView);
 app.appendChild(articleView);
-app.appendChild(adminView);
 
 // Navbar (for home page)
 renderNavbar(homeView);
@@ -975,24 +970,8 @@ function loop() {
 loop();
 fromScroll();
 
-// ===== SPA ROUTER (Home, Article Detail, & Admin Portal) =====
+// ===== SPA ROUTER (Home & Article Detail) =====
 let savedScrollY = 0;
-
-function showAdmin(updateHistory = true) {
-  if (homeView.style.display !== 'none') {
-    savedScrollY = window.scrollY;
-  }
-  if (updateHistory) {
-    const newUrl = '/?page=admin';
-    window.history.pushState({ page: 'admin' }, '', newUrl);
-  }
-  homeView.style.display = 'none';
-  articleView.style.display = 'none';
-  articleView.innerHTML = '';
-  adminView.style.display = 'block';
-  renderAdminApp(adminView, () => showHome(true));
-  window.scrollTo(0, 0);
-}
 
 function showArticle(articleId, updateHistory = true) {
   if (homeView.style.display !== 'none') {
@@ -1002,8 +981,6 @@ function showArticle(articleId, updateHistory = true) {
     const newUrl = `${window.location.pathname}?article=${encodeURIComponent(articleId)}`;
     window.history.pushState({ articleId }, '', newUrl);
   }
-  adminView.style.display = 'none';
-  adminView.innerHTML = '';
   homeView.style.display = 'none';
   articleView.style.display = 'block';
   renderArticlePage(articleView, articleId, () => showHome(true));
@@ -1013,8 +990,6 @@ function showHome(updateHistory = true) {
   if (updateHistory) {
     window.history.pushState({}, '', '/');
   }
-  adminView.style.display = 'none';
-  adminView.innerHTML = '';
   articleView.style.display = 'none';
   articleView.innerHTML = '';
   homeView.style.display = 'block';
@@ -1029,7 +1004,12 @@ window.__navigateToArticle = function (id) {
 };
 
 window.__navigateToAdmin = function () {
-  showAdmin(true);
+  const hostname = window.location.hostname;
+  if (hostname === 'samudra.buzz' || hostname.endsWith('.samudra.buzz')) {
+    window.location.href = 'https://admin.samudra.buzz/';
+  } else {
+    window.location.href = '/admin.html';
+  }
 };
 
 // Handle Browser Back & Forward buttons
@@ -1037,8 +1017,8 @@ window.addEventListener('popstate', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const articleId = urlParams.get('article');
   const page = urlParams.get('page');
-  if (page === 'admin' || window.location.search.includes('admin')) {
-    showAdmin(false);
+  if (page === 'admin') {
+    window.__navigateToAdmin();
   } else if (articleId) {
     showArticle(articleId, false);
   } else {
@@ -1046,37 +1026,24 @@ window.addEventListener('popstate', () => {
   }
 });
 
-// Initial URL inspection on load (including Google OAuth callback token from backend redirect)
+// Initial URL inspection on load
 const urlParams = new URLSearchParams(window.location.search);
 const isCallbackPath = window.location.pathname.includes('/auth/callback');
 const oauthToken = urlParams.get('token') || urlParams.get('accessToken') || urlParams.get('access_token');
-const oauthRefreshToken = urlParams.get('refreshToken') || urlParams.get('refresh_token');
-const authError = urlParams.get('error') || urlParams.get('message');
 
-if (oauthToken) {
-  setAdminToken(oauthToken);
-  if (oauthRefreshToken) {
-    setAdminRefreshToken(oauthRefreshToken);
+if (oauthToken || isCallbackPath) {
+  // Callback token OAuth dialihkan ke portal admin yang terpisah
+  if (window.location.hostname === 'admin.samudra.buzz' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    window.location.replace('/admin.html' + window.location.search);
+  } else {
+    window.location.replace('https://admin.samudra.buzz/auth/callback' + window.location.search);
   }
-  // Immediately decode user so getAdminUser() is ready immediately
-  getAdminUser();
-
-  // Clean URL to /?page=admin without leaving access tokens in address bar
-  window.history.replaceState({ page: 'admin' }, '', '/?page=admin');
-
-  getMe().catch((e) => {
-    console.warn('Gagal memuat profil OAuth:', e);
-  }).finally(() => {
-    showAdmin(false);
-  });
-} else if (authError) {
-  window.history.replaceState({ page: 'admin' }, '', '/?page=admin');
-  showAdmin(false);
-} else if (isCallbackPath || urlParams.get('page') === 'admin' || window.location.search.includes('admin')) {
-  if (isCallbackPath) {
-    window.history.replaceState({ page: 'admin' }, '', '/?page=admin');
+} else if (urlParams.get('page') === 'admin' || window.location.search.includes('admin')) {
+  if (window.location.hostname === 'samudra.buzz') {
+    window.location.replace('https://admin.samudra.buzz/');
+  } else {
+    window.location.replace('/admin.html' + window.location.search);
   }
-  showAdmin(false);
 } else if (urlParams.get('article')) {
   showArticle(urlParams.get('article'), false);
 } else {
