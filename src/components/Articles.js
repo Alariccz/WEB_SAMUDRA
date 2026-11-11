@@ -154,49 +154,67 @@ export function renderArticles(container) {
       </div>
     </div>
 
-    <!-- Interactive FAQ Section (With Azure Blue Accent) -->
+    <!-- Interactive FAQ Section (Tactical Maritime HUD Style) -->
     <div class="morgana-faq">
       <div class="morgana-faq__header">
         <span class="morgana-eyebrow">Informasi Populer</span>
         <h3 class="morgana-faq__title">Pertanyaan Umum Seputar SAMUDRA</h3>
         <p class="morgana-faq__desc">Mekanisme pemantauan gempa BMKG, pemodelan 3D tsunami, dan kepastian evakuasi.</p>
+
+        <!-- BMKG Telemetry Status Card -->
+        <div class="faq-telemetry-card">
+          <div class="faq-telemetry-card__header">
+            <span class="faq-telemetry-led"></span>
+            <span class="faq-telemetry-label">Status Sistem: <span class="faq-telemetry-status">NORMAL</span></span>
+          </div>
+          <div class="faq-telemetry-card__meta">Micro-telemetry</div>
+          <div class="faq-telemetry-card__row">BMKG Feed 34ms &bull; Cache Offline 100% Synced</div>
+        </div>
       </div>
 
       <div class="morgana-accordion" id="morgana-accordion">
         <div class="morgana-accordion__item" data-index="0">
           <button class="morgana-accordion__trigger">
-            <span>Bagaimana SAMUDRA menerima informasi gempa &amp; potensi tsunami?</span>
-            <span class="morgana-accordion__icon">+</span>
+            <span class="morgana-accordion__num">01</span>
+            <span class="morgana-accordion__text">Bagaimana SAMUDRA menerima informasi gempa &amp; potensi tsunami?</span>
+            <span class="morgana-accordion__icon-box"><span class="morgana-accordion__icon">+</span></span>
           </button>
           <div class="morgana-accordion__content">
             <p>SAMUDRA terhubung dengan sistem diseminasi BMKG (InaTEWS), menangkap data magnitudo, episenter, kedalaman, dan perkiraan waktu tiba gelombang dalam hitungan detik setelah gempa terdeteksi.</p>
           </div>
         </div>
 
-        <div class="morgana-accordion__item morgana-accordion__item--active" data-index="1">
+        <div class="morgana-accordion__item" data-index="1">
           <button class="morgana-accordion__trigger">
-            <span>Alat pemantauan, simulasi 3D, dan panduan evakuasi.</span>
-            <span class="morgana-accordion__icon">&minus;</span>
+            <span class="morgana-accordion__num">02</span>
+            <span class="morgana-accordion__text">Apa saja fitur utama pemantauan, simulasi 3D, dan panduan evakuasi di SAMUDRA?</span>
+            <span class="morgana-accordion__icon-box"><span class="morgana-accordion__icon">+</span></span>
           </button>
-          <div class="morgana-accordion__content" style="display: block;">
+          <div class="morgana-accordion__content">
             <p>Aplikasi SAMUDRA mengintegrasikan pemodelan ketinggian air laut 3D interaktif, perhitungan elevasi topografi pesisir, dan panduan rute tercepat ke shelter tinggi yang aman dari jembatan dan zona merah.</p>
           </div>
         </div>
 
-        <div class="morgana-accordion__item" data-index="2">
+        <div class="morgana-accordion__item morgana-accordion__item--active" data-index="2">
           <button class="morgana-accordion__trigger">
-            <span>Apakah simulasi 3D dapat dijalankan secara offline?</span>
-            <span class="morgana-accordion__icon">+</span>
+            <span class="morgana-accordion__num">03</span>
+            <span class="morgana-accordion__text">Apakah simulasi 3D dapat dijalankan secara offline?</span>
+            <span class="morgana-accordion__icon-box"><span class="morgana-accordion__icon">&minus;</span></span>
           </button>
-          <div class="morgana-accordion__content">
+          <div class="morgana-accordion__content" style="display: block;">
             <p>Ya, rute evakuasi dan peta topografi offline disimpan secara lokal di perangkat Anda sehingga tetap dapat diakses saat jaringan telekomunikasi seluler mengalami pemadaman pasca-gempa.</p>
+            <div class="morgana-accordion__badges">
+              <span class="morgana-micro-badge">Local SQLite Cache</span>
+              <span class="morgana-micro-badge">Offline GPS Mesh</span>
+            </div>
           </div>
         </div>
 
         <div class="morgana-accordion__item" data-index="3">
           <button class="morgana-accordion__trigger">
-            <span>Apa arti tingkat peringatan Waspada, Siaga, dan Awas?</span>
-            <span class="morgana-accordion__icon">+</span>
+            <span class="morgana-accordion__num">04</span>
+            <span class="morgana-accordion__text">Apa arti tingkat peringatan Waspada, Siaga, dan Awas?</span>
+            <span class="morgana-accordion__icon-box"><span class="morgana-accordion__icon">+</span></span>
           </button>
           <div class="morgana-accordion__content">
             <p>Waspada: potensi tinggi gelombang &lt; 0.5 meter (jauhi pantai). Siaga: potensi tinggi 0.5 &ndash; 3 meter (segera evakuasi ke tempat tinggi). Awas: potensi tinggi &gt; 3 meter (evakuasi menyeluruh ke shelter daratan tinggi).</p>
@@ -205,8 +223,9 @@ export function renderArticles(container) {
 
         <div class="morgana-accordion__item" data-index="4">
           <button class="morgana-accordion__trigger">
-            <span>Bagaimana cara menyusun rencana darurat keluarga?</span>
-            <span class="morgana-accordion__icon">+</span>
+            <span class="morgana-accordion__num">05</span>
+            <span class="morgana-accordion__text">Bagaimana cara menyusun rencana darurat keluarga?</span>
+            <span class="morgana-accordion__icon-box"><span class="morgana-accordion__icon">+</span></span>
           </button>
           <div class="morgana-accordion__content">
             <p>Tentukan titik kumpul di luar zona rendaman merah, sepakati kontak darurat di luar kota, dan lengkapi tas siaga bencana dengan persediaan minimal untuk 72 jam pertama.</p>
@@ -273,7 +292,6 @@ function initAccordion(section) {
     };
   });
 }
-
 // Curated 3-image media stacks for InfoCardMedia fan animation
 const MEDIA_GALLERIES = [
   [
