@@ -332,23 +332,10 @@ const ctaSection = document.createElement('section');
 ctaSection.id = 'akses';
 ctaSection.innerHTML = `
   <div class="cta-banner" id="unduh-apk">
-    <!-- Tactical grid background lines -->
-    <div class="cta-coord cta-coord--tl" aria-hidden="true">2.6, 10</div>
-    <div class="cta-coord cta-coord--tc" aria-hidden="true">390°</div>
-    <div class="cta-coord cta-coord--bl" aria-hidden="true">0°0'</div>
-    <div class="cta-coord cta-coord--bc" aria-hidden="true">180°</div>
-    <div class="cta-coord cta-coord--br" aria-hidden="true">6°0'</div>
-
     <div class="cta-banner__grid">
       <!-- Left: Copywriting & Action Buttons -->
       <div class="cta-banner__content">
-        <!-- Badge -->
-        <div class="cta-distrib-badge">
-          <span class="cta-distrib-led"></span>
-          <span>DISTRIBUSI RESMI &bull; APLIKASI MANDIRI</span>
-          <span class="cta-distrib-led"></span>
-        </div>
-
+        <span class="section-eyebrow">DISTRIBUSI RESMI &bull; APLIKASI MANDIRI</span>
         <h2 class="cta-banner__title">Kesiapsiagaan dimulai dari genggaman Anda.</h2>
         <p class="cta-banner__lead">
           Pasang aplikasi Android (APK) siap pakai untuk navigasi evakuasi mandiri berpanduan GPS offline, sirene gempa BMKG otomatis, dan penunjuk arah shelter elevasi tinggi terdekat.
@@ -356,7 +343,7 @@ ctaSection.innerHTML = `
 
         <div class="cta-banner__actions">
           <a class="btn btn--primary btn--apk" id="cta-apk-btn" href="#unduh-apk">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
               <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -367,140 +354,101 @@ ctaSection.innerHTML = `
           <a class="btn btn--outline" href="#artikel">Berita &amp; Riset</a>
         </div>
 
-        <!-- Telemetry Spec Pills -->
-        <div class="apk-spec-strip">
-          <div class="apk-spec-pill">
-            <span class="apk-spec-led"></span>
-            <div>
-              <span class="apk-spec-label">VERSI:</span>
-              <span class="apk-spec-val">v2.4.1</span>
-            </div>
+        <!-- APK Metadata Info -->
+        <div class="apk-meta-grid">
+          <div class="apk-meta-item">
+            <span class="apk-meta-label">VERSI</span>
+            <span class="apk-meta-val">v2.4.1 (Stable)</span>
           </div>
-          <div class="apk-spec-pill">
-            <span class="apk-spec-led"></span>
-            <div>
-              <span class="apk-spec-label">UKURAN:</span>
-              <span class="apk-spec-val">28.4 MB</span>
-            </div>
+          <div class="apk-meta-item">
+            <span class="apk-meta-label">UKURAN FILE</span>
+            <span class="apk-meta-val">28.4 MB</span>
           </div>
-          <div class="apk-spec-pill">
-            <span class="apk-spec-led"></span>
-            <div>
-              <span class="apk-spec-label">SISTEM OPERASI:</span>
-              <span class="apk-spec-val">Android 8.0+</span>
-            </div>
+          <div class="apk-meta-item">
+            <span class="apk-meta-label">SISTEM OPERASI</span>
+            <span class="apk-meta-val">Android 8.0+</span>
           </div>
-          <div class="apk-spec-pill">
-            <span class="apk-spec-led apk-spec-led--check"></span>
-            <div>
-              <span class="apk-spec-label">INTEGRITAS:</span>
-              <span class="apk-spec-val">Terverifikasi</span>
-            </div>
+          <div class="apk-meta-item">
+            <span class="apk-meta-label">INTEGRITAS</span>
+            <span class="apk-meta-val">Bebas Iklan &bull; Terverifikasi</span>
           </div>
         </div>
       </div>
 
       <!-- Right: Phone Mockup & QR Code Container -->
       <div class="cta-banner__visuals">
-        <div class="phone-qr-wrapper">
-          <!-- Phone Mockup -->
-          <div class="phone-mockup">
-            <div class="phone-mockup__notch"></div>
-            <div class="phone-mockup__screen">
-              <div class="mockup-statusbar">
-                <span class="mockup-statusbar__time">5:41</span>
-                <span class="mockup-statusbar__icons">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="20" y1="11" x2="22" y2="11" stroke="currentColor" stroke-width="2"/></svg>
-                </span>
-              </div>
-              <div class="mockup-header">
-                <div class="mockup-header__left">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-                  <span class="mockup-header__logo">SAMUDRA</span>
-                </div>
-                <div class="mockup-header__right">
-                  <span class="mockup-live-indicator"><span class="mockup-live-dot"></span> LIVE BMKG</span>
-                </div>
-              </div>
-              <div class="mockup-alert">
-                <div class="mockup-alert__tag">
-                  <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-                  PERINGATAN DINI
-                </div>
-                <div class="mockup-alert__title">POTENSI TSUNAMI M 8.0</div>
-              </div>
-              <div class="mockup-radar">
-                <div class="mockup-radar__grid"></div>
-                <div class="mockup-radar__circle mockup-radar__circle--3"></div>
-                <div class="mockup-radar__circle mockup-radar__circle--2"></div>
-                <div class="mockup-radar__circle mockup-radar__circle--1"></div>
-                <div class="mockup-radar__line"></div>
-                <div class="mockup-radar__sweep"></div>
-                <svg class="mockup-radar__path" viewBox="0 0 200 140" fill="none">
-                  <path d="M 20 120 Q 80 110 110 75 T 160 30" stroke="#00f2fe" stroke-width="2" stroke-dasharray="4 4" opacity="0.75" />
-                </svg>
-                <div class="mockup-radar__pin"></div>
-              </div>
-              <div class="mockup-card">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="color:#00f2fe;flex-shrink:0;margin-top:1px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="#030712"/></svg>
-                <div>
-                  <div class="mockup-card__dest">1.4 km &bull; 11 menit</div>
-                  <div class="mockup-card__eta">to nearest high-elevation shelter</div>
-                </div>
-              </div>
+        <!-- Phone Mockup -->
+        <div class="phone-mockup">
+          <div class="phone-mockup__speaker"></div>
+          <div class="phone-mockup__screen">
+            <div class="mockup-header">
+              <span class="mockup-header__logo">SAMUDRA</span>
+              <span class="mockup-header__status"><span class="mockup-dot"></span> LIVE BMKG</span>
+            </div>
+            <div class="mockup-alert">
+              <div class="mockup-alert__tag">PERINGATAN DINI</div>
+              <div class="mockup-alert__title">POTENSI TSUNAMI M 8.0</div>
+              <div class="mockup-alert__sub">Jalur evakuasi aktif &bull; Hindari pesisir</div>
+            </div>
+            <div class="mockup-radar">
+              <div class="mockup-radar__circle mockup-radar__circle--3"></div>
+              <div class="mockup-radar__circle mockup-radar__circle--2"></div>
+              <div class="mockup-radar__circle mockup-radar__circle--1"></div>
+              <div class="mockup-radar__line"></div>
+              <div class="mockup-radar__pin"></div>
+            </div>
+            <div class="mockup-card">
+              <div class="mockup-card__dest">Shelter Bukit Sektor B</div>
+              <div class="mockup-card__eta">1.4 km &bull; 11 menit berjalan</div>
             </div>
           </div>
+        </div>
 
-          <!-- QR Code Card (overlapping) -->
-          <div class="tactical-qr-card">
-            <div class="tactical-qr-corner tactical-qr-corner--tl"></div>
-            <div class="tactical-qr-corner tactical-qr-corner--tr"></div>
-            <div class="tactical-qr-corner tactical-qr-corner--bl"></div>
-            <div class="tactical-qr-corner tactical-qr-corner--br"></div>
-            <div class="tactical-qr-label">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-              Pindai QR Code
-            </div>
-            <div class="tactical-qr-code">
-              <svg viewBox="0 0 100 100" width="120" height="120">
-                <rect x="0" y="0" width="100" height="100" fill="#030f20"/>
-                <!-- Top-Left Finder -->
-                <rect x="8" y="8" width="26" height="26" fill="#00d2ff"/>
-                <rect x="12" y="12" width="18" height="18" fill="#030f20"/>
-                <rect x="16" y="16" width="10" height="10" fill="#00d2ff"/>
-                <!-- Top-Right Finder -->
-                <rect x="66" y="8" width="26" height="26" fill="#00d2ff"/>
-                <rect x="70" y="12" width="18" height="18" fill="#030f20"/>
-                <rect x="74" y="16" width="10" height="10" fill="#00d2ff"/>
-                <!-- Bottom-Left Finder -->
-                <rect x="8" y="66" width="26" height="26" fill="#00d2ff"/>
-                <rect x="12" y="70" width="18" height="18" fill="#030f20"/>
-                <rect x="16" y="74" width="10" height="10" fill="#00d2ff"/>
-                <!-- Data modules -->
-                <rect x="38" y="10" width="6" height="6" fill="#38bdf8"/>
-                <rect x="48" y="10" width="8" height="6" fill="#00d2ff"/>
-                <rect x="38" y="22" width="10" height="6" fill="#00d2ff"/>
-                <rect x="52" y="22" width="6" height="6" fill="#38bdf8"/>
-                <rect x="10" y="40" width="6" height="8" fill="#00d2ff"/>
-                <rect x="22" y="40" width="8" height="6" fill="#38bdf8"/>
-                <rect x="36" y="38" width="8" height="8" fill="#00d2ff"/>
-                <rect x="48" y="40" width="8" height="6" fill="#38bdf8"/>
-                <rect x="62" y="40" width="10" height="6" fill="#00d2ff"/>
-                <rect x="78" y="38" width="8" height="8" fill="#38bdf8"/>
-                <rect x="36" y="52" width="6" height="10" fill="#38bdf8"/>
-                <rect x="48" y="54" width="10" height="6" fill="#00d2ff"/>
-                <rect x="64" y="52" width="8" height="8" fill="#00d2ff"/>
-                <rect x="76" y="54" width="10" height="6" fill="#38bdf8"/>
-                <rect x="38" y="68" width="8" height="8" fill="#00d2ff"/>
-                <rect x="52" y="66" width="6" height="10" fill="#38bdf8"/>
-                <rect x="64" y="70" width="12" height="6" fill="#00d2ff"/>
-                <rect x="80" y="68" width="6" height="8" fill="#38bdf8"/>
-                <rect x="40" y="82" width="10" height="6" fill="#38bdf8"/>
-                <rect x="56" y="80" width="8" height="8" fill="#00d2ff"/>
-                <rect x="70" y="82" width="14" height="6" fill="#00d2ff"/>
-              </svg>
-            </div>
+        <!-- QR Code Card -->
+        <div class="qr-card">
+          <div class="qr-card__code">
+            <svg viewBox="0 0 100 100" width="110" height="110" fill="#00d2ff">
+              <!-- QR Code Pattern -->
+              <rect x="0" y="0" width="100" height="100" fill="#041226"/>
+              <!-- Top-Left Target -->
+              <rect x="10" y="10" width="24" height="24" fill="#00d2ff"/>
+              <rect x="14" y="14" width="16" height="16" fill="#041226"/>
+              <rect x="18" y="18" width="8" height="8" fill="#00d2ff"/>
+              <!-- Top-Right Target -->
+              <rect x="66" y="10" width="24" height="24" fill="#00d2ff"/>
+              <rect x="70" y="14" width="16" height="16" fill="#041226"/>
+              <rect x="74" y="18" width="8" height="8" fill="#00d2ff"/>
+              <!-- Bottom-Left Target -->
+              <rect x="10" y="66" width="24" height="24" fill="#00d2ff"/>
+              <rect x="14" y="70" width="16" height="16" fill="#041226"/>
+              <rect x="18" y="74" width="8" height="8" fill="#00d2ff"/>
+              <!-- Data modules -->
+              <rect x="38" y="12" width="6" height="6" fill="#38bdf8"/>
+              <rect x="48" y="12" width="6" height="6" fill="#00d2ff"/>
+              <rect x="38" y="24" width="10" height="6" fill="#00d2ff"/>
+              <rect x="52" y="24" width="6" height="6" fill="#38bdf8"/>
+              <rect x="12" y="42" width="6" height="10" fill="#00d2ff"/>
+              <rect x="24" y="42" width="8" height="6" fill="#38bdf8"/>
+              <rect x="38" y="40" width="8" height="8" fill="#00d2ff"/>
+              <rect x="50" y="42" width="8" height="6" fill="#38bdf8"/>
+              <rect x="64" y="42" width="10" height="6" fill="#00d2ff"/>
+              <rect x="80" y="40" width="8" height="8" fill="#38bdf8"/>
+              <rect x="38" y="54" width="6" height="10" fill="#38bdf8"/>
+              <rect x="50" y="56" width="10" height="6" fill="#00d2ff"/>
+              <rect x="66" y="54" width="8" height="8" fill="#00d2ff"/>
+              <rect x="78" y="56" width="10" height="6" fill="#38bdf8"/>
+              <rect x="40" y="70" width="8" height="8" fill="#00d2ff"/>
+              <rect x="54" y="68" width="6" height="10" fill="#38bdf8"/>
+              <rect x="66" y="72" width="12" height="6" fill="#00d2ff"/>
+              <rect x="82" y="70" width="6" height="8" fill="#38bdf8"/>
+              <rect x="42" y="84" width="10" height="6" fill="#38bdf8"/>
+              <rect x="58" y="82" width="8" height="8" fill="#00d2ff"/>
+              <rect x="72" y="84" width="14" height="6" fill="#00d2ff"/>
+            </svg>
+          </div>
+          <div class="qr-card__label">
+            <b>Pindai QR Code</b>
+            <small>Unduh langsung ke ponsel Android Anda</small>
           </div>
         </div>
       </div>

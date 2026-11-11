@@ -49,15 +49,14 @@ const TSUNAMI_PRESETS = [
     name: "Megathrust Selatan Jawa",
     lat: -9.2,
     lon: 109.5,
-    mapCenter: [-8.35, 109.8],
-    zoom: 6.8,
     mag: 8.7,
     depth: 20,
     dist: 130,
     coasts: [
-      { name: "Pangandaran", lat: -7.70, lon: 108.65, etaMin: 22, height: 7.1 },
-      { name: "Parangtritis", lat: -8.02, lon: 110.33, etaMin: 28, height: 6.4 },
-      { name: "Pacitan", lat: -8.22, lon: 111.09, etaMin: 32, height: 5.9 }
+      { name: "Pangandaran (Jabar)", lat: -7.70, lon: 108.65, etaMin: 22, height: 7.1 },
+      { name: "Parangtritis / Bantul (DIY)", lat: -8.02, lon: 110.33, etaMin: 28, height: 6.4 },
+      { name: "Pacitan (Jatim)", lat: -8.22, lon: 111.09, etaMin: 32, height: 5.9 },
+      { name: "Pelabuhan Ratu (Jabar)", lat: -6.98, lon: 106.54, etaMin: 35, height: 5.2 }
     ]
   },
   {
@@ -65,15 +64,14 @@ const TSUNAMI_PRESETS = [
     name: "Subduksi Sumatra - Aceh Simeulue",
     lat: 2.8,
     lon: 95.5,
-    mapCenter: [3.2, 96.2],
-    zoom: 6.8,
     mag: 9.1,
     depth: 25,
     dist: 85,
     coasts: [
-      { name: "Sinabang", lat: 2.48, lon: 96.38, etaMin: 12, height: 14.5 },
-      { name: "Meulaboh", lat: 4.14, lon: 96.13, etaMin: 24, height: 9.8 },
-      { name: "Banda Aceh", lat: 5.55, lon: 95.32, etaMin: 38, height: 8.5 }
+      { name: "Sinabang (Simeulue)", lat: 2.48, lon: 96.38, etaMin: 12, height: 14.5 },
+      { name: "Meulaboh (Aceh Barat)", lat: 4.14, lon: 96.13, etaMin: 24, height: 9.8 },
+      { name: "Banda Aceh (Aceh)", lat: 5.55, lon: 95.32, etaMin: 38, height: 8.5 },
+      { name: "Gunungsitoli (Nias)", lat: 1.28, lon: 97.61, etaMin: 28, height: 6.5 }
     ]
   },
   {
@@ -160,8 +158,12 @@ export function renderSimulation(container) {
         <!-- TOOLBAR: SIMULATION MODE -->
         <div class="seismic-card__toolbar" id="toolbar-sim-map">
           <div class="seismic-card__meta">
+            <span class="seismic-live-badge seismic-live-badge--cyan">
+              <span class="seismic-led seismic-led--cyan"></span>
+              SIMULATOR PROPAGASI GELOMBANG
+            </span>
             <div class="seismic-select-group">
-              <label for="sim-scenario-select" class="seismic-label">Scenario</label>
+              <label for="sim-scenario-select" class="seismic-label">Skenario:</label>
               <select id="sim-scenario-select" class="seismic-select">
                 <option value="megathrust-jawa" selected>Megathrust Selatan Jawa (M 8.7)</option>
                 <option value="subduksi-aceh">Subduksi Aceh - Simeulue (M 9.1)</option>
@@ -174,9 +176,16 @@ export function renderSimulation(container) {
 
           <div class="seismic-card__actions">
             <button type="button" id="sim-btn-play" class="seismic-action-btn seismic-action-btn--primary">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
               <span>Mulai Simulasi</span>
             </button>
             <button type="button" id="sim-btn-reset" class="seismic-action-btn seismic-action-btn--secondary" title="Reset Simulasi">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+              </svg>
               <span>Reset</span>
             </button>
           </div>
@@ -245,7 +254,7 @@ export function renderSimulation(container) {
 
         <!-- Main Display Frame (Map or Cross-Section Canvas) -->
         <div class="seismic-frame-wrap" id="seismic-frame-wrap">
-          <!-- MAP CONTAINER (ESRI Dark Gray with Tactical Bathymetry Filter) -->
+          <!-- MAP CONTAINER (ESRI Dark Gray) -->
           <div id="seismic-native-map" class="seismic-native-map"></div>
 
           <!-- CROSS-SECTION CANVAS (Initially hidden) -->
@@ -253,16 +262,21 @@ export function renderSimulation(container) {
 
           <!-- SIMULATION HUD TELEMETRY OVERLAY (In Map Mode) -->
           <div class="sim-hud-overlay" id="sim-hud-overlay">
-            <div class="sim-hud-badge sim-hud-badge--red" id="sim-hud-status">
+            <div class="sim-hud-badge" id="sim-hud-status">
               <span class="sim-hud-dot"></span>
-              <span id="sim-hud-status-text">STATUS: AWAS</span>
+              <span id="sim-hud-status-text">STATUS: SIAP</span>
             </div>
-            <div class="sim-hud-capsule">
-              <span class="sim-hud-item"><span class="sim-hud-lbl">T+</span> <span class="sim-hud-val" id="sim-hud-timer">00:00</span></span>
-              <span class="sim-hud-divider"></span>
-              <span class="sim-hud-item"><span class="sim-hud-lbl">ESTIMASI:</span> <span class="sim-hud-val sim-hud-val--alert" id="sim-hud-height">4.9 m</span></span>
-              <span class="sim-hud-divider"></span>
-              <span class="sim-hud-item"><span class="sim-hud-lbl">ETA:</span> <span class="sim-hud-val" id="sim-hud-eta">15 Menit</span></span>
+            <div class="sim-hud-item">
+              <span class="sim-hud-lbl">WAKTU SIMULASI</span>
+              <span class="sim-hud-val" id="sim-hud-timer">T+ 00:00</span>
+            </div>
+            <div class="sim-hud-item">
+              <span class="sim-hud-lbl">ESTIMASI GELOMBANG</span>
+              <span class="sim-hud-val" id="sim-hud-height" style="color: #00d2ff;">▲ 6.4 m</span>
+            </div>
+            <div class="sim-hud-item">
+              <span class="sim-hud-lbl">ETA TERCEPAT</span>
+              <span class="sim-hud-val" id="sim-hud-eta" style="color: #f59e0b;">⏱ 22 Menit</span>
             </div>
           </div>
 
@@ -289,7 +303,7 @@ export function renderSimulation(container) {
         <div class="seismic-controls-bar" id="seismic-controls-bar">
           <div class="sim-control-item">
             <div class="sim-control-head">
-              <label for="sim-input-mag" class="sim-control-label">Magnitudo</label>
+              <label for="sim-input-mag" class="sim-control-label">Magnitudo Gempa</label>
               <span class="sim-control-val" id="sim-val-mag">M 8.7</span>
             </div>
             <input type="range" id="sim-input-mag" min="6.5" max="9.2" step="0.1" value="8.7" class="sim-slider" />
@@ -297,7 +311,7 @@ export function renderSimulation(container) {
 
           <div class="sim-control-item">
             <div class="sim-control-head">
-              <label for="sim-input-depth" class="sim-control-label">Kedalaman</label>
+              <label for="sim-input-depth" class="sim-control-label">Kedalaman Episentrum</label>
               <span class="sim-control-val" id="sim-val-depth">20 km</span>
             </div>
             <input type="range" id="sim-input-depth" min="10" max="100" step="5" value="20" class="sim-slider" />
@@ -305,21 +319,28 @@ export function renderSimulation(container) {
 
           <div class="sim-control-item">
             <div class="sim-control-head">
-              <label for="sim-input-dist" class="sim-control-label">Jarak</label>
-              <span class="sim-control-val" id="sim-val-dist">130 km</span>
+              <label for="sim-input-dist" class="sim-control-label">Jarak ke Pesisir</label>
+              <span class="sim-control-val" id="sim-val-dist">120 km</span>
             </div>
-            <input type="range" id="sim-input-dist" min="20" max="300" step="10" value="130" class="sim-slider" />
+            <input type="range" id="sim-input-dist" min="20" max="300" step="10" value="120" class="sim-slider" />
           </div>
         </div>
 
         <!-- FOOTER BAR -->
         <div class="seismic-card__footer">
-          <div class="sim-tactical-footer">
-            <span>Persamaan Shallow Water (Green's Law)</span>
-            <span class="sim-footer-dot">&bull;</span>
-            <span>Data Feed: USGS, BMKG, EMSC</span>
-            <span class="sim-footer-dot">&bull;</span>
-            <span>Klasifikasi: <strong class="sim-footer-alert" id="sim-warning-tier">AWAS (&gt; 3.0 Meter)</strong></span>
+          <div class="seismic-pills" id="footer-pills">
+            <div class="seismic-pill">
+              <span class="seismic-pill__lbl">METODE PEMODELAN</span>
+              <span class="seismic-pill__val">Persamaan Shallow Water (Green's Law)</span>
+            </div>
+            <div class="seismic-pill">
+              <span class="seismic-pill__lbl">DATA FEED</span>
+              <span class="seismic-pill__val">USGS &bull; BMKG &bull; EMSC</span>
+            </div>
+            <div class="seismic-pill">
+              <span class="seismic-pill__lbl">KLASIFIKASI PERINGATAN</span>
+              <span class="seismic-pill__val" id="sim-warning-tier">AWAS (&gt; 3.0 Meter)</span>
+            </div>
           </div>
         </div>
       </div>
@@ -339,10 +360,10 @@ function initUnifiedSeismicSimulator(root) {
   const canvasEl = root.querySelector('#seismic-cross-canvas');
   if (!mapEl || !canvasEl) return;
 
-  // Initialize Leaflet Map centered on Java Trench
+  // Initialize Leaflet Map with center in Indonesia
   const map = L.map(mapEl, {
-    center: [-8.35, 109.8],
-    zoom: 6.8,
+    center: [-2.5, 118.0],
+    zoom: 5,
     minZoom: 4,
     maxZoom: 9,
     zoomControl: false,
@@ -436,8 +457,8 @@ function initUnifiedSeismicSimulator(root) {
     // Time to coast: shallow water speed v = sqrt(g * d) ~ 600-800 km/h in deep sea
     const etaMin = Math.max(4, Math.round(D / 8.5));
 
-    hudHeight.textContent = `${waveHeight.toFixed(1)} m`;
-    hudEta.textContent = `${etaMin} Menit`;
+    hudHeight.textContent = `▲ ${waveHeight.toFixed(1)} m`;
+    hudEta.textContent = `⏱ ${etaMin} Menit`;
 
     // BMKG warning tier
     if (waveHeight >= 3.0) {
@@ -471,9 +492,7 @@ function initUnifiedSeismicSimulator(root) {
 
     calculateTsunamiMetrics();
     renderScenarioMarkers(preset);
-    const targetCenter = preset.mapCenter || [preset.lat, preset.lon];
-    const targetZoom = preset.zoom || 6.6;
-    map.flyTo(targetCenter, targetZoom, { duration: 1.2 });
+    map.flyTo([preset.lat, preset.lon], 6.5, { duration: 1.2 });
   }
 
   function renderScenarioMarkers(preset) {
@@ -488,8 +507,8 @@ function initUnifiedSeismicSimulator(root) {
         <div class="sim-epicenter-pulse"></div>
         <div class="sim-epicenter-core"></div>
       `,
-      iconSize: [36, 36],
-      iconAnchor: [18, 18]
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
     });
 
     const epicMarker = L.marker([preset.lat, preset.lon], { icon: epicIcon });
@@ -508,42 +527,25 @@ function initUnifiedSeismicSimulator(root) {
     `);
     epicMarker.addTo(simEpicenterLayerGroup);
 
-    // Initial static propagation wave rings (matching tactical radar aesthetic)
-    const staticRadii = [35000, 75000, 120000, 175000, 230000];
-    staticRadii.forEach((r, idx) => {
-      L.circle([preset.lat, preset.lon], {
-        radius: r,
-        color: '#00f2fe',
-        weight: 1.6,
-        opacity: Math.max(0.12, 0.55 - idx * 0.09),
-        fillColor: '#00f2fe',
-        fillOpacity: 0.03,
-        dashArray: idx % 2 === 1 ? '4, 4' : null,
-        interactive: false
-      }).addTo(simWavesLayerGroup);
-    });
-
-    // Coastline impact target markers with tactical pins
+    // Coastline impact target markers
     preset.coasts.forEach(coast => {
       const coastIcon = L.divIcon({
         className: 'sim-coast-marker',
         html: `
-          <div class="sim-tactical-pin">
-            <span class="sim-tactical-pin__dot"></span>
-            <div class="sim-tactical-pin__box">
-              <span class="sim-pin-name">${coast.name}</span>
-              <span class="sim-pin-eta">${coast.etaMin}m</span>
-            </div>
+          <div class="sim-coast-pill">
+            <span class="sim-coast-dot"></span>
+            <span>${coast.name.split('(')[0]}</span>
+            <small>${coast.etaMin}m</small>
           </div>
         `,
-        iconSize: [90, 36],
-        iconAnchor: [6, 18]
+        iconSize: [120, 24],
+        iconAnchor: [60, 12]
       });
 
       const coastMarker = L.marker([coast.lat, coast.lon], { icon: coastIcon });
       coastMarker.bindPopup(`
         <div class="seismic-popup">
-          <div class="seismic-popup__badge" style="background:rgba(0, 242, 254, 0.2); border-color:#00f2fe; color:#00f2fe">
+          <div class="seismic-popup__badge" style="background:rgba(0, 210, 255, 0.2); border-color:#00d2ff; color:#00d2ff">
             TARGET PESISIR
           </div>
           <h4 class="seismic-popup__title">${coast.name}</h4>
@@ -567,24 +569,24 @@ function initUnifiedSeismicSimulator(root) {
     const currentMin = Math.round(simProgress * totalSimMinutes);
     const minStr = String(currentMin).padStart(2, '0');
     const secStr = String(Math.floor((simProgress * totalSimMinutes * 60) % 60)).padStart(2, '0');
-    hudTimer.textContent = `${minStr}:${secStr}`;
+    hudTimer.textContent = `T+ ${minStr}:${secStr}`;
 
     const maxRadiusMeters = 380000; // ~380 km wave reach
-    const waveCount = 5;
+    const waveCount = 4;
 
     for (let i = 0; i < waveCount; i++) {
-      const wavePhase = (simProgress * 1.5 - i * 0.16);
-      if (wavePhase > 0 && wavePhase <= 1.25) {
+      const wavePhase = (simProgress * 1.5 - i * 0.18);
+      if (wavePhase > 0 && wavePhase <= 1.2) {
         const radius = Math.min(maxRadiusMeters, wavePhase * maxRadiusMeters);
-        const opacity = Math.max(0, 0.85 - wavePhase * 0.65);
+        const opacity = Math.max(0, 0.75 - wavePhase * 0.6);
 
         L.circle([activePreset.lat, activePreset.lon], {
           radius: radius,
-          color: '#00f2fe',
-          weight: 2,
+          color: '#00d2ff',
+          weight: 2.2,
           opacity: opacity,
-          fillColor: '#00f2fe',
-          fillOpacity: opacity * 0.1,
+          fillColor: '#00d2ff',
+          fillOpacity: opacity * 0.12,
           interactive: false
         }).addTo(simWavesLayerGroup);
       }
@@ -598,7 +600,12 @@ function initUnifiedSeismicSimulator(root) {
     } else {
       // Finished 1 full cycle
       isSimPlaying = false;
-      btnPlay.innerHTML = `<span>Mulai Ulang</span>`;
+      btnPlay.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        <span>Mulai Ulang</span>
+      `;
     }
   }
 
@@ -607,12 +614,23 @@ function initUnifiedSeismicSimulator(root) {
       // Pause
       isSimPlaying = false;
       cancelAnimationFrame(simAnimId);
-      btnPlay.innerHTML = `<span>Lanjutkan</span>`;
+      btnPlay.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        <span>Lanjutkan</span>
+      `;
     } else {
       // Play
       if (simProgress >= 1.0) simProgress = 0;
       isSimPlaying = true;
-      btnPlay.innerHTML = `<span>Jeda</span>`;
+      btnPlay.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="4" width="4" height="16"></rect>
+          <rect x="14" y="4" width="4" height="16"></rect>
+        </svg>
+        <span>Jeda</span>
+      `;
       simAnimId = requestAnimationFrame(stepSimWaves);
     }
   }
@@ -621,10 +639,15 @@ function initUnifiedSeismicSimulator(root) {
     isSimPlaying = false;
     cancelAnimationFrame(simAnimId);
     simProgress = 0;
-    hudTimer.textContent = '00:00';
-    btnPlay.innerHTML = `<span>Mulai Simulasi</span>`;
+    simWavesLayerGroup.clearLayers();
+    hudTimer.textContent = 'T+ 00:00';
+    btnPlay.innerHTML = `
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+      <span>Mulai Simulasi</span>
+    `;
     calculateTsunamiMetrics();
-    renderScenarioMarkers(activePreset);
   }
 
   // ==========================================
