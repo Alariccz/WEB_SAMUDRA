@@ -38,7 +38,11 @@ export function renderAdminApp(container, onBackToWebsite) {
   // --- Cek autentikasi ---
   if (!isAdminLoggedIn()) {
     activeTab = 'dashboard';
+    if (!window.location.pathname.includes('/auth/callback')) {
+      window.history.replaceState({}, '', '/login');
+    }
     renderAdminLogin(root, () => {
+      window.history.replaceState({}, '', '/dashboard');
       renderAdminApp(container, onBackToWebsite);
     }, onBackToWebsite);
     return;
@@ -70,6 +74,7 @@ export function renderAdminApp(container, onBackToWebsite) {
     if (logoutBtn) {
       logoutBtn.onclick = () => {
         logoutAdmin();
+        window.history.replaceState({}, '', '/login');
         renderAdminApp(container, onBackToWebsite);
       };
     }
@@ -213,6 +218,7 @@ export function renderAdminApp(container, onBackToWebsite) {
       if (confirm('Keluar dari sesi administrator SAMUDRA?')) {
         logoutAdmin();
         activeTab = 'dashboard';
+        window.history.replaceState({}, '', '/login');
         showToast('Anda telah keluar dari sesi admin.', 'success');
         renderAdminApp(container, onBackToWebsite);
       }

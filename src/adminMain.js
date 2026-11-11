@@ -7,13 +7,13 @@
 import './admin/adminStyle.css';
 import {
   renderAdminApp,
-  setAdminToken,
-  setAdminRefreshToken,
-  getMe,
-  getAdminUser
+  renderAdminLogin,
+  handleAuthCallback,
+  isAdminLoggedIn,
+  isAdminOrAbove
 } from './admin/index.js';
 
-// Catch unhandled errors gracefully in console
+// Tangani console error secara graceful
 window.onerror = function (msg, url, line) {
   console.warn('SAMUDRA Admin Console Warning:', msg, 'at line', line);
 };
@@ -37,33 +37,74 @@ function navigateToPublicWebsite() {
   }
 }
 
-// Inisialisasi token dari Google OAuth redirect callback jika ada
-const urlParams = new URLSearchParams(window.location.search);
-const oauthToken = urlParams.get('token') || urlParams.get('accessToken') || urlParams.get('access_token');
-const oauthRefreshToken = urlParams.get('refreshToken') || urlParams.get('refresh_token');
-const authError = urlParams.get('error') || urlParams.get('message');
+/**
+ * Router utama untuk portal administrator
+ */
+function route() {
+  const pathname = window.location.pathname;
+  const searchParams = new URLSearchParams(window.location.search);
+  const isCallback = pathname.includes('/auth/callback') || searchParams.has('accessToken') || searchParams.has('access_token');
 
-if (oauthToken) {
-  setAdminToken(oauthToken);
-  if (oauthRefreshToken) {
-    setAdminRefreshToken(oauthRefreshToken);
+  // 1. Route: /auth/callback (Google OAuth redirect)
+  if (isCallback) {
+    handleAuthCallback(adminRoot, {
+      onAuthSuccess: () => {
+        renderAdminApp(adminRoot, navigateToPublicWebsite);
+      },
+      onAuthError: (errMsg) => {
+        renderAdminLogin(
+          adminRoot,
+          () => {
+            window.history.replaceState({}, '', '/dashboard');
+            renderAdminApp(adminRoot, navigateToPublicWebsite);
+          },
+          navigateToPublicWebsite,
+          errMsg
+        );
+      }
+    });
+    return;
   }
-  getAdminUser();
 
-  // Bersihkan query string token dari address bar demi keamanan
-  const cleanUrl = window.location.pathname.replace(/\/auth\/callback/g, '') || '/';
-  window.history.replaceState({}, '', cleanUrl);
-
-  getMe().catch((e) => {
-    console.warn('Gagal memuat profil OAuth:', e);
-  }).finally(() => {
-    renderAdminApp(adminRoot, navigateToPublicWebsite);
-  });
-} else {
-  if (authError) {
-    console.warn('OAuth Error:', authError);
-    window.history.replaceState({}, '', window.location.pathname);
+  // 2. Route: /login
+  if (pathname.includes('/login')) {
+    if (isAdminLoggedIn() && isAdminOrAbove()) {
+      window.history.replaceState({}, '', '/dashboard');
+      renderAdminApp(adminRoot, navigateToPublicWebsite);
+      return;
+    }
+    renderAdminLogin(
+      adminRoot,
+      () => {
+        window.history.replaceState({}, '', '/dashboard');
+        renderAdminApp(adminRoot, navigateToPublicWebsite);
+      },
+      navigateToPublicWebsite
+    );
+    return;
   }
+
+  // 3. Route: /dashboard atau route lainnya
+  if (!isAdminLoggedIn()) {
+    window.history.replaceState({}, '', '/login');
+    renderAdminLogin(
+      adminRoot,
+      () => {
+        window.history.replaceState({}, '', '/dashboard');
+        renderAdminApp(adminRoot, navigateToPublicWebsite);
+      },
+      navigateToPublicWebsite
+    );
+    return;
+  }
+
   renderAdminApp(adminRoot, navigateToPublicWebsite);
 }
 
+// Inisialisasi router
+route();
+
+// Dengarkan perubahan histori browser (Back/Forward)
+window.addEventListener('popstate', () => {
+  route();
+});

@@ -1,4 +1,4 @@
-const API_BASE = 'https://samudra.rizalzaky.cloud/api';
+const API_BASE = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE || 'https://samudra.rizalzaky.cloud/api').replace(/\/+$/, '');
 
 export async function fetchLatestEarthquake() {
   const res = await fetch(`${API_BASE}/earthquakes/latest`);

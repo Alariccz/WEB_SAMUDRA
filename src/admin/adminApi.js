@@ -4,33 +4,40 @@
  * Mendukung Auth JWT, Cloudflare R2 Storage Upload, Artikel, Mitigasi, dan Peralatan Siaga
  */
 
-const API_BASE = 'https://samudra.rizalzaky.cloud/api';
+const rawBase = import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE || 'https://samudra.rizalzaky.cloud/api';
+export const API_BASE = rawBase.replace(/\/+$/, '');
 const TOKEN_KEY = 'samudra_admin_token';
 const REFRESH_TOKEN_KEY = 'samudra_admin_refresh_token';
 const USER_KEY = 'samudra_admin_user';
 
 // --- AUTH TOKEN HELPERS ---
 export function getAdminToken() {
-  return localStorage.getItem(TOKEN_KEY) || '';
+  return localStorage.getItem(TOKEN_KEY) || localStorage.getItem('access_token') || localStorage.getItem('accessToken') || '';
 }
 
 export function setAdminToken(token) {
   if (token) {
     localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem('access_token', token);
   } else {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('accessToken');
   }
 }
 
 export function getAdminRefreshToken() {
-  return localStorage.getItem(REFRESH_TOKEN_KEY) || '';
+  return localStorage.getItem(REFRESH_TOKEN_KEY) || localStorage.getItem('refresh_token') || localStorage.getItem('refreshToken') || '';
 }
 
 export function setAdminRefreshToken(refreshToken) {
   if (refreshToken) {
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    localStorage.setItem('refresh_token', refreshToken);
   } else {
     localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('refreshToken');
   }
 }
 
@@ -77,7 +84,11 @@ export function setAdminUser(user) {
 
 export function logoutAdmin() {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('accessToken');
   localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('refreshToken');
   localStorage.removeItem(USER_KEY);
 }
 
@@ -289,9 +300,9 @@ export async function loginWithGoogleToken(idToken) {
  * Membuka Google OAuth backend
  */
 export function redirectToGoogleOAuth() {
-  const origin = window.location.origin;
-  const returnUrl = encodeURIComponent(`${origin}/auth/callback`);
-  window.location.href = `${API_BASE}/auth/google?state=${returnUrl}`;
+  const backendBaseUrl = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE || 'https://samudra.rizalzaky.cloud/api').replace(/\/+$/, '');
+  const returnUrl = `${window.location.origin}/auth/callback`;
+  window.location.href = `${backendBaseUrl}/auth/google?state=${encodeURIComponent(returnUrl)}`;
 }
 
 /**
