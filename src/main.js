@@ -13,6 +13,7 @@ import { renderWeatherSection } from './components/WeatherWidget.js';
 import { renderArticlePage } from './components/ArticlePage.js';
 import { createScene } from './scene/threeScene.js';
 import * as THREE from 'three';
+import QRCode from 'qrcode';
 
 // ===== BUILD HTML STRUCTURE =====
 const app = document.getElementById('app');
@@ -362,7 +363,7 @@ ctaSection.innerHTML = `
           </div>
           <div class="apk-meta-item">
             <span class="apk-meta-label">UKURAN FILE</span>
-            <span class="apk-meta-val">28.4 MB</span>
+            <span class="apk-meta-val">59.0 MB</span>
           </div>
           <div class="apk-meta-item">
             <span class="apk-meta-label">SISTEM OPERASI</span>
@@ -379,76 +380,23 @@ ctaSection.innerHTML = `
       <div class="cta-banner__visuals">
         <!-- Phone Mockup -->
         <div class="phone-mockup">
-          <div class="phone-mockup__speaker"></div>
-          <div class="phone-mockup__screen">
-            <div class="mockup-header">
-              <span class="mockup-header__logo">SAMUDRA</span>
-              <span class="mockup-header__status"><span class="mockup-dot"></span> LIVE BMKG</span>
-            </div>
-            <div class="mockup-alert">
-              <div class="mockup-alert__tag">PERINGATAN DINI</div>
-              <div class="mockup-alert__title">POTENSI TSUNAMI M 8.0</div>
-              <div class="mockup-alert__sub">Jalur evakuasi aktif &bull; Hindari pesisir</div>
-            </div>
-            <div class="mockup-radar">
-              <div class="mockup-radar__circle mockup-radar__circle--3"></div>
-              <div class="mockup-radar__circle mockup-radar__circle--2"></div>
-              <div class="mockup-radar__circle mockup-radar__circle--1"></div>
-              <div class="mockup-radar__line"></div>
-              <div class="mockup-radar__pin"></div>
-            </div>
-            <div class="mockup-card">
-              <div class="mockup-card__dest">Shelter Bukit Sektor B</div>
-              <div class="mockup-card__eta">1.4 km &bull; 11 menit berjalan</div>
-            </div>
+          <div class="phone-mockup__screen phone-mockup__screen--app">
+            <img
+              src="/img/samudra-app-screen.png"
+              alt="Tampilan Aplikasi Mobile SAMUDRA"
+              class="phone-mockup__img"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
         </div>
 
         <!-- QR Code Card -->
-        <div class="qr-card">
-          <div class="qr-card__code">
-            <svg viewBox="0 0 100 100" width="110" height="110" fill="#00d2ff">
-              <!-- QR Code Pattern -->
-              <rect x="0" y="0" width="100" height="100" fill="#041226"/>
-              <!-- Top-Left Target -->
-              <rect x="10" y="10" width="24" height="24" fill="#00d2ff"/>
-              <rect x="14" y="14" width="16" height="16" fill="#041226"/>
-              <rect x="18" y="18" width="8" height="8" fill="#00d2ff"/>
-              <!-- Top-Right Target -->
-              <rect x="66" y="10" width="24" height="24" fill="#00d2ff"/>
-              <rect x="70" y="14" width="16" height="16" fill="#041226"/>
-              <rect x="74" y="18" width="8" height="8" fill="#00d2ff"/>
-              <!-- Bottom-Left Target -->
-              <rect x="10" y="66" width="24" height="24" fill="#00d2ff"/>
-              <rect x="14" y="70" width="16" height="16" fill="#041226"/>
-              <rect x="18" y="74" width="8" height="8" fill="#00d2ff"/>
-              <!-- Data modules -->
-              <rect x="38" y="12" width="6" height="6" fill="#38bdf8"/>
-              <rect x="48" y="12" width="6" height="6" fill="#00d2ff"/>
-              <rect x="38" y="24" width="10" height="6" fill="#00d2ff"/>
-              <rect x="52" y="24" width="6" height="6" fill="#38bdf8"/>
-              <rect x="12" y="42" width="6" height="10" fill="#00d2ff"/>
-              <rect x="24" y="42" width="8" height="6" fill="#38bdf8"/>
-              <rect x="38" y="40" width="8" height="8" fill="#00d2ff"/>
-              <rect x="50" y="42" width="8" height="6" fill="#38bdf8"/>
-              <rect x="64" y="42" width="10" height="6" fill="#00d2ff"/>
-              <rect x="80" y="40" width="8" height="8" fill="#38bdf8"/>
-              <rect x="38" y="54" width="6" height="10" fill="#38bdf8"/>
-              <rect x="50" y="56" width="10" height="6" fill="#00d2ff"/>
-              <rect x="66" y="54" width="8" height="8" fill="#00d2ff"/>
-              <rect x="78" y="56" width="10" height="6" fill="#38bdf8"/>
-              <rect x="40" y="70" width="8" height="8" fill="#00d2ff"/>
-              <rect x="54" y="68" width="6" height="10" fill="#38bdf8"/>
-              <rect x="66" y="72" width="12" height="6" fill="#00d2ff"/>
-              <rect x="82" y="70" width="6" height="8" fill="#38bdf8"/>
-              <rect x="42" y="84" width="10" height="6" fill="#38bdf8"/>
-              <rect x="58" y="82" width="8" height="8" fill="#00d2ff"/>
-              <rect x="72" y="84" width="14" height="6" fill="#00d2ff"/>
-            </svg>
-          </div>
+        <div class="qr-card" id="qr-download-card" role="button" tabindex="0" title="Pindai QR Code atau klik untuk mengunduh APK">
+          <div class="qr-card__code" id="qr-code-container" aria-label="QR Code Unduh APK SAMUDRA"></div>
           <div class="qr-card__label">
             <b>Pindai QR Code</b>
-            <small>Unduh langsung ke ponsel Android Anda</small>
+            <small>Scan dengan kamera HP untuk unduh APK</small>
           </div>
         </div>
       </div>
@@ -457,20 +405,85 @@ ctaSection.innerHTML = `
 `;
 main.appendChild(ctaSection);
 
-// Setup APK download feedback simulation
+const APK_FILENAME = 'SAMUDRA-Mobile-v2.4.1.apk';
+const CONFIGURED_APK_URL = (import.meta.env?.VITE_APK_URL || '').trim();
+const LOCAL_APK_PATH = `/downloads/${APK_FILENAME}`;
+
+function getQrDownloadUrl() {
+  if (CONFIGURED_APK_URL) return CONFIGURED_APK_URL;
+  return `${window.location.origin}/?download=apk`;
+}
+
+// Render real scannable QR Code SVG
+const qrCodeContainer = ctaSection.querySelector('#qr-code-container');
+if (qrCodeContainer) {
+  QRCode.toString(getQrDownloadUrl(), {
+    type: 'svg',
+    margin: 2,
+    width: 120,
+    errorCorrectionLevel: 'M',
+    color: {
+      dark: '#041226',
+      light: '#f0f9ff'
+    }
+  })
+    .then((svgMarkup) => {
+      qrCodeContainer.innerHTML = svgMarkup;
+    })
+    .catch((err) => {
+      console.warn('Gagal membuat QR Code:', err);
+    });
+}
+
+function startBrowserDownload(url, filename) {
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.rel = 'noopener';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+async function triggerApkDownload() {
+  if (CONFIGURED_APK_URL) {
+    showToast(`Mengunduh ${APK_FILENAME}...`);
+    startBrowserDownload(CONFIGURED_APK_URL, APK_FILENAME);
+    return;
+  }
+
+  try {
+    const res = await fetch(LOCAL_APK_PATH, { method: 'HEAD', cache: 'no-store' });
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+    // Vite/Nginx SPA fallback returns text/html for missing files; reject HTML responses
+    if (res.ok && !contentType.includes('text/html')) {
+      showToast(`Mengunduh ${APK_FILENAME}...`);
+      startBrowserDownload(LOCAL_APK_PATH, APK_FILENAME);
+      return;
+    }
+  } catch (err) {
+    console.warn('Gagal memeriksa file APK lokal:', err);
+  }
+
+  showToast(`File APK belum tersedia di public/downloads/${APK_FILENAME}.`);
+}
+
 const ctaApkBtn = ctaSection.querySelector('#cta-apk-btn');
 if (ctaApkBtn) {
   ctaApkBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    showToast('Mengunduh SAMUDRA-Mobile-v2.4.1.apk (28.4 MB)...');
-    // Trigger download of an authentic apk blob or link
-    const blob = new Blob(["SAMUDRA Android App v2.4.1 (Production Release)"], { type: 'application/vnd.android.package-archive' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'SAMUDRA-Mobile-v2.4.1.apk';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    triggerApkDownload();
+  });
+}
+
+const qrCardEl = ctaSection.querySelector('#qr-download-card');
+if (qrCardEl) {
+  qrCardEl.addEventListener('click', () => triggerApkDownload());
+  qrCardEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      triggerApkDownload();
+    }
   });
 }
 
@@ -1048,6 +1061,13 @@ if (oauthToken || isCallbackPath) {
   showArticle(urlParams.get('article'), false);
 } else {
   showHome(false);
+  if (urlParams.get('download') === 'apk') {
+    setTimeout(() => {
+      const target = document.getElementById('unduh-apk');
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      triggerApkDownload();
+    }, 350);
+  }
 }
 
 // Listen for live admin updates to refresh public views

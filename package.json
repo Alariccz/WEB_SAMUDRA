@@ -16,6 +16,7 @@
     "framer-motion": "^14.9.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.65.0",
+    "qrcode": "^1.5.4",
     "three": "^0.186.1"
   }
 }
