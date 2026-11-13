@@ -19,10 +19,25 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   scroll-padding-top: calc(82px + env(safe-area-inset-top, 0px));
   scrollbar-width: thin;
   scrollbar-color: rgba(56, 189, 248, 0.35) transparent;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ===== CUSTOM SLEEK OCEANIC SCROLLBAR ===== */
@@ -612,7 +627,7 @@ a { color: inherit; text-decoration: none; }
 /* ===== MAIN OCEANIC MESH SECTIONS & DYNAMIC BACKGROUNDS ===== */
 main {
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
   position: relative;
   background: transparent;
 }

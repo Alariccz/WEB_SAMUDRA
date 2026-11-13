@@ -15,6 +15,10 @@ import { createScene } from './scene/threeScene.js';
 import { mountPhone3DMockup } from './components/Phone3DMockup.js';
 import * as THREE from 'three';
 import QRCode from 'qrcode';
+import Lenis from 'lenis';
+import 'lenis/dist/lenis.css';
+
+let lenisInstance = null;
 
 // ===== BUILD HTML STRUCTURE =====
 const app = document.getElementById('app');
@@ -550,10 +554,15 @@ const sceneNavBtns = Array.from(document.querySelectorAll('.scene-nav__btn'));
 function scrollToScene(n) {
   const s = document.querySelector('.stage');
   const ratio = n === 2 ? 0.96 : (n + 0.25) / 3;
-  window.scrollTo({
-    top: s.offsetTop + (s.offsetHeight - window.innerHeight) * ratio,
-    behavior: 'smooth'
-  });
+  const targetTop = s.offsetTop + (s.offsetHeight - window.innerHeight) * ratio;
+  if (lenisInstance) {
+    lenisInstance.scrollTo(targetTop);
+  } else {
+    window.scrollTo({
+      top: targetTop,
+      behavior: 'auto'
+    });
+  }
 }
 
 sceneNavBtns.forEach(btn => {
@@ -1035,7 +1044,12 @@ function showHome(updateHistory = true) {
   articleView.innerHTML = '';
   homeView.style.display = 'block';
   // Restore user scroll position on home page
-  window.scrollTo(0, savedScrollY || 0);
+  if (lenisInstance) {
+    lenisInstance.resize();
+    lenisInstance.scrollTo(savedScrollY || 0, { immediate: true });
+  } else {
+    window.scrollTo(0, savedScrollY || 0);
+  }
   fromScroll();
 }
 
@@ -1092,7 +1106,13 @@ if (oauthToken || isCallbackPath) {
   if (urlParams.get('download') === 'apk') {
     setTimeout(() => {
       const target = document.getElementById('unduh-apk');
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (target) {
+        if (lenisInstance) {
+          lenisInstance.scrollTo(target, { offset: -76 });
+        } else {
+          target.scrollIntoView({ behavior: 'auto', block: 'center' });
+        }
+      }
       triggerApkDownload();
     }, 350);
   }
@@ -1126,7 +1146,16 @@ window.addEventListener('samudra:content-updated', (e) => {
   }
 });
 
-// ===== INSTANT ZERO-LATENCY SCROLL & READING PROGRESS =====
+// ===== HIGH-REFRESH-RATE SMOOTH SCROLL (LENIS) & READING PROGRESS =====
+const LENIS_SCROLL_CONFIG = {
+  lerp: 0.09,           // Rentang ideal 0.08 - 0.1 (lebih kecil = lebih licin, lebih besar = lebih responsif)
+  smoothWheel: true,    // Haluskan input mouse wheel & trackpad
+  wheelMultiplier: 1,   // Pengali kecepatan scroll mouse (>1 lebih cepat, <1 lebih lambat)
+  touchMultiplier: 1.4, // Pengali sensitivitas sentuhan layar
+  syncTouch: false,     // Biarkan momentum sentuh native di mobile agar terasa natural
+  autoRaf: false        // Loop rAF dikelola manual agar sinkron presisi dengan refresh rate layar (144Hz/240Hz)
+};
+
 function initSmoothScroll() {
   // Top reading progress indicator
   let progressBar = document.getElementById('scroll-progress-bar');
@@ -1151,7 +1180,47 @@ function initSmoothScroll() {
   window.addEventListener('resize', updateProgressBar, { passive: true });
   updateProgressBar();
 
-  // Smooth easing for internal hash anchors
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let rafId = null;
+
+  function stopLenis() {
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    if (lenisInstance) {
+      lenisInstance.destroy();
+      lenisInstance = null;
+    }
+  }
+
+  function startLenis() {
+    if (reducedMotionQuery.matches || lenisInstance) return;
+
+    lenisInstance = new Lenis(LENIS_SCROLL_CONFIG);
+    lenisInstance.on('scroll', updateProgressBar);
+
+    function raf(time) {
+      if (!lenisInstance) return;
+      lenisInstance.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+
+    rafId = requestAnimationFrame(raf);
+  }
+
+  startLenis();
+
+  // Hormati perubahan preferensi aksesibilitas OS secara real-time
+  reducedMotionQuery.addEventListener('change', (e) => {
+    if (e.matches) {
+      stopLenis();
+    } else {
+      startLenis();
+    }
+  });
+
+  // Smooth anchor link (#section) dengan offset navbar
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a[href^="#"]');
     if (!link) return;
@@ -1161,7 +1230,11 @@ function initSmoothScroll() {
     if (!targetEl) return;
 
     e.preventDefault();
-    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (lenisInstance) {
+      lenisInstance.scrollTo(targetEl, { offset: -76 });
+    } else {
+      targetEl.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
   });
 }
 
