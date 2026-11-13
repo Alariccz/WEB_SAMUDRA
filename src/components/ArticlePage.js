@@ -4,12 +4,10 @@ import {
   fetchMitigasi
 } from '../api.js';
 
-// PALET WARNA (Muted Aqua Glass / Nature Retreat Dribbble Inspiration)
-// Background utama: #10191D | Background sekunder: #18272C
-// Muted aqua: #789A98 | Dusty teal: #607F80 | Soft blue-gray: #91A5A5
-// Glass surface: rgba(145, 165, 165, 0.09) / rgba(24, 39, 44, 0.70)
-// Glass border: rgba(180, 200, 198, 0.17)
-// Primary text: #E8EFED | Secondary text: #AABAB8 | Subtle accent: #B1C1B8
+// PALET WARNA (SAMUDRA Oceanic Navy & Cyan Glass)
+// Background utama: #061426 -> #0f2947 | Surface: rgba(12, 30, 52, 0.86)
+// Primary accent: #00d2ff / #38bdf8 | Border: rgba(56, 189, 248, 0.2)
+// Primary text: #f8fafc | Secondary text: #cbd5e1 | Muted text: #94a3b8
 
 // MENGAMANKAN TEKS DARI API
 function escapeHTML(value = '') {
@@ -93,10 +91,34 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-root {
         min-height: 100vh;
         width: 100%;
-        background-color: #10191D;
-        color: #E8EFED;
+        position: relative;
+        background:
+          radial-gradient(ellipse 80% 45% at 50% 0%, rgba(0, 210, 255, 0.11) 0%, transparent 60%),
+          linear-gradient(180deg, #0b223d 0%, #07172b 45%, #040d1a 100%);
+        color: #f8fafc;
         font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        overflow-x: hidden;
+        overflow-x: clip;
+      }
+
+      .artp-root::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(rgba(56, 189, 248, 0.14) 1.5px, transparent 1.5px),
+          linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 36px 36px, 72px 72px, 72px 72px;
+        background-position: center top;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .artp-nav,
+      .artp-main-container,
+      .artp-footer {
+        position: relative;
+        z-index: 1;
       }
 
       /* TOP STICKY NAVBAR */
@@ -109,21 +131,19 @@ export async function renderArticlePage(container, articleId, onBack) {
         justify-content: space-between;
         gap: 16px;
         padding: 16px clamp(20px, 4vw, 48px);
-        background: rgba(16, 25, 29, 0.90);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-bottom: 1px solid rgba(180, 200, 198, 0.17);
+        background: rgba(6, 18, 34, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(56, 189, 248, 0.16);
       }
 
       .artp-btn-back {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: rgba(24, 39, 44, 0.70);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(180, 200, 198, 0.22);
-        color: #E8EFED;
+        background: rgba(14, 34, 58, 0.72);
+        border: 1px solid rgba(56, 189, 248, 0.24);
+        color: #f8fafc;
         padding: 9px 18px;
         border-radius: 999px;
         font-size: 13px;
@@ -133,9 +153,10 @@ export async function renderArticlePage(container, articleId, onBack) {
       }
 
       .artp-btn-back:hover {
-        background: #607F80;
-        color: #FEFEFE;
-        border-color: rgba(180, 200, 198, 0.4);
+        background: rgba(0, 210, 255, 0.16);
+        color: #ffffff;
+        border-color: rgba(0, 210, 255, 0.55);
+        box-shadow: 0 0 18px rgba(0, 210, 255, 0.2);
         transform: translateX(-3px);
       }
 
@@ -148,27 +169,26 @@ export async function renderArticlePage(container, articleId, onBack) {
       }
 
       .artp-logo {
-        color: #E8EFED;
+        color: #f8fafc;
         text-decoration: none;
         font-size: 20px;
         font-weight: 800;
         letter-spacing: 0.16em;
+        text-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
         transition: opacity 0.2s ease;
       }
 
       .artp-logo:hover {
-        opacity: 0.85;
+        opacity: 0.88;
       }
 
       .artp-btn-share {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: rgba(24, 39, 44, 0.70);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(180, 200, 198, 0.22);
-        color: #E8EFED;
+        background: rgba(14, 34, 58, 0.72);
+        border: 1px solid rgba(56, 189, 248, 0.24);
+        color: #f8fafc;
         padding: 9px 18px;
         border-radius: 999px;
         font-size: 13px;
@@ -178,9 +198,10 @@ export async function renderArticlePage(container, articleId, onBack) {
       }
 
       .artp-btn-share:hover {
-        background: #607F80;
-        color: #FEFEFE;
-        border-color: rgba(180, 200, 198, 0.4);
+        background: rgba(0, 210, 255, 0.16);
+        color: #ffffff;
+        border-color: rgba(0, 210, 255, 0.55);
+        box-shadow: 0 0 18px rgba(0, 210, 255, 0.2);
         transform: translateY(-2px);
       }
 
@@ -199,28 +220,28 @@ export async function renderArticlePage(container, articleId, onBack) {
         align-items: center;
         gap: 10px;
         font-size: 12.5px;
-        color: #789A98;
+        color: #64748b;
         margin-bottom: 24px;
         flex-wrap: wrap;
       }
 
       .artp-bc-link {
-        color: #789A98;
+        color: #38bdf8;
         text-decoration: none;
         cursor: pointer;
         transition: color 0.2s ease;
       }
 
       .artp-bc-link:hover {
-        color: #FEFEFE;
+        color: #7dd3fc;
       }
 
       .artp-bc-sep {
-        color: rgba(180, 200, 198, 0.3);
+        color: rgba(148, 163, 184, 0.35);
       }
 
       .artp-bc-current {
-        color: #AABAB8;
+        color: #cbd5e1;
         max-width: 320px;
         white-space: nowrap;
         overflow: hidden;
@@ -235,14 +256,12 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-category-badge {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         padding: 6px 14px;
         border-radius: 999px;
-        background: rgba(16, 25, 29, 0.88);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(180, 200, 198, 0.25);
-        color: #789A98;
+        background: rgba(0, 210, 255, 0.1);
+        border: 1px solid rgba(56, 189, 248, 0.32);
+        color: #38bdf8;
         font-size: 11px;
         font-weight: 700;
         letter-spacing: 0.12em;
@@ -254,7 +273,8 @@ export async function renderArticlePage(container, articleId, onBack) {
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background-color: #789A98;
+        background-color: #00d2ff;
+        box-shadow: 0 0 8px rgba(0, 210, 255, 0.65);
       }
 
       .artp-title {
@@ -262,7 +282,7 @@ export async function renderArticlePage(container, articleId, onBack) {
         font-weight: 700;
         line-height: 1.22;
         letter-spacing: -0.025em;
-        color: #E8EFED;
+        color: #f8fafc;
         margin: 0 0 20px;
       }
 
@@ -274,8 +294,8 @@ export async function renderArticlePage(container, articleId, onBack) {
         gap: 20px;
         flex-wrap: wrap;
         padding: 16px 0;
-        border-top: 1px solid rgba(180, 200, 198, 0.17);
-        border-bottom: 1px solid rgba(180, 200, 198, 0.17);
+        border-top: 1px solid rgba(56, 189, 248, 0.16);
+        border-bottom: 1px solid rgba(56, 189, 248, 0.16);
       }
 
       .artp-author-box {
@@ -289,16 +309,16 @@ export async function renderArticlePage(container, articleId, onBack) {
         height: 44px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid rgba(180, 200, 198, 0.25);
+        border: 2px solid rgba(56, 189, 248, 0.38);
       }
 
       .artp-avatar-placeholder {
         width: 44px;
         height: 44px;
         border-radius: 50%;
-        background: #18272C;
-        border: 1px solid rgba(180, 200, 198, 0.25);
-        color: #E8EFED;
+        background: linear-gradient(135deg, rgba(0, 210, 255, 0.22) 0%, rgba(14, 34, 58, 0.92) 100%);
+        border: 1px solid rgba(56, 189, 248, 0.4);
+        color: #38bdf8;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -309,14 +329,14 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-author-name {
         font-size: 14.5px;
         font-weight: 600;
-        color: #E8EFED;
+        color: #f8fafc;
         margin: 0;
         line-height: 1.3;
       }
 
       .artp-author-role {
         font-size: 11.5px;
-        color: #789A98;
+        color: #38bdf8;
         text-transform: uppercase;
         letter-spacing: 0.08em;
       }
@@ -326,11 +346,11 @@ export async function renderArticlePage(container, articleId, onBack) {
         align-items: center;
         gap: 12px;
         font-size: 13px;
-        color: #AABAB8;
+        color: #94a3b8;
       }
 
       .artp-meta-dot {
-        color: #789A98;
+        color: #38bdf8;
       }
 
       /* HERO MEDIA / FEATURED IMAGE */
@@ -339,10 +359,10 @@ export async function renderArticlePage(container, articleId, onBack) {
         height: clamp(280px, 46vw, 500px);
         border-radius: 22px;
         overflow: hidden;
-        border: 1px solid rgba(180, 200, 198, 0.17);
-        background: #18272C;
+        border: 1px solid rgba(56, 189, 248, 0.22);
+        background: #0c1e34;
         margin: clamp(28px, 4vw, 44px) 0 clamp(36px, 5vw, 64px);
-        box-shadow: 0 20px 48px -12px rgba(5, 12, 15, 0.7);
+        box-shadow: 0 24px 56px -12px rgba(0, 0, 0, 0.65), 0 0 36px rgba(0, 210, 255, 0.08);
         position: relative;
       }
 
@@ -351,7 +371,7 @@ export async function renderArticlePage(container, articleId, onBack) {
         height: 100%;
         object-fit: cover;
         display: block;
-        filter: brightness(0.88) contrast(1.04);
+        filter: brightness(0.92) contrast(1.03);
       }
 
       .artp-media-fallback {
@@ -362,26 +382,26 @@ export async function renderArticlePage(container, articleId, onBack) {
         align-items: center;
         justify-content: center;
         gap: 14px;
-        background: radial-gradient(circle at 50% 40%, rgba(96, 127, 128, 0.25) 0%, #132227 70%);
+        background: radial-gradient(circle at 50% 40%, rgba(0, 210, 255, 0.16) 0%, #091a2e 70%);
       }
 
       .artp-fallback-icon {
         width: 60px;
         height: 60px;
         border-radius: 16px;
-        background: rgba(145, 165, 165, 0.10);
-        border: 1px solid rgba(180, 200, 198, 0.22);
+        background: rgba(0, 210, 255, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.32);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #789A98;
+        color: #38bdf8;
       }
 
       .artp-fallback-label {
         font-size: 12px;
         font-weight: 700;
         letter-spacing: 0.16em;
-        color: #789A98;
+        color: #38bdf8;
         text-transform: uppercase;
       }
 
@@ -394,7 +414,7 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-paragraph {
         font-size: clamp(16px, 1.2vw, 17.5px);
         line-height: 1.88;
-        color: #AABAB8;
+        color: #cbd5e1;
         margin: 0 0 28px;
         white-space: pre-line;
       }
@@ -403,44 +423,40 @@ export async function renderArticlePage(container, articleId, onBack) {
         font-size: clamp(20px, 2.2vw, 25px);
         font-weight: 700;
         letter-spacing: -0.015em;
-        color: #E8EFED;
+        color: #f8fafc;
         margin: 44px 0 16px;
         line-height: 1.35;
       }
 
-      /* NATURE RETREAT CALLOUT BOX */
+      /* SAMUDRA CALLOUT BOX */
       .artp-callout {
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.25);
-        border-left: 4px solid #BB4019;
-        background: rgba(24, 39, 44, 0.70);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(180, 200, 198, 0.17);
-        border-left: 4px solid #789A98;
+        background: linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.06) 0%,
+          rgba(255, 255, 255, 0.015) 45%,
+          rgba(56, 189, 248, 0.08) 100%
+        ), rgba(12, 30, 52, 0.86);
+        border: 1px solid rgba(56, 189, 248, 0.22);
+        border-left: 4px solid #00d2ff;
         border-radius: 16px;
         padding: 24px 28px;
         margin: 36px 0;
         display: flex;
         gap: 18px;
         align-items: flex-start;
-        box-shadow: 0 10px 26px -4px rgba(6, 14, 18, 0.5);
-        box-shadow: 0 10px 26px -4px rgba(5, 12, 15, 0.4);
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.12);
       }
 
       .artp-callout-icon {
         width: 38px;
         height: 38px;
         border-radius: 10px;
-        background: rgba(187, 64, 25, 0.15);
-        border: 1px solid rgba(187, 64, 25, 0.35);
-        background: rgba(145, 165, 165, 0.12);
-        border: 1px solid rgba(180, 200, 198, 0.22);
+        background: rgba(0, 210, 255, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.32);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #BB4019;
-        color: #789A98;
+        color: #00d2ff;
         flex-shrink: 0;
         margin-top: 2px;
       }
@@ -448,13 +464,11 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-callout-body {
         font-size: 14.5px;
         line-height: 1.75;
-        color: #A5B5BC;
-        color: #AABAB8;
+        color: #cbd5e1;
       }
 
       .artp-callout-body strong {
-        color: #FEFEFE;
-        color: #E8EFED;
+        color: #f8fafc;
         display: block;
         margin-bottom: 4px;
         font-size: 15px;
@@ -464,14 +478,15 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-share-section {
         margin: 56px 0 clamp(56px, 7vw, 84px);
         padding: 28px clamp(20px, 4vw, 36px);
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.22);
-        background: rgba(24, 39, 44, 0.70);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(180, 200, 198, 0.17);
+        background: linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.06) 0%,
+          rgba(255, 255, 255, 0.015) 45%,
+          rgba(56, 189, 248, 0.08) 100%
+        ), rgba(12, 30, 52, 0.86);
+        border: 1px solid rgba(56, 189, 248, 0.2);
         border-radius: 20px;
-        box-shadow: 0 10px 24px rgba(5, 12, 15, 0.35);
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -482,15 +497,13 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-share-title {
         font-size: 15px;
         font-weight: 700;
-        color: #FEFEFE;
-        color: #E8EFED;
+        color: #f8fafc;
         margin: 0 0 4px;
       }
 
       .artp-share-desc {
         font-size: 13px;
-        color: #58818F;
-        color: #789A98;
+        color: #94a3b8;
         margin: 0;
       }
 
@@ -514,54 +527,45 @@ export async function renderArticlePage(container, articleId, onBack) {
       }
 
       .artp-btn-copy {
-        background: rgba(43, 81, 97, 0.3);
-        border: 1px solid rgba(88, 129, 143, 0.35);
-        background: #607F80;
-        border: 1px solid rgba(180, 200, 198, 0.25);
-        color: #FEFEFE;
+        background: linear-gradient(135deg, #00d2ff 0%, #38bdf8 100%);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: #041424;
+        box-shadow: 0 4px 16px rgba(0, 210, 255, 0.3);
       }
 
       .artp-btn-copy:hover {
-        background: #2B5161;
-        border-color: rgba(165, 181, 188, 0.45);
-        background: #789A98;
-        border-color: rgba(180, 200, 198, 0.45);
+        background: linear-gradient(135deg, #38bdf8 0%, #7dd3fc 100%);
+        box-shadow: 0 6px 22px rgba(0, 210, 255, 0.48);
         transform: translateY(-2px);
       }
 
       .artp-btn-wa {
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.28);
-        color: #FEFEFE;
-        background: rgba(24, 39, 44, 0.85);
-        border: 1px solid rgba(180, 200, 198, 0.22);
-        color: #E8EFED;
+        background: rgba(14, 34, 58, 0.85);
+        border: 1px solid rgba(56, 189, 248, 0.28);
+        color: #f8fafc;
       }
 
       .artp-btn-wa:hover {
-        background: #142a35;
-        border-color: rgba(165, 181, 188, 0.4);
-        background: rgba(28, 45, 51, 0.95);
-        border-color: rgba(180, 200, 198, 0.35);
+        background: rgba(0, 210, 255, 0.14);
+        border-color: rgba(0, 210, 255, 0.5);
         transform: translateY(-2px);
       }
 
       /* CTA BANNER: SIMULASI & PORTAL RESMI */
       .artp-cta-banner {
-        background: linear-gradient(135deg, #0B171D 0%, #10242D 100%);
-        border: 1px solid rgba(88, 129, 143, 0.25);
-        border-left: 4px solid #BB4019;
-        background: linear-gradient(135deg, rgba(24, 39, 44, 0.85) 0%, rgba(16, 25, 29, 0.95) 100%);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(180, 200, 198, 0.2);
-        border-left: 4px solid #789A98;
+        background: linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.07) 0%,
+          rgba(255, 255, 255, 0.02) 45%,
+          rgba(56, 189, 248, 0.1) 100%
+        ), rgba(12, 30, 52, 0.88);
+        border: 1px solid rgba(56, 189, 248, 0.24);
+        border-left: 4px solid #00d2ff;
         border-radius: 22px;
         padding: clamp(32px, 5vw, 48px);
         margin: 0 0 clamp(64px, 8vw, 96px);
         text-align: center;
-        box-shadow: 0 16px 44px -8px rgba(6, 14, 18, 0.65);
-        box-shadow: 0 16px 44px -8px rgba(5, 12, 15, 0.55);
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14);
       }
 
       .artp-cta-eyebrow {
@@ -572,16 +576,14 @@ export async function renderArticlePage(container, articleId, onBack) {
         font-weight: 700;
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: #BB4019;
-        color: #789A98;
+        color: #38bdf8;
         margin-bottom: 12px;
       }
 
       .artp-cta-title {
         font-size: clamp(22px, 3.2vw, 30px);
         font-weight: 700;
-        color: #FEFEFE;
-        color: #E8EFED;
+        color: #f8fafc;
         line-height: 1.35;
         margin: 0 0 12px;
       }
@@ -589,8 +591,7 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-cta-desc {
         font-size: 14.5px;
         line-height: 1.75;
-        color: #A5B5BC;
-        color: #AABAB8;
+        color: #94a3b8;
         max-width: 620px;
         margin: 0 auto 24px;
       }
@@ -606,57 +607,45 @@ export async function renderArticlePage(container, articleId, onBack) {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background-color: #BB4019;
-        color: #FEFEFE;
-        background-color: #607F80;
-        color: #E8EFED;
+        background: linear-gradient(135deg, #00d2ff 0%, #38bdf8 100%);
+        color: #041424;
         padding: 12px 24px;
         border-radius: 999px;
         font-size: 13.5px;
         font-weight: 600;
         text-decoration: none;
-        border: 1px solid rgba(254, 254, 254, 0.15);
-        border: 1px solid rgba(180, 200, 198, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 4px 20px rgba(0, 210, 255, 0.36);
         cursor: pointer;
         transition: all 0.22s ease;
       }
 
       .artp-btn-primary:hover {
-        background-color: #a33512;
-        background-color: #789A98;
-        color: #FEFEFE;
-        border-color: rgba(180, 200, 198, 0.45);
+        background: linear-gradient(135deg, #38bdf8 0%, #7dd3fc 100%);
+        color: #041424;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px -2px rgba(187, 64, 25, 0.4);
-        box-shadow: 0 8px 24px -2px rgba(96, 127, 128, 0.4);
+        box-shadow: 0 6px 26px rgba(0, 210, 255, 0.55);
       }
 
       .artp-btn-secondary {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: #0B171D;
-        color: #FEFEFE;
-        background: rgba(24, 39, 44, 0.70);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        color: #E8EFED;
+        background: rgba(14, 34, 58, 0.78);
+        color: #f8fafc;
         padding: 12px 24px;
         border-radius: 999px;
         font-size: 13.5px;
         font-weight: 600;
-        border: 1px solid rgba(88, 129, 143, 0.3);
-        border: 1px solid rgba(180, 200, 198, 0.22);
+        border: 1px solid rgba(56, 189, 248, 0.28);
         cursor: pointer;
         transition: all 0.22s ease;
       }
 
       .artp-btn-secondary:hover {
-        background: #2B5161;
-        border-color: rgba(165, 181, 188, 0.45);
-        background: #607F80;
-        color: #FEFEFE;
-        border-color: rgba(180, 200, 198, 0.35);
+        background: rgba(0, 210, 255, 0.14);
+        color: #ffffff;
+        border-color: rgba(0, 210, 255, 0.52);
         transform: translateY(-2px);
       }
 
@@ -664,8 +653,7 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-related-section {
         margin-top: 24px;
         padding-top: clamp(48px, 6vw, 72px);
-        border-top: 1px solid rgba(88, 129, 143, 0.2);
-        border-top: 1px solid rgba(180, 200, 198, 0.17);
+        border-top: 1px solid rgba(56, 189, 248, 0.16);
       }
 
       .artp-related-header {
@@ -680,23 +668,20 @@ export async function renderArticlePage(container, articleId, onBack) {
         font-weight: 700;
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: #58818F;
-        color: #789A98;
+        color: #38bdf8;
         margin-bottom: 10px;
       }
 
       .artp-related-title {
         font-size: clamp(24px, 3.2vw, 32px);
         font-weight: 700;
-        color: #FEFEFE;
-        color: #E8EFED;
+        color: #f8fafc;
         margin: 0 0 10px;
       }
 
       .artp-related-desc {
         font-size: 14.5px;
-        color: #A5B5BC;
-        color: #AABAB8;
+        color: #94a3b8;
         margin: 0;
       }
 
@@ -707,40 +692,35 @@ export async function renderArticlePage(container, articleId, onBack) {
       }
 
       .artp-related-card {
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.2);
-        background: rgba(24, 39, 44, 0.70);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(180, 200, 198, 0.17);
+        background: linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.06) 0%,
+          rgba(255, 255, 255, 0.015) 45%,
+          rgba(56, 189, 248, 0.07) 100%
+        ), rgba(12, 30, 52, 0.86);
+        border: 1px solid rgba(56, 189, 248, 0.2);
         border-radius: 18px;
         overflow: hidden;
         display: flex;
         flex-direction: column;
         text-decoration: none;
         color: inherit;
-        box-shadow: 0 8px 24px -4px rgba(6, 14, 18, 0.45);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.12);
         transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-        box-shadow: 0 8px 24px -4px rgba(5, 12, 15, 0.35);
-        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
         cursor: pointer;
         height: 100%;
       }
 
       .artp-related-card:hover {
         transform: translateY(-5px);
-        border-color: rgba(165, 181, 188, 0.4);
-        box-shadow: 0 16px 34px -6px rgba(6, 14, 18, 0.75);
-        background: rgba(28, 45, 51, 0.85);
-        border-color: rgba(180, 200, 198, 0.35);
-        box-shadow: 0 16px 34px -6px rgba(5, 12, 15, 0.55);
+        border-color: rgba(0, 210, 255, 0.48);
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.55), 0 0 24px rgba(0, 210, 255, 0.14);
       }
 
       .artp-related-thumb {
         position: relative;
         height: 170px;
-        background: #10242D;
-        background: #132227;
+        background: #0a1b30;
         overflow: hidden;
       }
 
@@ -749,7 +729,7 @@ export async function renderArticlePage(container, articleId, onBack) {
         height: 100%;
         object-fit: cover;
         display: block;
-        filter: brightness(0.85);
+        filter: brightness(0.9);
         transition: transform 0.4s ease;
       }
 
@@ -761,22 +741,15 @@ export async function renderArticlePage(container, articleId, onBack) {
         position: absolute;
         top: 12px;
         left: 12px;
-        background: rgba(6, 14, 18, 0.88);
-        border: 1px solid rgba(88, 129, 143, 0.35);
-        background: rgba(16, 25, 29, 0.88);
-        border: 1px solid rgba(180, 200, 198, 0.25);
+        background: rgba(6, 18, 34, 0.88);
+        border: 1px solid rgba(56, 189, 248, 0.35);
         padding: 4px 10px;
         border-radius: 999px;
         font-size: 9.5px;
         font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: #58818F;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        color: #789A98;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        color: #38bdf8;
       }
 
       .artp-related-body {
@@ -788,16 +761,14 @@ export async function renderArticlePage(container, articleId, onBack) {
 
       .artp-related-date {
         font-size: 11.5px;
-        color: #58818F;
-        color: #789A98;
+        color: #38bdf8;
         margin-bottom: 8px;
       }
 
       .artp-related-card-title {
         font-size: 16px;
         font-weight: 600;
-        color: #FEFEFE;
-        color: #E8EFED;
+        color: #f8fafc;
         line-height: 1.45;
         margin: 0 0 10px;
         display: -webkit-box;
@@ -809,8 +780,7 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-related-card-desc {
         font-size: 13px;
         line-height: 1.65;
-        color: #A5B5BC;
-        color: #AABAB8;
+        color: #94a3b8;
         margin: 0 0 16px;
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -820,21 +790,19 @@ export async function renderArticlePage(container, articleId, onBack) {
       }
 
       .artp-related-action {
-        border-top: 1px solid rgba(88, 129, 143, 0.16);
-        border-top: 1px solid rgba(180, 200, 198, 0.15);
+        border-top: 1px solid rgba(56, 189, 248, 0.16);
         padding-top: 14px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        color: #58818F;
-        color: #789A98;
+        color: #38bdf8;
         font-size: 12.5px;
         font-weight: 600;
         transition: color 0.2s ease;
       }
 
       .artp-related-card:hover .artp-related-action {
-        color: #FEFEFE;
+        color: #f8fafc;
       }
 
       .artp-related-action svg {
@@ -843,19 +811,15 @@ export async function renderArticlePage(container, articleId, onBack) {
 
       .artp-related-card:hover .artp-related-action svg {
         transform: translateX(4px);
-        color: #BB4019;
-        color: #91A5A5;
+        color: #00d2ff;
       }
 
       /* FOOTER */
       .artp-footer {
         padding: 32px clamp(20px, 4vw, 48px);
-        background: #0B171D;
-        border-top: 1px solid rgba(88, 129, 143, 0.18);
-        color: #58818F;
-        background: #18272C;
-        border-top: 1px solid rgba(180, 200, 198, 0.17);
-        color: #789A98;
+        background: rgba(6, 18, 34, 0.9);
+        border-top: 1px solid rgba(56, 189, 248, 0.16);
+        color: #94a3b8;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -865,8 +829,7 @@ export async function renderArticlePage(container, articleId, onBack) {
       }
 
       .artp-footer a {
-        color: #FEFEFE;
-        color: #E8EFED;
+        color: #38bdf8;
         text-decoration: none;
         font-weight: 600;
       }
@@ -950,10 +913,8 @@ export async function renderArticlePage(container, articleId, onBack) {
 
       <!-- MAIN CONTENT SLOT -->
       <main id="article-content-slot" class="artp-main-container">
-        <div style="padding: 80px 20px; text-align: center; color: #A5B5BC;">
-          <div style="width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(88,129,143,0.3); border-top-color: #BB4019; animation: artp-spin 0.8s linear infinite;"></div>
-        <div style="padding: 80px 20px; text-align: center; color: #AABAB8;">
-          <div style="width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(180,200,198,0.2); border-top-color: #789A98; animation: artp-spin 0.8s linear infinite;"></div>
+        <div style="padding: 80px 20px; text-align: center; color: #94a3b8;">
+          <div style="width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(56, 189, 248, 0.18); border-top-color: #00d2ff; animation: artp-spin 0.8s linear infinite;"></div>
           Memuat publikasi dan informasi kebencanaan SAMUDRA...
         </div>
       </main>
