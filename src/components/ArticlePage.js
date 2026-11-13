@@ -3,13 +3,62 @@ import {
   fetchArticles,
   fetchMitigasi
 } from '../api.js';
+import { DEFAULT_IMAGES, DEFAULT_MITIGASI } from './Mitigasi.js';
 
-// PALET WARNA (Muted Aqua Glass / Nature Retreat Dribbble Inspiration)
-// Background utama: #10191D | Background sekunder: #18272C
-// Muted aqua: #789A98 | Dusty teal: #607F80 | Soft blue-gray: #91A5A5
-// Glass surface: rgba(145, 165, 165, 0.09) / rgba(24, 39, 44, 0.70)
-// Glass border: rgba(180, 200, 198, 0.17)
-// Primary text: #E8EFED | Secondary text: #AABAB8 | Subtle accent: #B1C1B8
+const DEFAULT_COVERS = [
+  '/img/cover-1.jpg',
+  '/img/cover-2.jpg',
+  '/img/cover-3.jpg',
+  '/img/cover-4.jpg',
+  '/img/bento-evacuation-route.jpg',
+  '/img/bento-buoy-warning.jpg',
+  '/img/bg-misty-coast.jpg'
+];
+
+function stableHash(value = '') {
+  let hash = 0;
+  for (const character of String(value)) {
+    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  }
+  return hash;
+}
+
+function getCoverCandidates(primary, key) {
+  const start = stableHash(key) % DEFAULT_COVERS.length;
+  const fallbackCovers = DEFAULT_COVERS
+    .slice(start)
+    .concat(DEFAULT_COVERS.slice(0, start))
+    .map(safeImageUrl);
+  return [...new Set([safeImageUrl(primary), ...fallbackCovers].filter(Boolean))];
+}
+
+function getStackImages(primary, key) {
+  const primaryPath = primary
+    ? new URL(primary, window.location.origin).pathname
+    : '';
+  const stack = DEFAULT_COVERS.filter(path => path !== primaryPath);
+  const start = stableHash(key) % stack.length;
+  return [stack[start], stack[(start + 1) % stack.length]].map(safeImageUrl);
+}
+
+function attachImageFallbacks(root) {
+  root.querySelectorAll('[data-image-candidates]').forEach(image => {
+    const candidates = JSON.parse(image.dataset.imageCandidates || '[]');
+    let index = Math.max(0, candidates.indexOf(image.getAttribute('src')));
+    const advance = () => {
+      index += 1;
+      if (index < candidates.length) {
+        image.src = candidates[index];
+        return;
+      }
+
+      image.closest('.artp-hero-media, .artp-related-thumb')?.classList.add('is-fallback');
+      image.remove();
+    };
+
+    image.addEventListener('error', advance);
+  });
+}
 
 // MENGAMANKAN TEKS DARI API
 function escapeHTML(value = '') {
@@ -89,19 +138,67 @@ async function copyLink(url) {
 // MAIN ARTICLE PAGE RENDERER
 export async function renderArticlePage(container, articleId, onBack) {
   container.innerHTML = `
+
     <style>
       .artp-root {
+        --bg-base: #0C1D33;
+        --bg-glow-1: rgba(42, 90, 140, 0.45);
+        --bg-glow-2: rgba(30, 70, 120, 0.35);
+        --glass-bg: linear-gradient(155deg, rgba(58, 92, 132, 0.46) 0%, rgba(34, 60, 96, 0.42) 48%, rgba(16, 32, 58, 0.52) 100%);
+        --glass-bg-hover: linear-gradient(155deg, rgba(68, 106, 148, 0.54) 0%, rgba(38, 68, 106, 0.48) 48%, rgba(18, 36, 64, 0.58) 100%);
+        --glass-button-bg: linear-gradient(155deg, rgba(58, 92, 132, 0.36) 0%, rgba(34, 60, 96, 0.32) 48%, rgba(16, 32, 58, 0.42) 100%);
+        --glass-border: rgba(190, 205, 225, 0.22);
+        --glass-edge: rgba(225, 233, 245, 0.50);
+        --art-label: #62C2EE;
+        --art-label-border: rgba(86, 170, 215, 0.60);
+        --art-label-bg: rgba(54, 128, 175, 0.14);
+        --hover-border: rgba(205, 218, 235, 0.55);
+        --hover-title: #DCEFFE;
+        --hover-glow: 0 0 0 1px rgba(205, 218, 235, 0.22), 0 14px 32px -12px rgba(120, 160, 205, 0.35);
+        --text: #FEFEFE;
+        --text-2: #E8EEF3;
+        --hover-text-2: #C9D5DA;
+        --art-meta: #E8EEF3;
+        --art-divider: rgba(110, 160, 210, 0.18);
+        --glass-shadow: inset 0 1px 0 var(--glass-edge), 0 14px 32px -14px rgba(4, 12, 24, 0.6);
+        --hover-underline: rgba(108, 188, 242, 0.7);
+        --art-glass-fallback: linear-gradient(155deg, rgba(58, 92, 132, 0.92) 0%, rgba(34, 60, 96, 0.90) 48%, rgba(16, 32, 58, 0.92) 100%);
+        --art-fallback-start: #16335A;
+        --art-fallback-overlay: linear-gradient(145deg, rgba(12, 29, 51, 0.58), rgba(12, 29, 51, 0.74));
+        --art-btn-primary: #3B82B8;
+        --art-btn-primary-hover: #4C8FB0;
+        --art-action: #6CBCF2;
+        position: relative;
+        isolation: isolate;
         min-height: 100vh;
         width: 100%;
-        background-color: #10191D;
-        color: #E8EFED;
-        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         overflow-x: hidden;
+        background: var(--bg-base);
+        color: var(--text);
+        font-family: inherit;
       }
 
-      /* TOP STICKY NAVBAR */
+      .artp-root::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        background:
+          radial-gradient(ellipse at 12% 12%, var(--bg-glow-1), transparent 38%),
+          radial-gradient(ellipse at 88% 28%, var(--bg-glow-2), transparent 34%),
+          radial-gradient(ellipse at 52% 72%, var(--bg-glow-1), transparent 42%);
+        pointer-events: none;
+      }
+
+      .artp-root > * {
+        position: relative;
+        z-index: 1;
+      }
+
       .artp-nav {
         position: sticky;
+        isolation: isolate;
+        overflow: hidden;
         top: 0;
         z-index: 100;
         display: flex;
@@ -109,83 +206,92 @@ export async function renderArticlePage(container, articleId, onBack) {
         justify-content: space-between;
         gap: 16px;
         padding: 16px clamp(20px, 4vw, 48px);
-        background: rgba(16, 25, 29, 0.90);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-bottom: 1px solid rgba(180, 200, 198, 0.17);
+        background: var(--glass-bg);
+        backdrop-filter: blur(18px) saturate(140%);
+        -webkit-backdrop-filter: blur(18px) saturate(140%);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow);
       }
 
-      .artp-btn-back {
+      .artp-btn-back,
+      .artp-btn-share,
+      .artp-btn-copy,
+      .artp-btn-wa,
+      .artp-btn-secondary {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        background: var(--glass-button-bg);
+        backdrop-filter: blur(18px) saturate(140%);
+        -webkit-backdrop-filter: blur(18px) saturate(140%);
+        border: 1px solid var(--glass-border);
+        color: var(--text);
+        box-shadow: var(--glass-shadow);
+        cursor: pointer;
+        transition: transform 0.28s ease-out, border-color 0.28s ease-out, color 0.28s ease-out;
+      }
+
+      .artp-btn-back::before,
+      .artp-btn-share::before,
+      .artp-btn-copy::before,
+      .artp-btn-wa::before,
+      .artp-btn-secondary::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        border-radius: inherit;
+        background: radial-gradient(120% 70% at 18% 0%, rgba(165, 205, 242, 0.16), transparent 70%);
+        pointer-events: none;
+      }
+
+      .artp-btn-back > *,
+      .artp-btn-share > *,
+      .artp-btn-copy > *,
+      .artp-btn-wa > *,
+      .artp-btn-secondary > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .artp-btn-back,
+      .artp-btn-share {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: rgba(24, 39, 44, 0.70);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(180, 200, 198, 0.22);
-        color: #E8EFED;
         padding: 9px 18px;
         border-radius: 999px;
+        font: inherit;
         font-size: 13px;
         font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
       }
 
-      .artp-btn-back:hover {
-        background: #607F80;
-        color: #FEFEFE;
-        border-color: rgba(180, 200, 198, 0.4);
-        transform: translateX(-3px);
-      }
-
-      .artp-btn-back svg {
-        transition: transform 0.2s ease;
-      }
-
-      .artp-btn-back:hover svg {
-        transform: translateX(-2px);
+      .artp-btn-back svg,
+      .artp-btn-share svg,
+      .artp-action-btn svg,
+      .artp-btn-primary svg,
+      .artp-btn-secondary svg {
+        flex: 0 0 auto;
+        transition: transform 0.28s ease-out;
       }
 
       .artp-logo {
-        color: #E8EFED;
+        color: var(--text);
         text-decoration: none;
         font-size: 20px;
         font-weight: 800;
         letter-spacing: 0.16em;
-        transition: opacity 0.2s ease;
+        transition: opacity 0.28s ease-out;
       }
 
       .artp-logo:hover {
         opacity: 0.85;
       }
 
-      .artp-btn-share {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(24, 39, 44, 0.70);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(180, 200, 198, 0.22);
-        color: #E8EFED;
-        padding: 9px 18px;
-        border-radius: 999px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-
-      .artp-btn-share:hover {
-        background: #607F80;
-        color: #FEFEFE;
-        border-color: rgba(180, 200, 198, 0.4);
-        transform: translateY(-2px);
-      }
-
-      /* MAIN CONTAINER */
       .artp-main-container {
+        position: relative;
+        isolation: isolate;
+        z-index: 1;
         width: 100%;
         max-width: 1120px;
         margin: 0 auto;
@@ -193,80 +299,66 @@ export async function renderArticlePage(container, articleId, onBack) {
         box-sizing: border-box;
       }
 
-      /* BREADCRUMB */
+      .artp-main-container::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        background:
+          radial-gradient(520px 360px at 12% 18%, rgba(60, 130, 200, 0.34), transparent 70%),
+          radial-gradient(620px 420px at 88% 46%, rgba(46, 100, 170, 0.30), transparent 70%),
+          radial-gradient(560px 380px at 30% 82%, rgba(80, 150, 215, 0.22), transparent 70%);
+        pointer-events: none;
+      }
+
+      .artp-main-container > * {
+        position: relative;
+        z-index: 1;
+      }
+
       .artp-breadcrumb {
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 12.5px;
-        color: #789A98;
         margin-bottom: 24px;
         flex-wrap: wrap;
+        color: var(--art-meta);
+        font-size: 12.5px;
       }
 
       .artp-bc-link {
-        color: #789A98;
+        color: var(--art-meta);
         text-decoration: none;
         cursor: pointer;
-        transition: color 0.2s ease;
-      }
-
-      .artp-bc-link:hover {
-        color: #FEFEFE;
+        transition: color 0.28s ease-out;
       }
 
       .artp-bc-sep {
-        color: rgba(180, 200, 198, 0.3);
+        color: var(--glass-edge);
       }
 
       .artp-bc-current {
-        color: #AABAB8;
         max-width: 320px;
-        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
-      /* HERO SECTION */
       .artp-hero-header {
         margin-bottom: clamp(32px, 4vw, 44px);
       }
 
       .artp-category-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 14px;
-        border-radius: 999px;
-        background: rgba(16, 25, 29, 0.88);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(180, 200, 198, 0.25);
-        color: #789A98;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
         margin-bottom: 16px;
       }
 
-      .artp-badge-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background-color: #789A98;
-      }
-
       .artp-title {
-        font-size: clamp(28px, 4.2vw, 46px);
-        font-weight: 700;
-        line-height: 1.22;
-        letter-spacing: -0.025em;
-        color: #E8EFED;
         margin: 0 0 20px;
+        color: var(--text);
+        font: 300 clamp(30px, 4.2vw, 46px)/1.12 'Inter', sans-serif;
+        letter-spacing: -0.03em;
       }
 
-      /* AUTHOR & METADATA BAR */
       .artp-meta-bar {
         display: flex;
         align-items: center;
@@ -274,8 +366,8 @@ export async function renderArticlePage(container, articleId, onBack) {
         gap: 20px;
         flex-wrap: wrap;
         padding: 16px 0;
-        border-top: 1px solid rgba(180, 200, 198, 0.17);
-        border-bottom: 1px solid rgba(180, 200, 198, 0.17);
+        border-top: 1px solid var(--art-divider);
+        border-bottom: 1px solid var(--art-divider);
       }
 
       .artp-author-box {
@@ -284,214 +376,197 @@ export async function renderArticlePage(container, articleId, onBack) {
         gap: 12px;
       }
 
-      .artp-avatar {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid rgba(180, 200, 198, 0.25);
-      }
-
+      .artp-avatar,
       .artp-avatar-placeholder {
         width: 44px;
         height: 44px;
+        flex: 0 0 auto;
+        border: 1px solid var(--glass-border);
         border-radius: 50%;
-        background: #18272C;
-        border: 1px solid rgba(180, 200, 198, 0.25);
-        color: #E8EFED;
+      }
+
+      .artp-avatar {
+        object-fit: cover;
+      }
+
+      .artp-avatar-placeholder {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
+        background: var(--glass-bg);
+        box-shadow: var(--glass-shadow);
+        color: var(--text);
         font-size: 16px;
+        font-weight: 700;
       }
 
       .artp-author-name {
+        margin: 0;
+        color: var(--text);
         font-size: 14.5px;
         font-weight: 600;
-        color: #E8EFED;
-        margin: 0;
         line-height: 1.3;
-      }
-
-      .artp-author-role {
-        font-size: 11.5px;
-        color: #789A98;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
       }
 
       .artp-meta-details {
         display: flex;
         align-items: center;
         gap: 12px;
+        color: var(--text-2);
         font-size: 13px;
-        color: #AABAB8;
       }
 
       .artp-meta-dot {
-        color: #789A98;
+        color: var(--art-label);
       }
 
-      /* HERO MEDIA / FEATURED IMAGE */
       .artp-hero-media {
-        width: 100%;
-        height: clamp(280px, 46vw, 500px);
-        border-radius: 22px;
-        overflow: hidden;
-        border: 1px solid rgba(180, 200, 198, 0.17);
-        background: #18272C;
-        margin: clamp(28px, 4vw, 44px) 0 clamp(36px, 5vw, 64px);
-        box-shadow: 0 20px 48px -12px rgba(5, 12, 15, 0.7);
         position: relative;
+        isolation: isolate;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        height: auto;
+        overflow: hidden;
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        background: var(--glass-bg);
+        margin: clamp(28px, 4vw, 44px) 0 clamp(36px, 5vw, 64px);
+        box-shadow: var(--glass-shadow);
       }
 
       .artp-hero-img {
+        position: relative;
+        z-index: 2;
+        display: block;
         width: 100%;
         height: 100%;
         object-fit: cover;
-        display: block;
-        filter: brightness(0.88) contrast(1.04);
+        box-sizing: border-box;
+        border: 1px solid rgba(190, 205, 225, 0.16);
+        box-shadow: 0 10px 24px -10px rgba(4, 12, 24, 0.6);
+        filter: brightness(0.92);
       }
 
       .artp-media-fallback {
+        display: none;
+        position: absolute;
+        inset: 0;
         width: 100%;
         height: 100%;
-        display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 14px;
-        background: radial-gradient(circle at 50% 40%, rgba(96, 127, 128, 0.25) 0%, #132227 70%);
+        background: linear-gradient(145deg, var(--art-fallback-start), var(--bg-base));
+        color: var(--art-label);
+      }
+
+      .artp-hero-media.is-fallback .artp-media-fallback,
+      .artp-related-thumb.is-fallback .artp-media-fallback {
+        display: flex;
+      }
+
+      .artp-related-thumb .artp-media-fallback {
+        background: var(--art-fallback-overlay);
       }
 
       .artp-fallback-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 16px;
-        background: rgba(145, 165, 165, 0.10);
-        border: 1px solid rgba(180, 200, 198, 0.22);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #789A98;
+        color: var(--art-label);
       }
 
-      .artp-fallback-label {
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        color: #789A98;
-        text-transform: uppercase;
-      }
-
-      /* EDITORIAL CONTENT AREA */
       .artp-editorial-wrapper {
         max-width: 780px;
         margin: 0 auto;
       }
 
       .artp-paragraph {
+        margin: 0 0 28px;
+        color: var(--text-2);
         font-size: clamp(16px, 1.2vw, 17.5px);
         line-height: 1.88;
-        color: #AABAB8;
-        margin: 0 0 28px;
         white-space: pre-line;
       }
 
       .artp-subheading {
-        font-size: clamp(20px, 2.2vw, 25px);
-        font-weight: 700;
-        letter-spacing: -0.015em;
-        color: #E8EFED;
         margin: 44px 0 16px;
+        color: var(--text);
+        font-size: clamp(20px, 2.2vw, 25px);
+        font-weight: 600;
+        letter-spacing: -0.015em;
         line-height: 1.35;
       }
 
-      /* NATURE RETREAT CALLOUT BOX */
+      .artp-callout,
+      .artp-share-section,
+      .artp-cta-banner,
+      .artp-related-card,
+      .artp-footer {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        border: 1px solid var(--glass-border);
+        background: var(--glass-bg);
+        backdrop-filter: blur(18px) saturate(140%);
+        -webkit-backdrop-filter: blur(18px) saturate(140%);
+        box-shadow: var(--glass-shadow);
+      }
+
       .artp-callout {
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.25);
-        border-left: 4px solid #BB4019;
-        background: rgba(24, 39, 44, 0.70);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(180, 200, 198, 0.17);
-        border-left: 4px solid #789A98;
-        border-radius: 16px;
-        padding: 24px 28px;
-        margin: 36px 0;
         display: flex;
-        gap: 18px;
         align-items: flex-start;
-        box-shadow: 0 10px 26px -4px rgba(6, 14, 18, 0.5);
-        box-shadow: 0 10px 26px -4px rgba(5, 12, 15, 0.4);
+        gap: 14px;
+        margin: 36px 0;
+        padding: 24px 28px;
+        border-radius: 16px;
       }
 
       .artp-callout-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        background: rgba(187, 64, 25, 0.15);
-        border: 1px solid rgba(187, 64, 25, 0.35);
-        background: rgba(145, 165, 165, 0.12);
-        border: 1px solid rgba(180, 200, 198, 0.22);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #BB4019;
-        color: #789A98;
-        flex-shrink: 0;
+        flex: 0 0 auto;
         margin-top: 2px;
+        color: var(--art-label);
       }
 
       .artp-callout-body {
+        color: var(--text-2);
         font-size: 14.5px;
         line-height: 1.75;
-        color: #A5B5BC;
-        color: #AABAB8;
       }
 
       .artp-callout-body strong {
-        color: #FEFEFE;
-        color: #E8EFED;
         display: block;
         margin-bottom: 4px;
+        color: var(--text);
         font-size: 15px;
       }
 
-      /* SHARE & ACTIONS FOOTER */
       .artp-share-section {
-        margin: 56px 0 clamp(56px, 7vw, 84px);
-        padding: 28px clamp(20px, 4vw, 36px);
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.22);
-        background: rgba(24, 39, 44, 0.70);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(180, 200, 198, 0.17);
-        border-radius: 20px;
-        box-shadow: 0 10px 24px rgba(5, 12, 15, 0.35);
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 20px;
         flex-wrap: wrap;
+        margin: 56px 0 clamp(56px, 7vw, 84px);
+        padding: 28px clamp(20px, 4vw, 36px);
+        border-radius: 20px;
       }
 
       .artp-share-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: #FEFEFE;
-        color: #E8EFED;
         margin: 0 0 4px;
+        color: var(--text);
+        font-size: 15px;
+        font-weight: 600;
       }
 
       .artp-share-desc {
-        font-size: 13px;
-        color: #58818F;
-        color: #789A98;
         margin: 0;
+        color: var(--text-2);
+        font-size: 13px;
       }
 
       .artp-share-buttons {
@@ -507,92 +582,36 @@ export async function renderArticlePage(container, articleId, onBack) {
         gap: 8px;
         padding: 10px 18px;
         border-radius: 999px;
+        font: inherit;
         font-size: 13px;
         font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
       }
 
-      .artp-btn-copy {
-        background: rgba(43, 81, 97, 0.3);
-        border: 1px solid rgba(88, 129, 143, 0.35);
-        background: #607F80;
-        border: 1px solid rgba(180, 200, 198, 0.25);
-        color: #FEFEFE;
-      }
-
-      .artp-btn-copy:hover {
-        background: #2B5161;
-        border-color: rgba(165, 181, 188, 0.45);
-        background: #789A98;
-        border-color: rgba(180, 200, 198, 0.45);
-        transform: translateY(-2px);
-      }
-
-      .artp-btn-wa {
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.28);
-        color: #FEFEFE;
-        background: rgba(24, 39, 44, 0.85);
-        border: 1px solid rgba(180, 200, 198, 0.22);
-        color: #E8EFED;
-      }
-
-      .artp-btn-wa:hover {
-        background: #142a35;
-        border-color: rgba(165, 181, 188, 0.4);
-        background: rgba(28, 45, 51, 0.95);
-        border-color: rgba(180, 200, 198, 0.35);
-        transform: translateY(-2px);
-      }
-
-      /* CTA BANNER: SIMULASI & PORTAL RESMI */
       .artp-cta-banner {
-        background: linear-gradient(135deg, #0B171D 0%, #10242D 100%);
-        border: 1px solid rgba(88, 129, 143, 0.25);
-        border-left: 4px solid #BB4019;
-        background: linear-gradient(135deg, rgba(24, 39, 44, 0.85) 0%, rgba(16, 25, 29, 0.95) 100%);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(180, 200, 198, 0.2);
-        border-left: 4px solid #789A98;
-        border-radius: 22px;
-        padding: clamp(32px, 5vw, 48px);
         margin: 0 0 clamp(64px, 8vw, 96px);
+        padding: clamp(32px, 5vw, 48px);
+        border-radius: 22px;
         text-align: center;
-        box-shadow: 0 16px 44px -8px rgba(6, 14, 18, 0.65);
-        box-shadow: 0 16px 44px -8px rgba(5, 12, 15, 0.55);
       }
 
       .artp-cta-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: #BB4019;
-        color: #789A98;
         margin-bottom: 12px;
       }
 
       .artp-cta-title {
-        font-size: clamp(22px, 3.2vw, 30px);
-        font-weight: 700;
-        color: #FEFEFE;
-        color: #E8EFED;
-        line-height: 1.35;
         margin: 0 0 12px;
+        color: var(--text);
+        font-size: clamp(22px, 3.2vw, 30px);
+        font-weight: 600;
+        line-height: 1.35;
       }
 
       .artp-cta-desc {
-        font-size: 14.5px;
-        line-height: 1.75;
-        color: #A5B5BC;
-        color: #AABAB8;
         max-width: 620px;
         margin: 0 auto 24px;
+        color: var(--text-2);
+        font-size: 14.5px;
+        line-height: 1.75;
       }
 
       .artp-cta-actions {
@@ -602,70 +621,36 @@ export async function renderArticlePage(container, articleId, onBack) {
         flex-wrap: wrap;
       }
 
-      .artp-btn-primary {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background-color: #BB4019;
-        color: #FEFEFE;
-        background-color: #607F80;
-        color: #E8EFED;
-        padding: 12px 24px;
-        border-radius: 999px;
-        font-size: 13.5px;
-        font-weight: 600;
-        text-decoration: none;
-        border: 1px solid rgba(254, 254, 254, 0.15);
-        border: 1px solid rgba(180, 200, 198, 0.25);
-        cursor: pointer;
-        transition: all 0.22s ease;
-      }
-
-      .artp-btn-primary:hover {
-        background-color: #a33512;
-        background-color: #789A98;
-        color: #FEFEFE;
-        border-color: rgba(180, 200, 198, 0.45);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px -2px rgba(187, 64, 25, 0.4);
-        box-shadow: 0 8px 24px -2px rgba(96, 127, 128, 0.4);
-      }
-
+      .artp-btn-primary,
       .artp-btn-secondary {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 8px;
-        background: #0B171D;
-        color: #FEFEFE;
-        background: rgba(24, 39, 44, 0.70);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        color: #E8EFED;
         padding: 12px 24px;
         border-radius: 999px;
+        font: inherit;
         font-size: 13.5px;
         font-weight: 600;
-        border: 1px solid rgba(88, 129, 143, 0.3);
-        border: 1px solid rgba(180, 200, 198, 0.22);
+        text-decoration: none;
+      }
+
+      .artp-btn-primary {
+        border: 1px solid var(--art-btn-primary);
+        background: var(--art-btn-primary);
+        color: var(--text);
         cursor: pointer;
-        transition: all 0.22s ease;
+        transition: transform 0.28s ease-out, background-color 0.28s ease-out, border-color 0.28s ease-out;
       }
 
-      .artp-btn-secondary:hover {
-        background: #2B5161;
-        border-color: rgba(165, 181, 188, 0.45);
-        background: #607F80;
-        color: #FEFEFE;
-        border-color: rgba(180, 200, 198, 0.35);
-        transform: translateY(-2px);
+      .artp-btn-secondary {
+        cursor: pointer;
       }
 
-      /* ARTIKEL TERKAIT SECTION */
       .artp-related-section {
         margin-top: 24px;
         padding-top: clamp(48px, 6vw, 72px);
-        border-top: 1px solid rgba(88, 129, 143, 0.2);
-        border-top: 1px solid rgba(180, 200, 198, 0.17);
+        border-top: 1px solid var(--art-divider);
       }
 
       .artp-related-header {
@@ -673,252 +658,572 @@ export async function renderArticlePage(container, articleId, onBack) {
       }
 
       .artp-related-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: #58818F;
-        color: #789A98;
         margin-bottom: 10px;
       }
 
       .artp-related-title {
-        font-size: clamp(24px, 3.2vw, 32px);
-        font-weight: 700;
-        color: #FEFEFE;
-        color: #E8EFED;
         margin: 0 0 10px;
+        color: var(--text);
+        font-size: clamp(24px, 3.2vw, 32px);
+        font-weight: 600;
       }
 
       .artp-related-desc {
-        font-size: 14.5px;
-        color: #A5B5BC;
-        color: #AABAB8;
         margin: 0;
+        color: var(--text-2);
+        font-size: 14.5px;
+        line-height: 1.65;
       }
 
       .artp-related-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 24px;
       }
 
       .artp-related-card {
-        background: #0B171D;
-        border: 1px solid rgba(88, 129, 143, 0.2);
-        background: rgba(24, 39, 44, 0.70);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(180, 200, 198, 0.17);
-        border-radius: 18px;
-        overflow: hidden;
         display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        color: inherit;
-        box-shadow: 0 8px 24px -4px rgba(6, 14, 18, 0.45);
-        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-        box-shadow: 0 8px 24px -4px rgba(5, 12, 15, 0.35);
-        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
-        cursor: pointer;
         height: 100%;
+        min-width: 0;
+        flex-direction: column;
+        overflow: visible;
+        border-radius: 18px;
+        color: inherit;
+        text-decoration: none;
+        box-shadow: var(--glass-shadow);
+        transition: transform 0.28s ease-out, border-color 0.28s ease-out, box-shadow 0.28s ease-out;
+        cursor: pointer;
       }
 
-      .artp-related-card:hover {
-        transform: translateY(-5px);
-        border-color: rgba(165, 181, 188, 0.4);
-        box-shadow: 0 16px 34px -6px rgba(6, 14, 18, 0.75);
-        background: rgba(28, 45, 51, 0.85);
-        border-color: rgba(180, 200, 198, 0.35);
-        box-shadow: 0 16px 34px -6px rgba(5, 12, 15, 0.55);
+      .artp-related-card::before,
+      .artp-callout::before,
+      .artp-share-section::before,
+      .artp-cta-banner::before,
+      .artp-footer::before,
+      .artp-nav::before,
+      .artp-hero-media::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        border-radius: inherit;
+        background: radial-gradient(120% 70% at 18% 0%, rgba(165, 205, 242, 0.16), transparent 70%);
+        pointer-events: none;
+      }
+
+      .artp-related-card::after,
+      .artp-btn-back::after,
+      .artp-btn-share::after,
+      .artp-btn-copy::after,
+      .artp-btn-wa::after,
+      .artp-btn-secondary::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        border-radius: inherit;
+        background: var(--glass-bg-hover);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.28s ease-out;
+      }
+
+      .artp-btn-back:hover::after,
+      .artp-btn-share:hover::after,
+      .artp-btn-copy:hover::after,
+      .artp-btn-wa:hover::after,
+      .artp-btn-secondary:hover::after,
+      .artp-btn-back:focus-visible::after,
+      .artp-btn-share:focus-visible::after,
+      .artp-btn-copy:focus-visible::after,
+      .artp-btn-wa:focus-visible::after,
+      .artp-btn-secondary:focus-visible::after {
+        opacity: 1;
+      }
+
+      .artp-related-card:hover::after,
+      .artp-related-card:focus-visible::after {
+        opacity: 1;
+      }
+
+      .artp-related-card > *,
+      .artp-callout > *,
+      .artp-share-section > *,
+      .artp-cta-banner > *,
+      .artp-footer > *,
+      .artp-nav > *,
+      .artp-hero-media > * {
+        position: relative;
+        z-index: 2;
+      }
+
+      .artp-btn-back > *,
+      .artp-btn-share > *,
+      .artp-btn-copy > *,
+      .artp-btn-wa > *,
+      .artp-btn-secondary > * {
+        z-index: 2;
       }
 
       .artp-related-thumb {
         position: relative;
-        height: 170px;
-        background: #10242D;
-        background: #132227;
-        overflow: hidden;
+        isolation: isolate;
+        height: 140px;
+        flex: 0 0 auto;
+        margin: 0;
+        border-radius: 17px 17px 0 0;
+        background: var(--bg-base);
+        transition: height 0.3s ease-out;
+      }
+
+      .artp-related-media-item {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 14px;
+        object-fit: cover;
+        box-sizing: border-box;
+        border: 1px solid rgba(190, 205, 225, 0.16);
+        box-shadow: 0 10px 24px -10px rgba(4, 12, 24, 0.6);
+        pointer-events: none;
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+      }
+
+      .artp-related-media-item--back-1 {
+        z-index: 1;
+        opacity: var(--rest-op, 0.18);
+        transform: translateY(var(--rest-ty, 3px)) scale(var(--rest-sc, 0.97));
+      }
+
+      .artp-related-media-item--back-2 {
+        z-index: 0;
+        opacity: var(--rest-op, 0.12);
+        transform: translateY(var(--rest-ty, 6px)) scale(var(--rest-sc, 0.94));
       }
 
       .artp-related-img {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        display: block;
         width: 100%;
         height: 100%;
+        border-radius: 17px 17px 0 0;
         object-fit: cover;
-        display: block;
-        filter: brightness(0.85);
-        transition: transform 0.4s ease;
+        box-sizing: border-box;
+        border: 1px solid rgba(190, 205, 225, 0.16);
+        box-shadow: 0 10px 24px -10px rgba(4, 12, 24, 0.6);
+        transition: transform 0.28s ease-out;
       }
 
-      .artp-related-card:hover .artp-related-img {
-        transform: scale(1.05);
+      .artp-related-thumb.is-fallback .artp-related-img {
+        display: none;
       }
 
       .artp-related-badge {
         position: absolute;
+        z-index: 4;
         top: 12px;
         left: 12px;
-        background: rgba(6, 14, 18, 0.88);
-        border: 1px solid rgba(88, 129, 143, 0.35);
-        background: rgba(16, 25, 29, 0.88);
-        border: 1px solid rgba(180, 200, 198, 0.25);
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 9.5px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: #58818F;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        color: #789A98;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
       }
 
       .artp-related-body {
-        padding: 20px;
+        position: relative;
+        z-index: 3;
         display: flex;
-        flex-direction: column;
         flex-grow: 1;
+        flex-direction: column;
+        padding: 20px;
+        border-radius: 0 0 17px 17px;
       }
 
       .artp-related-date {
-        font-size: 11.5px;
-        color: #58818F;
-        color: #789A98;
+        display: block;
         margin-bottom: 8px;
       }
 
       .artp-related-card-title {
+        display: -webkit-box;
+        overflow: hidden;
+        margin: 0 0 10px;
+        color: var(--text);
         font-size: 16px;
         font-weight: 600;
-        color: #FEFEFE;
-        color: #E8EFED;
         line-height: 1.45;
-        margin: 0 0 10px;
-        display: -webkit-box;
+        text-decoration: underline;
+        text-decoration-color: transparent;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
-        overflow: hidden;
+        transition: color 0.28s ease-out, text-decoration-color 0.28s ease-out;
       }
 
       .artp-related-card-desc {
-        font-size: 13px;
-        line-height: 1.65;
-        color: #A5B5BC;
-        color: #AABAB8;
-        margin: 0 0 16px;
         display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
         overflow: hidden;
         flex-grow: 1;
+        margin: 0 0 16px;
+        color: var(--text-2);
+        font-size: 13px;
+        line-height: 1.65;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        transition: color 0.28s ease-out;
       }
 
       .artp-related-action {
-        border-top: 1px solid rgba(88, 129, 143, 0.16);
-        border-top: 1px solid rgba(180, 200, 198, 0.15);
-        padding-top: 14px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        color: #58818F;
-        color: #789A98;
+        max-height: 0;
+        overflow: hidden;
+        padding-top: 0;
+        border-top: 0 solid var(--art-divider);
+        color: var(--text-2);
         font-size: 12.5px;
         font-weight: 600;
-        transition: color 0.2s ease;
-      }
-
-      .artp-related-card:hover .artp-related-action {
-        color: #FEFEFE;
+        opacity: 0;
+        transform: translateY(6px);
+        transition: color 0.28s ease-out, max-height 0.28s ease-out, padding-top 0.28s ease-out, border-width 0.28s ease-out, opacity 0.24s ease-out, transform 0.24s ease-out;
       }
 
       .artp-related-action svg {
-        transition: transform 0.25s ease, color 0.25s ease;
+        color: currentColor;
+        transition: transform 0.28s ease-out, color 0.28s ease-out;
       }
 
-      .artp-related-card:hover .artp-related-action svg {
-        transform: translateX(4px);
-        color: #BB4019;
-        color: #91A5A5;
-      }
-
-      /* FOOTER */
       .artp-footer {
-        padding: 32px clamp(20px, 4vw, 48px);
-        background: #0B171D;
-        border-top: 1px solid rgba(88, 129, 143, 0.18);
-        color: #58818F;
-        background: #18272C;
-        border-top: 1px solid rgba(180, 200, 198, 0.17);
-        color: #789A98;
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
         flex-wrap: wrap;
         gap: 16px;
+        padding: 32px clamp(20px, 4vw, 48px);
+        color: var(--text-2);
         font-size: 12.5px;
       }
 
       .artp-footer a {
-        color: #FEFEFE;
-        color: #E8EFED;
-        text-decoration: none;
+        color: var(--text);
         font-weight: 600;
+        text-decoration: none;
+        transition: color 0.28s ease-out;
       }
 
-      .artp-footer a:hover {
-        text-decoration: underline;
+      .artp-loading {
+        padding: 80px 20px;
+        color: var(--text-2);
+        text-align: center;
+      }
+
+      .artp-spinner {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 16px;
+        border: 3px solid var(--glass-border);
+        border-top-color: var(--art-label);
+        border-radius: 50%;
+        animation: artp-spin 0.8s linear infinite;
       }
 
       @keyframes artp-spin {
-        to {
-          transform: rotate(360deg);
+        to { transform: rotate(360deg); }
+      }
+
+      @media (hover: hover) {
+        .artp-btn-back:hover,
+        .artp-btn-share:hover,
+        .artp-btn-copy:hover,
+        .artp-btn-wa:hover,
+        .artp-btn-secondary:hover {
+          transform: translateY(-2px);
+          border-color: var(--hover-border);
+        }
+
+        .artp-btn-back:hover svg {
+          transform: translateX(-2px);
+        }
+
+        .artp-btn-primary:hover {
+          transform: translateY(-2px);
+          border-color: var(--art-btn-primary-hover);
+          background: var(--art-btn-primary-hover);
+        }
+
+        .artp-bc-link:hover,
+        .artp-footer a:hover {
+          color: var(--hover-title);
+        }
+
+      }
+
+      .artp-btn-back:focus-visible,
+      .artp-btn-share:focus-visible,
+      .artp-btn-copy:focus-visible,
+      .artp-btn-wa:focus-visible,
+      .artp-btn-primary:focus-visible,
+      .artp-btn-secondary:focus-visible,
+      .artp-bc-link:focus-visible,
+      .artp-footer a:focus-visible,
+      .artp-related-card:focus-visible {
+        outline: 2px solid var(--hover-title);
+        outline-offset: 3px;
+      }
+
+      .artp-btn-back:focus-visible,
+      .artp-btn-share:focus-visible,
+      .artp-btn-copy:focus-visible,
+      .artp-btn-wa:focus-visible,
+      .artp-btn-secondary:focus-visible {
+        transform: translateY(-2px);
+        border-color: var(--hover-border);
+      }
+
+      .artp-btn-primary:focus-visible {
+        transform: translateY(-2px);
+        border-color: var(--art-btn-primary-hover);
+        background: var(--art-btn-primary-hover);
+      }
+
+      .artp-bc-link:focus-visible,
+      .artp-footer a:focus-visible {
+        color: var(--hover-title);
+      }
+
+      .artp-related-card:hover,
+      .artp-related-card:focus-visible {
+        transform: translateY(-4px) scale(1.015);
+        border-color: var(--hover-border);
+        box-shadow: var(--glass-shadow), var(--hover-glow);
+      }
+
+      .artp-share-section:hover,
+      .artp-share-section:focus-within,
+      .artp-cta-banner:hover,
+      .artp-cta-banner:focus-within {
+        border-color: rgba(205, 218, 235, 0.55);
+      }
+
+      .artp-related-card:hover .artp-related-thumb,
+      .artp-related-card:focus-visible .artp-related-thumb {
+        height: 205px;
+      }
+
+      .artp-related-card:hover .artp-related-card-title,
+      .artp-related-card:focus-visible .artp-related-card-title {
+        color: var(--hover-title);
+        text-decoration-color: var(--hover-underline);
+      }
+
+      .artp-related-card:hover .artp-related-card-desc,
+      .artp-related-card:focus-visible .artp-related-card-desc {
+        color: var(--hover-text-2);
+      }
+
+      .artp-related-card:hover .artp-related-media-item--back-1,
+      .artp-related-card:focus-visible .artp-related-media-item--back-1 {
+        opacity: 0.9;
+        transform: translate(var(--hover-tx, -7px), var(--hover-ty, -7px)) rotate(var(--hover-rot, -3deg)) scale(var(--hover-sc, 1.04));
+      }
+
+      .artp-related-card:hover .artp-related-media-item--back-2,
+      .artp-related-card:focus-visible .artp-related-media-item--back-2 {
+        opacity: 0.72;
+        transform: translate(var(--hover-tx, -12px), var(--hover-ty, -11px)) rotate(var(--hover-rot, -6deg)) scale(var(--hover-sc, 1.08));
+      }
+
+      .artp-related-card:hover .artp-related-img,
+      .artp-related-card:focus-visible .artp-related-img {
+        transform: scale(1.03);
+      }
+
+      .artp-related-card:hover .artp-related-action,
+      .artp-related-card:focus-visible .artp-related-action {
+        max-height: 48px;
+        padding-top: 14px;
+        border-top-width: 1px;
+        opacity: 1;
+        transform: translateY(0);
+        color: var(--hover-title);
+      }
+
+      .artp-related-card:hover .artp-related-action svg,
+      .artp-related-card:focus-visible .artp-related-action svg {
+        transform: translateX(4px);
+      }
+
+      .artp-btn-back:hover,
+      .artp-btn-share:hover,
+      .artp-btn-copy:hover,
+      .artp-btn-wa:hover,
+      .artp-btn-secondary:hover,
+      .artp-btn-back:focus-visible,
+      .artp-btn-share:focus-visible,
+      .artp-btn-copy:focus-visible,
+      .artp-btn-wa:focus-visible,
+      .artp-btn-secondary:focus-visible {
+        transform: translateY(-2px);
+        border-color: var(--hover-border);
+      }
+
+      @supports not (backdrop-filter: blur(1px)) {
+        .artp-nav {
+          background: var(--art-glass-fallback);
+        }
+
+        .artp-btn-back,
+        .artp-btn-share,
+        .artp-btn-copy,
+        .artp-btn-wa,
+        .artp-btn-secondary,
+        .artp-callout,
+        .artp-share-section,
+        .artp-cta-banner,
+        .artp-related-card,
+        .artp-footer {
+          background: var(--art-glass-fallback);
         }
       }
 
-      /* RESPONSIVE BREAKPOINTS */
       @media (max-width: 960px) {
         .artp-related-grid {
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 20px;
         }
       }
 
       @media (max-width: 680px) {
         .artp-nav {
-          padding: 12px 18px;
+          gap: 8px;
+          padding: 12px clamp(12px, 4vw, 20px);
         }
+
+        .artp-btn-back,
+        .artp-btn-share {
+          gap: 6px;
+          padding: 8px 11px;
+          font-size: 12px;
+        }
+
         .artp-logo {
-          font-size: 18px;
+          font-size: 16px;
+          letter-spacing: 0.12em;
         }
+
+        .artp-main-container {
+          padding: 28px 20px 72px;
+        }
+
         .artp-related-grid {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
           gap: 18px;
         }
+
         .artp-share-section {
           flex-direction: column;
           align-items: flex-start;
+          padding: 24px 20px;
         }
+
         .artp-share-buttons {
           width: 100%;
         }
+
         .artp-action-btn {
           flex: 1;
           justify-content: center;
         }
+
         .artp-cta-actions {
           flex-direction: column;
           width: 100%;
         }
+
         .artp-cta-actions button {
           width: 100%;
-          justify-content: center;
         }
+
+        .artp-footer {
+          padding: 24px 20px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .artp-root *,
+        .artp-root *::before,
+        .artp-root *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+
+        .artp-btn-back:hover,
+        .artp-btn-share:hover,
+        .artp-btn-copy:hover,
+        .artp-btn-wa:hover,
+        .artp-btn-primary:hover,
+        .artp-btn-secondary:hover,
+        .artp-related-card:hover,
+        .artp-btn-back:focus-visible,
+        .artp-btn-share:focus-visible,
+        .artp-btn-copy:focus-visible,
+        .artp-btn-wa:focus-visible,
+        .artp-btn-primary:focus-visible,
+        .artp-btn-secondary:focus-visible,
+        .artp-related-card:focus-visible {
+          transform: none;
+        }
+
+        .artp-btn-back:hover svg,
+        .artp-related-card:hover .artp-related-action svg,
+        .artp-related-card:focus-visible .artp-related-action svg,
+        .artp-related-card:hover .artp-related-img,
+        .artp-related-card:focus-visible .artp-related-img,
+        .artp-related-card:hover .artp-related-media-item,
+        .artp-related-card:focus-visible .artp-related-media-item {
+          transform: none;
+        }
+      }
+
+      .artp-root .lbl-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--art-label-border);
+        background: var(--art-label-bg);
+        color: var(--art-label);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.3;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        box-shadow: none;
+      }
+
+      .artp-root .lbl-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--art-label);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .artp-root .lbl-meta {
+        color: #8296A8;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        letter-spacing: 0.04em;
       }
     </style>
 
@@ -950,10 +1255,8 @@ export async function renderArticlePage(container, articleId, onBack) {
 
       <!-- MAIN CONTENT SLOT -->
       <main id="article-content-slot" class="artp-main-container">
-        <div style="padding: 80px 20px; text-align: center; color: #A5B5BC;">
-          <div style="width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(88,129,143,0.3); border-top-color: #BB4019; animation: artp-spin 0.8s linear infinite;"></div>
-        <div style="padding: 80px 20px; text-align: center; color: #AABAB8;">
-          <div style="width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(180,200,198,0.2); border-top-color: #789A98; animation: artp-spin 0.8s linear infinite;"></div>
+        <div class="artp-loading">
+          <div class="artp-spinner" aria-hidden="true"></div>
           Memuat publikasi dan informasi kebencanaan SAMUDRA...
         </div>
       </main>
@@ -1020,7 +1323,7 @@ export async function renderArticlePage(container, articleId, onBack) {
         articleData = {
           id: mitigation.id,
           title: mitigation.title,
-          content: mitigation.description,
+          content: mitigation.content || mitigation.description,
           category: `Langkah Mitigasi ${mitigation.stepNumber || ''}`,
           coverImageUrl: mitigation.imageUrl,
           author: {
@@ -1031,11 +1334,29 @@ export async function renderArticlePage(container, articleId, onBack) {
         };
       }
     }
+
+    // 4. Cari panduan bawaan saat artikel berasal dari tautan card default.
+    if (!articleData) {
+      const mitigation = DEFAULT_MITIGASI.find(item => item.id === articleId);
+      if (mitigation) {
+        articleData = {
+          id: mitigation.id,
+          title: mitigation.title,
+          content: mitigation.content || mitigation.description,
+          category: `Langkah Mitigasi ${mitigation.stepNumber}`,
+          coverImageUrl: mitigation.imageUrl || DEFAULT_IMAGES[mitigation.stepNumber],
+          author: {
+            name: 'Tim Mitigasi SAMUDRA',
+            role: 'SOP TANGGAP DARURAT'
+          }
+        };
+      }
+    }
   } catch (error) {
     console.error('Gagal memuat artikel:', error);
   }
 
-  // 4. DATA CADANGAN JIKA TIDAK DITEMUKAN
+  // 5. DATA CADANGAN JIKA TIDAK DITEMUKAN
   if (!articleData) {
     articleData = {
       title: 'Memahami Gempa Megathrust dan Potensi Tsunami',
@@ -1071,7 +1392,12 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
     : 'KONTRIBUTOR SAMUDRA';
 
   const avatarUrl = safeImageUrl(articleData.author?.avatarUrl);
-  const coverImage = safeImageUrl(articleData.coverImageUrl);
+  const coverCandidates = getCoverCandidates(
+    articleData.coverImageUrl,
+    articleData.id || articleData.slug || articleData.title || articleId
+  );
+  const coverImage = coverCandidates[0] || '';
+  const coverCandidatesAttribute = escapeHTML(JSON.stringify(coverCandidates));
 
   // URL UNTUK DIBAGIKAN
   const shareArticleId = articleData.id || articleData.slug || articleId;
@@ -1122,6 +1448,12 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
       .slice(0, 3)
     : [];
 
+  const defaultRelatedPool = [
+    '/img/cover-2.jpg',
+    '/img/cover-3.jpg',
+    '/img/bento-buoy-warning.jpg'
+  ];
+
   const defaultRelated = [
     {
       id: 'rel-1',
@@ -1129,7 +1461,7 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
       category: 'PANDUAN EVAKUASI',
       excerpt: 'Ketahui tindakan taktis yang harus segera dilakukan ketika merasakan gempa kuat di wilayah pesisir.',
       dateStr: 'Informasi SAMUDRA',
-      coverImg: ''
+      coverImg: '/img/bento-evacuation-route.jpg'
     },
     {
       id: 'rel-2',
@@ -1137,7 +1469,7 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
       category: 'TEKNOLOGI KEBENCANAAN',
       excerpt: 'Mengenal teknologi sensor seismik pemantauan gempa dan sistem diseminasi peringatan dini BMKG.',
       dateStr: 'Informasi SAMUDRA',
-      coverImg: ''
+      coverImg: '/img/bento-buoy-warning.jpg'
     },
     {
       id: 'rel-3',
@@ -1145,12 +1477,12 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
       category: 'KESIAPSIAGAAN',
       excerpt: 'Kenali perlengkapan penting dan dokumen darurat yang wajib disiapkan untuk menghadapi bencana.',
       dateStr: 'Informasi SAMUDRA',
-      coverImg: ''
+      coverImg: '/img/cover-4.jpg'
     }
   ];
 
   const displayRelated = relatedArticles.length > 0
-    ? relatedArticles.map(item => ({
+    ? relatedArticles.map((item, index) => ({
       id: item.id || item.slug,
       title: item.title || 'Artikel SAMUDRA',
       category: (item.category || 'Artikel').replace(/_/g, ' ').toUpperCase(),
@@ -1158,7 +1490,7 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
         ? item.content.slice(0, 115) + (item.content.length > 115 ? '...' : '')
         : 'Informasi dan edukasi kebencanaan resmi dari SAMUDRA.',
       dateStr: formatDate(item.publishedAt),
-      coverImg: item.coverImageUrl
+      coverImg: item.coverImageUrl || defaultRelatedPool[index % defaultRelatedPool.length]
     }))
     : defaultRelated;
 
@@ -1170,13 +1502,12 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
       <span class="artp-bc-sep">/</span>
       <a href="#berita" class="artp-bc-link artp-bc-news">Berita</a>
       <span class="artp-bc-sep">/</span>
-      <span class="artp-bc-current">${escapeHTML(title)}</span>
+      <span class="artp-bc-current lbl-meta">${escapeHTML(title)}</span>
     </nav>
 
     <!-- 1. HERO ARTIKEL -->
     <header class="artp-hero-header">
-      <div class="artp-category-badge">
-        <span class="artp-badge-dot"></span>
+      <div class="artp-category-badge lbl-pill">
         <span>${escapeHTML(category)}</span>
       </div>
 
@@ -1192,7 +1523,7 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
     }
           <div>
             <p class="artp-author-name">${escapeHTML(authorName)}</p>
-            <span class="artp-author-role">${escapeHTML(authorRole)}</span>
+            <span class="artp-author-role lbl-meta">${escapeHTML(authorRole)}</span>
           </div>
         </div>
 
@@ -1206,28 +1537,23 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
 
     <!-- GAMBAR UTAMA LANDSCAPE -->
     <div class="artp-hero-media">
-      ${coverImage
-      ? `
-            <img
-              src="${coverImage}"
-              alt="${escapeHTML(title)}"
-              class="artp-hero-img"
-              loading="lazy"
-            >
-          `
-      : `
-            <div class="artp-media-fallback" aria-hidden="true">
-              <div class="artp-fallback-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                  <path d="M2 7c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                  <path d="M2 17c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                </svg>
-              </div>
-              <span class="artp-fallback-label">SAMUDRA INFORMATION</span>
-            </div>
-          `
-    }
+      <img
+        src="${coverImage}"
+        data-image-candidates="${coverCandidatesAttribute}"
+        alt="${escapeHTML(title)}"
+        class="artp-hero-img"
+        loading="lazy"
+      >
+      <div class="artp-media-fallback" aria-hidden="true">
+        <div class="artp-fallback-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+            <path d="M2 7c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+            <path d="M2 17c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+          </svg>
+        </div>
+        <span class="artp-fallback-label lbl-eyebrow">SAMUDRA INFORMATION</span>
+      </div>
     </div>
 
     <!-- 2. KONTEN ARTIKEL EDITORIAL -->
@@ -1284,8 +1610,7 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
 
     <!-- BANNER CTA EDUKASI -->
     <section class="artp-cta-banner">
-      <div class="artp-cta-eyebrow">
-        <span class="artp-badge-dot"></span>
+      <div class="artp-cta-eyebrow lbl-eyebrow">
         <span>SIAGA & TANGGAP</span>
       </div>
 
@@ -1317,8 +1642,7 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
     <!-- 4. ARTIKEL TERKAIT -->
     <section class="artp-related-section">
       <div class="artp-related-header">
-        <div class="artp-related-eyebrow">
-          <span class="artp-badge-dot"></span>
+        <div class="artp-related-eyebrow lbl-eyebrow">
           <span>JELAJAHI INFORMASI</span>
         </div>
 
@@ -1333,7 +1657,9 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
 
       <div class="artp-related-grid">
         ${displayRelated.map(card => {
-      const image = safeImageUrl(card.coverImg);
+      const candidates = getCoverCandidates(card.coverImg, card.id || card.title);
+      const image = candidates[0];
+      const stackImages = getStackImages(image, card.id || card.title);
 
       return `
             <a
@@ -1343,33 +1669,30 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
               aria-label="Buka artikel terkait: ${escapeHTML(card.title)}"
             >
               <div class="artp-related-thumb">
-                ${image
-          ? `
-                      <img
-                        src="${image}"
-                        alt="${escapeHTML(card.title)}"
-                        loading="lazy"
-                        class="artp-related-img"
-                      >
-                    `
-          : `
-                      <div class="artp-media-fallback" aria-hidden="true">
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                          <path d="M2 7c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                          <path d="M2 17c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                        </svg>
-                      </div>
-                    `
-        }
-                <span class="artp-related-badge">${escapeHTML(card.category)}</span>
+                <img src="${stackImages[0]}" alt="" aria-hidden="true" loading="lazy" class="artp-related-media-item artp-related-media-item--back-1" style="--rest-sc:.97;--rest-ty:3px;--rest-op:.18;--hover-rot:-3deg;--hover-tx:-7px;--hover-ty:-7px;--hover-sc:1.04;">
+                <img src="${stackImages[1]}" alt="" aria-hidden="true" loading="lazy" class="artp-related-media-item artp-related-media-item--back-2" style="--rest-sc:.94;--rest-ty:6px;--rest-op:.12;--hover-rot:-6deg;--hover-tx:-12px;--hover-ty:-11px;--hover-sc:1.08;">
+                <img
+                  src="${image}"
+                  data-image-candidates="${escapeHTML(JSON.stringify(candidates))}"
+                  alt="${escapeHTML(card.title)}"
+                  loading="lazy"
+                  class="artp-related-img"
+                >
+                <div class="artp-media-fallback" aria-hidden="true">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                    <path d="M2 7c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                    <path d="M2 17c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                  </svg>
+                  <span class="artp-fallback-label lbl-eyebrow">SAMUDRA INFORMATION</span>
+                </div>
+                <span class="artp-related-badge lbl-pill">${escapeHTML(card.category)}</span>
               </div>
 
               <div class="artp-related-body">
-                <span class="artp-related-date">${escapeHTML(card.dateStr || 'Informasi SAMUDRA')}</span>
+                <span class="artp-related-date lbl-meta">${escapeHTML(card.dateStr || 'Informasi SAMUDRA')}</span>
                 <h4 class="artp-related-card-title">${escapeHTML(card.title)}</h4>
                 <p class="artp-related-card-desc">${escapeHTML(card.excerpt)}</p>
-
                 <div class="artp-related-action">
                   <span>Baca Selengkapnya</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1383,6 +1706,8 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
       </div>
     </section>
   `;
+
+  attachImageFallbacks(contentSlot);
 
   // BREADCRUMB EVENT LISTENERS
   const bcHome = contentSlot.querySelector('.artp-bc-home');
