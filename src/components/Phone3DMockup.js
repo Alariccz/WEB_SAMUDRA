@@ -276,13 +276,10 @@ function buildPhoneModel(screenTexture) {
 
   const lensPupilMat = new THREE.MeshPhysicalMaterial({
     color: 0x120f2e,
-    metalness: 0.5,
+    metalness: 0.55,
     roughness: 0.06,
-    clearcoat: 1.0,
-    iridescence: 1.0,
-    iridescenceIOR: 1.35,
-    iridescenceThicknessRange: [180, 520],
-    envMapIntensity: 2.0
+    clearcoat: 0.85,
+    envMapIntensity: 1.8
   });
 
   const antennaMat = new THREE.MeshStandardMaterial({
@@ -297,8 +294,8 @@ function buildPhoneModel(screenTexture) {
     bevelEnabled: true,
     bevelThickness: BT,
     bevelSize: BS,
-    bevelSegments: 12,
-    curveSegments: 40
+    bevelSegments: 6,
+    curveSegments: 22
   });
   bodyGeo.translate(0, 0, -D / 2);
   phone.add(new THREE.Mesh(bodyGeo, frameMat));
@@ -458,12 +455,12 @@ function buildPhoneModel(screenTexture) {
   // Triple 48MP lens stack: metal bezel, black barrel, sapphire, optics
   const lensR = 0.108;
   const ringH = 0.026;
-  const ringGeo = zCylinder(lensR + 0.004, lensR, ringH, 64);
-  const lipGeo = new THREE.TorusGeometry(lensR - 0.006, 0.006, 12, 64);
-  const barrelGeo = new THREE.CircleGeometry(lensR - 0.012, 48);
-  const sapphireGeo = new THREE.CircleGeometry(lensR - 0.02, 48);
-  const elementGeo = new THREE.RingGeometry(lensR * 0.34, lensR * 0.56, 48);
-  const pupilGeo = new THREE.CircleGeometry(lensR * 0.3, 32);
+  const ringGeo = zCylinder(lensR + 0.004, lensR, ringH, 32);
+  const lipGeo = new THREE.TorusGeometry(lensR - 0.006, 0.006, 8, 32);
+  const barrelGeo = new THREE.CircleGeometry(lensR - 0.012, 28);
+  const sapphireGeo = new THREE.CircleGeometry(lensR - 0.02, 28);
+  const elementGeo = new THREE.RingGeometry(lensR * 0.34, lensR * 0.56, 28);
+  const pupilGeo = new THREE.CircleGeometry(lensR * 0.3, 20);
 
   const lensSpots = [
     [icx + 0.105, plateauCy + 0.125],
@@ -615,9 +612,9 @@ export function mountPhone3DMockup(container, screenUrl = '/img/samudra-app-scre
     return () => {};
   }
 
-  // Slight supersampling keeps the small UI text in the screenshot legible
+  // Cap DPR at 1.5x so 4K/Retina displays stay smooth without excessive fill-rate
   const dpr = window.devicePixelRatio || 1;
-  renderer.setPixelRatio(Math.min(2.5, Math.max(1.5, dpr)));
+  renderer.setPixelRatio(Math.min(1.5, dpr));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.outputColorSpace = THREE.SRGBColorSpace;

@@ -648,14 +648,15 @@ canvas.addEventListener('click', () => {
 
 // ===== SCROLL PROGRESS =====
 let isStageVisible = true;
+const stageEl = document.querySelector('.stage');
+const heroReducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 function fromScroll() {
   if (homeView.style.display === 'none') {
     isStageVisible = false;
     return;
   }
-  const s = document.querySelector('.stage');
-  if (!s || s.offsetParent === null) return;
-  const r = s.getBoundingClientRect();
+  if (!stageEl || stageEl.offsetParent === null) return;
+  const r = stageEl.getBoundingClientRect();
   const vh = window.innerHeight || document.documentElement.clientHeight;
   isStageVisible = r.bottom > -80 && r.top < vh + 80;
   const q = -r.top / Math.max(1, (r.height - vh));
@@ -731,7 +732,7 @@ function loop() {
 
   if (!isStageVisible || document.hidden) return;
 
-  const t = U.uT.value + dt * (matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.25 : 1);
+  const t = U.uT.value + dt * (heroReducedMotionQuery.matches ? 0.25 : 1);
   const st = threeCtx.getState();
 
   // Smooth scroll progress
