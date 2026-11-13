@@ -12,6 +12,7 @@ import { renderSimulation } from './components/Simulation.js';
 import { renderWeatherSection } from './components/WeatherWidget.js';
 import { renderArticlePage } from './components/ArticlePage.js';
 import { createScene } from './scene/threeScene.js';
+import { mountPhone3DMockup } from './components/Phone3DMockup.js';
 import * as THREE from 'three';
 import QRCode from 'qrcode';
 
@@ -376,18 +377,20 @@ ctaSection.innerHTML = `
         </div>
       </div>
 
-      <!-- Right: Phone Mockup & QR Code Container -->
+      <!-- Right: 3D Phone Mockup & QR Code Container -->
       <div class="cta-banner__visuals">
-        <!-- Phone Mockup -->
-        <div class="phone-mockup">
-          <div class="phone-mockup__screen phone-mockup__screen--app">
-            <img
-              src="/img/samudra-app-screen.png"
-              alt="Tampilan Aplikasi Mobile SAMUDRA"
-              class="phone-mockup__img"
-              loading="lazy"
-              decoding="async"
-            />
+        <!-- Interactive 3D Phone Mockup -->
+        <div class="phone-3d-stage" id="phone-3d-stage">
+          <div class="phone-mockup phone-mockup__fallback">
+            <div class="phone-mockup__screen phone-mockup__screen--app">
+              <img
+                src="/img/samudra-app-screen.png"
+                alt="Tampilan Aplikasi Mobile SAMUDRA"
+                class="phone-mockup__img"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
           </div>
         </div>
 
@@ -404,31 +407,56 @@ ctaSection.innerHTML = `
   </div>
 `;
 main.appendChild(ctaSection);
+mountPhone3DMockup(ctaSection.querySelector('#phone-3d-stage'), '/img/samudra-app-screen.png');
 
 const APK_FILENAME = 'SAMUDRA-Mobile-v2.4.1.apk';
 const CONFIGURED_APK_URL = (import.meta.env?.VITE_APK_URL || '').trim();
 const LOCAL_APK_PATH = `/downloads/${APK_FILENAME}`;
+const LOCALHOST_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
 
-function getQrDownloadUrl() {
+async function resolveQrDownloadUrl() {
   if (CONFIGURED_APK_URL) return CONFIGURED_APK_URL;
-  return `${window.location.origin}/?download=apk`;
+
+  if (LOCALHOST_HOSTNAMES.has(window.location.hostname)) {
+    try {
+      const res = await fetch('/__lan-origin.json', { cache: 'no-store' });
+      const contentType = (res.headers.get('content-type') || '').toLowerCase();
+      if (res.ok && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data?.origin) {
+          return `${data.origin}${LOCAL_APK_PATH}`;
+        }
+      }
+    } catch (err) {
+      console.warn('Gagal mendeteksi IP LAN untuk QR Code:', err);
+    }
+  }
+
+  return `${window.location.origin}${LOCAL_APK_PATH}`;
 }
 
 // Render real scannable QR Code SVG
 const qrCodeContainer = ctaSection.querySelector('#qr-code-container');
 if (qrCodeContainer) {
-  QRCode.toString(getQrDownloadUrl(), {
-    type: 'svg',
-    margin: 2,
-    width: 120,
-    errorCorrectionLevel: 'M',
-    color: {
-      dark: '#041226',
-      light: '#f0f9ff'
-    }
-  })
-    .then((svgMarkup) => {
+  resolveQrDownloadUrl()
+    .then((qrUrl) =>
+      QRCode.toString(qrUrl, {
+        type: 'svg',
+        margin: 2,
+        width: 120,
+        errorCorrectionLevel: 'M',
+        color: {
+          dark: '#041226',
+          light: '#f0f9ff'
+        }
+      }).then((svgMarkup) => ({ svgMarkup, qrUrl }))
+    )
+    .then(({ svgMarkup, qrUrl }) => {
       qrCodeContainer.innerHTML = svgMarkup;
+      const qrCard = ctaSection.querySelector('#qr-download-card');
+      if (qrCard) {
+        qrCard.setAttribute('title', `Pindai untuk mengunduh: ${qrUrl}`);
+      }
     })
     .catch((err) => {
       console.warn('Gagal membuat QR Code:', err);
