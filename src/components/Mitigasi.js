@@ -1,4 +1,5 @@
 import { fetchMitigasi } from '../api.js';
+import { waterStageMarkup, waterStageStyles, mountWarpCarousel } from './WarpCarouselMount.js';
 
 // PALET WARNA (Inspirasi Dribbble Lodge / Nature Retreat)
 // Deep navy: #060E12 | Ocean blue: #2B5161 | Muted blue: #58818F
@@ -259,6 +260,8 @@ export function renderMitigasi(container) {
         color: #94a3b8;
         margin: 0 auto;
       }
+
+      ${waterStageStyles}
 
       .mit-intro-cards {
         display: grid;
@@ -773,50 +776,7 @@ export function renderMitigasi(container) {
             </p>
           </div>
 
-          <div class="mit-intro-cards">
-            <!-- PILLAR 1: Kenali Risiko -->
-            <div class="mit-pillar-card">
-              <div class="mit-pillar-icon-box" aria-hidden="true">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M2 6c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                  <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                  <path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                </svg>
-              </div>
-              <h3 class="mit-pillar-title">Kenali Risiko</h3>
-              <p class="mit-pillar-desc">
-                Pahami potensi ancaman tsunami di lingkungan sekitar.
-              </p>
-            </div>
-
-            <!-- PILLAR 2: Kenali Lokasi Aman -->
-            <div class="mit-pillar-card">
-              <div class="mit-pillar-icon-box" aria-hidden="true">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-              </div>
-              <h3 class="mit-pillar-title">Kenali Lokasi Aman</h3>
-              <p class="mit-pillar-desc">
-                Ketahui titik kumpul dan jalur evakuasi terdekat.
-              </p>
-            </div>
-
-            <!-- PILLAR 3: Siapkan Diri -->
-            <div class="mit-pillar-card">
-              <div class="mit-pillar-icon-box" aria-hidden="true">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
-                  <path d="m9 12 2 2 4-4"/>
-                </svg>
-              </div>
-              <h3 class="mit-pillar-title">Siapkan Diri</h3>
-              <p class="mit-pillar-desc">
-                Persiapkan perlengkapan dan rencana menghadapi bencana.
-              </p>
-            </div>
-          </div>
+          ${waterStageMarkup()}
         </div>
       </section>
 
@@ -916,6 +876,9 @@ export function renderMitigasi(container) {
 
   container.appendChild(section);
 
+
+  // WARP CAROUSEL (React, dimuat lazy)
+  mountWarpCarousel(section).catch(err => console.warn('WarpCarousel gagal dimuat:', err));
 
   // TOMBOL PELAJARI PANDUAN
   const learnButton = section.querySelector('[data-learn-button]');
