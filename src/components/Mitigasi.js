@@ -1,5 +1,6 @@
 import { fetchMitigasi } from '../api.js';
 import { waterStageMarkup, waterStageStyles, mountWarpCarousel } from './WarpCarouselMount.js';
+import { mountCircularMitigasiCarousel } from './CircularCarouselMount.js';
 
 // PALET WARNA (Inspirasi Dribbble Lodge / Nature Retreat)
 // Deep navy: #060E12 | Ocean blue: #2B5161 | Muted blue: #58818F
@@ -79,7 +80,7 @@ export function renderMitigasi(container) {
         width: 100%;
         background-color: transparent;
         color: #f8fafc;
-        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         overflow: hidden;
         padding: 0;
         border: none;
@@ -95,23 +96,28 @@ export function renderMitigasi(container) {
 
       /* EYEBROW / BADGES */
       .mit-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.18em;
+        font: 600 11.5px/1 'JetBrains Mono', monospace;
+        letter-spacing: 0.16em;
         text-transform: uppercase;
         color: #38bdf8;
         margin-bottom: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(56, 189, 248, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        padding: 6px 14px;
+        border-radius: 999px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 0 16px rgba(56, 189, 248, 0.15);
       }
 
       .mit-eyebrow-dot {
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background-color: #00d2ff;
-        box-shadow: 0 0 8px rgba(0, 210, 255, 0.55);
+        background-color: #38bdf8;
+        box-shadow: 0 0 8px #38bdf8;
         display: inline-block;
       }
 
@@ -128,12 +134,11 @@ export function renderMitigasi(container) {
       }
 
       .mit-hero-title {
-        font-size: clamp(34px, 4.4vw, 54px);
-        font-weight: 700;
-        line-height: 1.15;
+        font: 300 clamp(34px, 4.5vw, 54px)/1.12 'Inter', sans-serif;
         letter-spacing: -0.025em;
-        color: #FEFEFE;
+        color: #ffffff;
         margin: 0 0 20px;
+        text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
       }
 
       .mit-hero-title-accent {
@@ -141,9 +146,8 @@ export function renderMitigasi(container) {
       }
 
       .mit-hero-desc {
-        font-size: clamp(15px, 1.2vw, 16px);
-        line-height: 1.8;
-        color: #94a3b8;
+        font: 300 15px/1.7 'Inter', sans-serif;
+        color: #b8cadc;
         max-width: 520px;
         margin: 0 0 32px;
       }
@@ -236,29 +240,37 @@ export function renderMitigasi(container) {
 
       /* INTRODUCTION SECTION */
       .mit-intro {
-        padding: clamp(60px, 8vw, 92px) 0;
+        padding: clamp(48px, 6vw, 76px) 0 clamp(36px, 5vw, 60px);
         background: transparent;
+        position: relative;
       }
 
       .mit-intro-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
-        max-width: 760px;
-        margin: 0 auto clamp(36px, 5vw, 48px);
+        max-width: 720px;
+        margin: 0 auto clamp(16px, 2.5vw, 24px);
+        position: relative;
+        z-index: 4;
       }
 
       .mit-intro-title {
-        font-size: clamp(26px, 3.5vw, 36px);
-        font-weight: 700;
-        color: #f8fafc;
-        letter-spacing: -0.02em;
+        font: 300 clamp(32px, 4.5vw, 54px)/1.12 'Inter', sans-serif;
+        letter-spacing: -0.025em;
+        color: #ffffff;
         margin: 0 0 16px;
+        text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        text-wrap: balance;
       }
 
       .mit-intro-desc {
-        font-size: 15px;
-        line-height: 1.8;
-        color: #94a3b8;
+        font: 300 15px/1.7 'Inter', sans-serif;
+        color: #b8cadc;
+        max-width: 60ch;
         margin: 0 auto;
+        text-wrap: balance;
       }
 
       ${waterStageStyles}
@@ -338,18 +350,17 @@ export function renderMitigasi(container) {
       }
 
       .mit-guide-title {
-        font-size: clamp(26px, 3.5vw, 36px);
-        font-weight: 700;
-        color: #FEFEFE;
-        letter-spacing: -0.02em;
-        margin: 0 0 10px;
+        font: 300 clamp(32px, 4.5vw, 54px)/1.12 'Inter', sans-serif;
+        color: #ffffff;
+        letter-spacing: -0.025em;
+        margin: 0 0 14px;
+        text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
       }
 
       .mit-guide-desc {
-        font-size: 15px;
-        line-height: 1.7;
-        color: #A5B5BC;
-        max-width: 560px;
+        font: 300 15px/1.7 'Inter', sans-serif;
+        color: #b8cadc;
+        max-width: 58ch;
         margin: 0;
       }
 
@@ -406,32 +417,14 @@ export function renderMitigasi(container) {
 
       /* CAROUSEL TRACK */
       .mit-carousel-track {
+        position: relative;
+        width: 100%;
+        min-height: 480px;
         display: flex;
-        gap: 24px;
-        overflow-x: auto;
-        scroll-behavior: smooth;
-        scroll-snap-type: x mandatory;
-        padding: 8px 4px 28px;
-        scrollbar-width: thin;
-        scrollbar-color: #2B5161 transparent;
-      }
-
-      .mit-carousel-track::-webkit-scrollbar {
-        height: 6px;
-      }
-
-      .mit-carousel-track::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.04);
-        border-radius: 999px;
-      }
-
-      .mit-carousel-track::-webkit-scrollbar-thumb {
-        background: #2B5161;
-        border-radius: 999px;
-      }
-
-      .mit-carousel-track::-webkit-scrollbar-thumb:hover {
-        background: #58818F;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+        padding: 4px 0 16px;
       }
 
       /* MITIGASI CARD */
@@ -799,34 +792,6 @@ export function renderMitigasi(container) {
                 Ikuti tahapan berikut untuk mengetahui tindakan yang perlu dilakukan ketika menghadapi ancaman tsunami.
               </p>
             </div>
-
-            <div class="mit-guide-controls">
-              <span id="mitigasi-counter" class="mit-counter">
-                Memuat panduan...
-              </span>
-
-              <div class="mit-nav-buttons">
-                <button
-                  id="mitigasi-prev"
-                  class="mit-nav-btn"
-                  aria-label="Langkah sebelumnya"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m15 18-6-6 6-6"/>
-                  </svg>
-                </button>
-
-                <button
-                  id="mitigasi-next"
-                  class="mit-nav-btn"
-                  aria-label="Langkah selanjutnya"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m9 18 6-6-6-6"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
           </div>
 
           <!-- CAROUSEL TRACK -->
@@ -933,6 +898,19 @@ export function renderMitigasi(container) {
 
 
   // AMBIL DATA DARI API
+  const mountCircularOrFallback = (items) => {
+    mountCircularMitigasiCarousel({
+      host: grid,
+      items,
+      counterEl: counter,
+      prevBtn: btnPrev,
+      nextBtn: btnNext
+    }).catch(err => {
+      console.warn('CircularCarousel gagal dimuat, memakai fallback kartu:', err);
+      renderCards(grid, items, counter);
+    });
+  };
+
   fetchMitigasi()
     .then(data => {
       if (Array.isArray(data) && data.length > 0) {
@@ -940,9 +918,9 @@ export function renderMitigasi(container) {
           (a, b) => (a.stepNumber || 0) - (b.stepNumber || 0)
         );
 
-        renderCards(grid, sorted, counter);
+        mountCircularOrFallback(sorted);
       } else {
-        renderCards(grid, DEFAULT_MITIGASI, counter);
+        mountCircularOrFallback(DEFAULT_MITIGASI);
       }
     })
     .catch(err => {
@@ -951,7 +929,7 @@ export function renderMitigasi(container) {
         err
       );
 
-      renderCards(grid, DEFAULT_MITIGASI, counter);
+      mountCircularOrFallback(DEFAULT_MITIGASI);
     });
 }
 

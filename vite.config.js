@@ -50,6 +50,11 @@ function attachLanOriginMiddleware(middlewares) {
 }
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': resolve(import.meta.dirname, '.')
+    }
+  },
   build: {
     rollupOptions: {
       input: {

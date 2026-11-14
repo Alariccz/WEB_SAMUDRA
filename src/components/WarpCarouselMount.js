@@ -124,8 +124,8 @@ export const waterStageStyles = `
     position: relative;
     width: 100%;
     max-width: 1100px;
-    margin: 0 auto;
-    height: clamp(420px, 50vw, 580px);
+    margin: -18px auto 0;
+    height: clamp(420px, 48vw, 540px);
     background: transparent;
     -webkit-mask-image: linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%);
     -webkit-mask-composite: source-in;
@@ -232,6 +232,7 @@ export async function mountWarpCarousel(root) {
       interval: 3.8,
       step: 1,
       warp: 0.3,
+      font: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       ariaLabel: 'Pilar mitigasi tsunami',
       style: { width: '100%', height: '100%', minHeight: 0, aspectRatio: 'auto', background: 'transparent' }
     })
