@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, ArrowRight, ArrowUpRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 export interface CarouselItem {
@@ -86,15 +86,14 @@ const CIRCULAR_CAROUSEL_STYLES = `
     content: '';
     position: absolute;
     left: 50%;
-    top: 40%;
-    width: 580px;
-    height: 340px;
+    top: 42%;
+    width: 480px;
+    height: 280px;
     transform: translate(-50%, -50%);
     background: radial-gradient(
       ellipse at center,
-      rgba(0, 210, 255, 0.22) 0%,
-      rgba(14, 165, 233, 0.10) 45%,
-      transparent 72%
+      rgba(56, 189, 248, 0.14) 0%,
+      transparent 70%
     );
     filter: blur(28px);
     pointer-events: none;
@@ -106,32 +105,33 @@ const CIRCULAR_CAROUSEL_STYLES = `
     left: 50%;
     top: 61%;
     width: 344px;
-    height: 342px;
+    height: 336px;
     margin-left: -172px;
-    margin-top: -171px;
+    margin-top: -168px;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    justify-content: space-between;
-    border-radius: 26px;
-    padding: 10px;
-    border: 1px solid rgba(125, 211, 252, 0.24);
-    background:
-      linear-gradient(
-        155deg,
-        rgba(255, 255, 255, 0.10) 0%,
-        rgba(56, 189, 248, 0.06) 35%,
-        rgba(12, 34, 58, 0.45) 100%
-      ),
-      rgba(7, 21, 38, 0.88);
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
     overflow: hidden;
+    border-radius: 20px;
+    padding: 0;
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(255, 255, 255, 0.04) 40%,
+      rgba(56, 189, 248, 0.10) 100%
+    ), rgba(14, 34, 56, 0.55);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow:
+      0 20px 48px rgba(0, 0, 0, 0.35),
+      0 0 30px rgba(56, 189, 248, 0.12),
+      inset 0 1px 2px 0 rgba(255, 255, 255, 0.45),
+      inset 0 -1px 1px 0 rgba(0, 210, 255, 0.22);
     cursor: pointer;
     text-align: left;
-    color: #f8fafc;
+    color: #ffffff;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    transition: border-color 0.32s ease, box-shadow 0.32s ease, filter 0.32s ease;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
     transform-origin: center center;
   }
 
@@ -139,251 +139,157 @@ const CIRCULAR_CAROUSEL_STYLES = `
     content: '';
     position: absolute;
     top: 0;
-    left: 12%;
-    right: 12%;
-    height: 1px;
+    left: 0;
+    right: 0;
+    height: 1.5px;
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(255, 255, 255, 0.55) 35%,
-      rgba(125, 211, 252, 0.90) 50%,
-      rgba(255, 255, 255, 0.55) 65%,
+      rgba(255, 255, 255, 0.8) 25%,
+      rgba(0, 210, 255, 0.9) 60%,
       transparent 100%
     );
-    z-index: 4;
+    z-index: 25;
     pointer-events: none;
   }
 
   .cc-card--active {
-    border-color: rgba(56, 189, 248, 0.62);
-    background:
-      linear-gradient(
-        155deg,
-        rgba(255, 255, 255, 0.14) 0%,
-        rgba(56, 189, 248, 0.11) 42%,
-        rgba(14, 116, 144, 0.18) 100%
-      ),
-      rgba(8, 25, 45, 0.90);
+    border-color: rgba(255, 255, 255, 0.3);
     box-shadow:
-      0 30px 72px -12px rgba(2, 8, 20, 0.88),
-      0 0 42px rgba(0, 210, 255, 0.22),
-      inset 0 1px 1px rgba(255, 255, 255, 0.34),
-      inset 0 -18px 36px rgba(0, 210, 255, 0.08);
-    filter: brightness(1.03);
+      0 24px 56px rgba(0, 0, 0, 0.45),
+      0 0 36px rgba(56, 189, 248, 0.18),
+      inset 0 1px 2px 0 rgba(255, 255, 255, 0.55),
+      inset 0 -1px 1px 0 rgba(0, 210, 255, 0.25);
   }
 
   .cc-card--inactive {
-    box-shadow:
-      0 20px 44px -10px rgba(2, 8, 20, 0.78),
-      inset 0 1px 1px rgba(255, 255, 255, 0.16);
-    filter: brightness(0.78) saturate(0.88);
+    filter: brightness(0.78) saturate(0.9);
   }
 
   .cc-card:hover {
-    border-color: rgba(0, 210, 255, 0.82);
-    filter: brightness(1.05);
+    border-color: rgba(0, 210, 255, 0.7);
+    filter: brightness(1.03);
     box-shadow:
-      0 32px 72px -10px rgba(2, 8, 20, 0.92),
-      0 0 48px rgba(0, 210, 255, 0.30),
-      inset 0 1px 1px rgba(255, 255, 255, 0.42),
-      inset 0 -18px 36px rgba(0, 210, 255, 0.12);
+      0 24px 60px rgba(0, 0, 0, 0.45),
+      0 0 45px rgba(0, 210, 255, 0.35),
+      inset 0 1px 2px 0 rgba(255, 255, 255, 0.7);
   }
 
-  /* Framed inset media box */
-  .cc-card__media {
+  .cc-card__graphic {
     position: relative;
-    width: 100%;
-    height: 146px;
-    border-radius: 17px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #0d2d4d 0%, #07182c 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
+    height: 230px;
     flex-shrink: 0;
+    overflow: hidden;
+    background: #081a2c;
+  }
+
+  .cc-card__graphic::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(2, 6, 18, 0.15) 0%, rgba(2, 8, 22, 0.35) 100%);
+    pointer-events: none;
   }
 
   .cc-card__img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    filter: brightness(0.94) contrast(1.04);
-    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    opacity: 0.95;
   }
 
   .cc-card:hover .cc-card__img {
-    transform: scale(1.07);
+    transform: scale(1.06);
+    opacity: 1;
   }
 
-  .cc-card__media::after {
-    content: '';
+  .cc-card__fade-top {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      180deg,
-      rgba(4, 13, 26, 0.25) 0%,
-      rgba(4, 13, 26, 0.0) 45%,
-      rgba(4, 13, 26, 0.55) 100%
-    );
+    background: linear-gradient(180deg, rgba(2, 7, 18, 0.25) 0%, transparent 40%);
     pointer-events: none;
   }
 
-  .cc-card__tag {
+  .cc-card__fade-bottom {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 2;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border-radius: 999px;
-    background: rgba(6, 18, 34, 0.72);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(125, 211, 252, 0.42);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 4px 12px rgba(0, 0, 0, 0.28);
-    padding: 5px 11px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: #f0f9ff;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(2, 8, 20, 0.45) 0%, rgba(2, 8, 20, 0.1) 45%, transparent 100%);
+    pointer-events: none;
   }
 
-  .cc-card__tag-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #00d2ff;
-    box-shadow: 0 0 8px #00d2ff;
-  }
-
-  .cc-card__corner-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 2;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(6, 18, 34, 0.68);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    color: #e0f2fe;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.28s ease, background-color 0.28s ease, border-color 0.28s ease;
-  }
-
-  .cc-card:hover .cc-card__corner-badge {
-    background: rgba(0, 210, 255, 0.28);
-    border-color: rgba(125, 211, 252, 0.65);
-    transform: translate(1px, -1px);
-  }
-
-  .cc-card__body {
-    width: 100%;
-    padding: 14px 10px 6px;
+  .cc-card__content {
+    position: relative;
+    z-index: 20;
+    margin-top: -92px;
+    flex: 1;
+    padding: 34px 24px 22px;
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 28%, black 45%, black 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 28%, black 45%, black 100%);
+    background: linear-gradient(
+      180deg,
+      rgba(14, 34, 56, 0) 0%,
+      rgba(14, 34, 56, 0.45) 25%,
+      rgba(12, 30, 50, 0.78) 55%,
+      rgba(10, 24, 42, 0.92) 100%
+    );
+    border-top: none;
+    box-shadow: none;
+    color: #ffffff;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
-    min-height: 0;
+    justify-content: flex-end;
+    transition: background 0.3s ease;
   }
 
-  .cc-card__kicker {
+  .cc-card:hover .cc-card__content {
+    background: linear-gradient(
+      180deg,
+      rgba(14, 34, 56, 0) 0%,
+      rgba(14, 34, 56, 0.52) 25%,
+      rgba(12, 30, 50, 0.85) 55%,
+      rgba(10, 24, 42, 0.96) 100%
+    );
+  }
+
+  .cc-card__eyebrow {
     display: block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9.5px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    font: 600 11px/1 'JetBrains Mono', monospace;
     color: #38bdf8;
-    margin-bottom: 5px;
-    opacity: 0.9;
+    margin-bottom: 7px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .cc-card__title {
-    margin: 0;
-    font-weight: 600;
-    line-height: 1.28;
-    letter-spacing: -0.02em;
+    font: 600 19px/1.3 'Inter', sans-serif;
+    letter-spacing: -0.015em;
     color: #ffffff;
-    font-size: 18px;
+    margin: 0 0 8px;
+    transition: color 0.2s ease;
     display: -webkit-box;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  .cc-card--inactive .cc-card__title {
-    color: rgba(248, 250, 252, 0.92);
-    font-size: 17px;
+  .cc-card:hover .cc-card__title {
+    color: #38bdf8;
   }
 
   .cc-card__desc {
-    margin: 6px 0 0;
-    font-size: 13px;
-    font-weight: 300;
-    line-height: 1.55;
+    font: 400 13px/1.6 'Inter', sans-serif;
     color: #b8cadc;
+    margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-  }
-
-  .cc-card--active .cc-card__desc {
-    color: #cbd5e1;
-  }
-
-  .cc-card__cta {
-    margin-top: 10px;
-    padding: 8px 12px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(125, 211, 252, 0.14);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    font-size: 12px;
-    font-weight: 500;
-    color: #e0f2fe;
-    letter-spacing: -0.005em;
-    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
-  }
-
-  .cc-card--active .cc-card__cta {
-    background: rgba(56, 189, 248, 0.10);
-    border-color: rgba(56, 189, 248, 0.28);
-  }
-
-  .cc-card:hover .cc-card__cta {
-    background: rgba(0, 210, 255, 0.16);
-    border-color: rgba(0, 210, 255, 0.48);
-    color: #ffffff;
-  }
-
-  .cc-card__cta-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: rgba(56, 189, 248, 0.18);
-    color: #38bdf8;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease;
-  }
-
-  .cc-card:hover .cc-card__cta-icon {
-    background: #00d2ff;
-    color: #041424;
-    transform: translateX(2px);
   }
 
   .cc-center {
@@ -493,8 +399,8 @@ const CIRCULAR_CAROUSEL_STYLES = `
       margin-left: -148px;
       margin-top: -152px;
     }
-    .cc-card__media {
-      height: 122px;
+    .cc-card__graphic {
+      height: 204px;
     }
   }
 
@@ -508,11 +414,15 @@ const CIRCULAR_CAROUSEL_STYLES = `
       margin-left: -128px;
       margin-top: -137px;
     }
-    .cc-card__media {
-      height: 102px;
+    .cc-card__graphic {
+      height: 184px;
+    }
+    .cc-card__content {
+      margin-top: -80px;
+      padding: 28px 18px 18px;
     }
     .cc-card__title {
-      font-size: 15.5px;
+      font-size: 16px;
     }
     .cc-card__desc {
       font-size: 12px;
@@ -650,7 +560,7 @@ export function CircularCarousel({
                   isActive ? "cc-card--active" : "cc-card--inactive",
                 )}
               >
-                <div className="cc-card__media">
+                <div className="cc-card__graphic">
                   {item.imageUrl ? (
                     <img
                       src={item.imageUrl}
@@ -659,29 +569,16 @@ export function CircularCarousel({
                       className="cc-card__img"
                     />
                   ) : null}
-                  {item.tag && (
-                    <span className="cc-card__tag">
-                      <span className="cc-card__tag-dot" />
-                      <span>{item.tag}</span>
-                    </span>
-                  )}
-                  <span className="cc-card__corner-badge" aria-hidden="true">
-                    <ArrowUpRight size={14} />
-                  </span>
+                  <div className="cc-card__fade-top" />
+                  <div className="cc-card__fade-bottom" />
                 </div>
 
-                <div className="cc-card__body">
-                  <div style={{ width: "100%" }}>
-                    <span className="cc-card__kicker">Panduan Evakuasi</span>
-                    <h3 className="cc-card__title">{item.title}</h3>
-                    <p className="cc-card__desc">{item.description}</p>
-                  </div>
-                  <div className="cc-card__cta">
-                    <span>Baca Panduan Lengkap</span>
-                    <span className="cc-card__cta-icon" aria-hidden="true">
-                      <ArrowRight size={12} />
-                    </span>
-                  </div>
+                <div className="cc-card__content">
+                  <span className="cc-card__eyebrow">
+                    {item.tag ? `${item.tag} · Panduan Evakuasi` : "Panduan Evakuasi"}
+                  </span>
+                  <h3 className="cc-card__title">{item.title}</h3>
+                  <p className="cc-card__desc">{item.description}</p>
                 </div>
               </motion.button>
             );
