@@ -92,7 +92,7 @@ const CIRCULAR_CAROUSEL_STYLES = `
     transform: translate(-50%, -50%);
     background: radial-gradient(
       ellipse at center,
-      rgba(56, 189, 248, 0.14) 0%,
+      rgba(0, 210, 255, 0.14) 0%,
       transparent 70%
     );
     filter: blur(28px);
@@ -111,27 +111,18 @@ const CIRCULAR_CAROUSEL_STYLES = `
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border-radius: 20px;
+    border-radius: var(--radius-card);
     padding: 0;
-    background: linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.14) 0%,
-      rgba(255, 255, 255, 0.04) 40%,
-      rgba(56, 189, 248, 0.10) 100%
-    ), rgba(14, 34, 56, 0.55);
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    box-shadow:
-      0 20px 48px rgba(0, 0, 0, 0.35),
-      0 0 30px rgba(56, 189, 248, 0.12),
-      inset 0 1px 2px 0 rgba(255, 255, 255, 0.45),
-      inset 0 -1px 1px 0 rgba(0, 210, 255, 0.22);
+    background: var(--color-surface);
+    -webkit-backdrop-filter: blur(18px) saturate(165%);
+    backdrop-filter: blur(18px) saturate(165%);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-card);
     cursor: pointer;
     text-align: left;
-    color: #ffffff;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+    color: var(--color-text-strong);
+    font-family: var(--font-sans);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base), filter var(--transition-base), background var(--transition-fast);
     transform-origin: center center;
   }
 
@@ -145,8 +136,8 @@ const CIRCULAR_CAROUSEL_STYLES = `
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(255, 255, 255, 0.8) 25%,
-      rgba(0, 210, 255, 0.9) 60%,
+      rgba(255, 255, 255, 0.7) 25%,
+      var(--color-accent) 60%,
       transparent 100%
     );
     z-index: 25;
@@ -154,25 +145,19 @@ const CIRCULAR_CAROUSEL_STYLES = `
   }
 
   .cc-card--active {
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow:
-      0 24px 56px rgba(0, 0, 0, 0.45),
-      0 0 36px rgba(56, 189, 248, 0.18),
-      inset 0 1px 2px 0 rgba(255, 255, 255, 0.55),
-      inset 0 -1px 1px 0 rgba(0, 210, 255, 0.25);
+    border-color: var(--color-border-accent);
+    box-shadow: var(--shadow-card), var(--shadow-glow);
   }
 
   .cc-card--inactive {
-    filter: brightness(0.78) saturate(0.9);
+    filter: brightness(0.88) saturate(0.95);
   }
 
   .cc-card:hover {
-    border-color: rgba(0, 210, 255, 0.7);
+    background: var(--color-surface-hover);
+    border-color: var(--color-accent);
     filter: brightness(1.03);
-    box-shadow:
-      0 24px 60px rgba(0, 0, 0, 0.45),
-      0 0 45px rgba(0, 210, 255, 0.35),
-      inset 0 1px 2px 0 rgba(255, 255, 255, 0.7);
+    box-shadow: var(--shadow-card-hover);
   }
 
   .cc-card__graphic {
@@ -180,14 +165,28 @@ const CIRCULAR_CAROUSEL_STYLES = `
     height: 230px;
     flex-shrink: 0;
     overflow: hidden;
-    background: #081a2c;
+    background: transparent;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 52%,
+      rgba(0, 0, 0, 0.4) 80%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 52%,
+      rgba(0, 0, 0, 0.4) 80%,
+      transparent 100%
+    );
   }
 
   .cc-card__graphic::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(2, 6, 18, 0.15) 0%, rgba(2, 8, 22, 0.35) 100%);
+    background: var(--image-overlay);
     pointer-events: none;
   }
 
@@ -198,6 +197,7 @@ const CIRCULAR_CAROUSEL_STYLES = `
     height: 100%;
     object-fit: cover;
     display: block;
+    filter: var(--image-filter);
     transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
     opacity: 0.95;
   }
@@ -210,14 +210,14 @@ const CIRCULAR_CAROUSEL_STYLES = `
   .cc-card__fade-top {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(2, 7, 18, 0.25) 0%, transparent 40%);
+    background: linear-gradient(180deg, rgba(13, 33, 54, 0.22) 0%, transparent 40%);
     pointer-events: none;
   }
 
   .cc-card__fade-bottom {
     position: absolute;
     inset: 0;
-    background: linear-gradient(0deg, rgba(2, 8, 20, 0.45) 0%, rgba(2, 8, 20, 0.1) 45%, transparent 100%);
+    background: linear-gradient(0deg, rgba(13, 33, 54, 0.34) 0%, rgba(13, 33, 54, 0.08) 45%, transparent 100%);
     pointer-events: none;
   }
 
@@ -227,16 +227,16 @@ const CIRCULAR_CAROUSEL_STYLES = `
     margin-top: -92px;
     flex: 1;
     padding: 34px 24px 22px;
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(165%);
+    backdrop-filter: blur(18px) saturate(165%);
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 28%, black 45%, black 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 28%, black 45%, black 100%);
     background: linear-gradient(
       180deg,
-      rgba(14, 34, 56, 0) 0%,
-      rgba(14, 34, 56, 0.45) 25%,
-      rgba(12, 30, 50, 0.78) 55%,
-      rgba(10, 24, 42, 0.92) 100%
+      rgba(13, 33, 54, 0) 0%,
+      rgba(13, 33, 54, 0.22) 28%,
+      rgba(13, 33, 54, 0.14) 65%,
+      transparent 100%
     );
     border-top: none;
     box-shadow: none;
@@ -250,28 +250,28 @@ const CIRCULAR_CAROUSEL_STYLES = `
   .cc-card:hover .cc-card__content {
     background: linear-gradient(
       180deg,
-      rgba(14, 34, 56, 0) 0%,
-      rgba(14, 34, 56, 0.52) 25%,
-      rgba(12, 30, 50, 0.85) 55%,
-      rgba(10, 24, 42, 0.96) 100%
+      rgba(16, 40, 66, 0) 0%,
+      rgba(16, 40, 66, 0.24) 28%,
+      rgba(16, 40, 66, 0.14) 65%,
+      transparent 100%
     );
   }
 
   .cc-card__eyebrow {
     display: block;
-    font: 600 11px/1 'JetBrains Mono', monospace;
-    color: #38bdf8;
+    font: 600 var(--text-xs)/1 var(--font-mono);
+    color: var(--color-accent);
     margin-bottom: 7px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
   .cc-card__title {
-    font: 600 19px/1.3 'Inter', sans-serif;
+    font: 600 var(--text-lg)/1.3 var(--font-sans);
     letter-spacing: -0.015em;
-    color: #ffffff;
+    color: var(--color-text-strong);
     margin: 0 0 8px;
-    transition: color 0.2s ease;
+    transition: color var(--transition-fast);
     display: -webkit-box;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
@@ -279,12 +279,12 @@ const CIRCULAR_CAROUSEL_STYLES = `
   }
 
   .cc-card:hover .cc-card__title {
-    color: #38bdf8;
+    color: var(--color-accent);
   }
 
   .cc-card__desc {
-    font: 400 13px/1.6 'Inter', sans-serif;
-    color: #b8cadc;
+    font: 400 13px/1.6 var(--font-sans);
+    color: var(--color-text-muted);
     margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -308,22 +308,22 @@ const CIRCULAR_CAROUSEL_STYLES = `
   }
 
   .cc-center__num {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans);
     font-size: 46px;
     font-weight: 300;
     letter-spacing: -0.04em;
     line-height: 1;
-    color: rgba(248, 250, 252, 0.94);
+    color: var(--color-text-strong);
     text-shadow: 0 0 32px rgba(0, 210, 255, 0.32);
   }
 
   .cc-center__total {
     margin-top: 4px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: rgba(184, 202, 220, 0.78);
+    color: var(--color-text-muted);
   }
 
   .cc-controls {
@@ -341,22 +341,22 @@ const CIRCULAR_CAROUSEL_STYLES = `
     width: 42px;
     align-items: center;
     justify-content: center;
-    border-radius: 999px;
-    border: 1px solid rgba(125, 211, 252, 0.32);
-    background: rgba(11, 27, 45, 0.58);
-    backdrop-filter: blur(12px);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-border-accent);
+    background: var(--color-surface-solid);
     -webkit-backdrop-filter: blur(12px);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-    color: #e2e8f0;
+    backdrop-filter: blur(12px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    color: var(--color-text);
     cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
   }
 
   .cc-btn:hover {
-    background: rgba(14, 116, 144, 0.42);
-    border-color: rgba(0, 210, 255, 0.68);
-    color: #ffffff;
-    box-shadow: 0 0 22px rgba(0, 210, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    background: var(--color-accent-soft-hover);
+    border-color: var(--color-accent);
+    color: var(--color-text-strong);
+    box-shadow: var(--shadow-glow);
   }
 
   .cc-dots {
@@ -367,17 +367,17 @@ const CIRCULAR_CAROUSEL_STYLES = `
 
   .cc-dot {
     height: 7px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     border: none;
     padding: 0;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--transition-base);
   }
 
   .cc-dot--active {
     width: 28px;
-    background: #00d2ff;
-    box-shadow: 0 0 12px rgba(0, 210, 255, 0.75);
+    background: var(--color-accent);
+    box-shadow: 0 0 12px var(--color-accent);
   }
 
   .cc-dot--inactive {
@@ -386,7 +386,7 @@ const CIRCULAR_CAROUSEL_STYLES = `
   }
 
   .cc-dot--inactive:hover {
-    background: rgba(56, 189, 248, 0.6);
+    background: var(--color-border-accent);
   }
 
   @media (max-width: 960px) {
@@ -597,7 +597,7 @@ export function CircularCarousel({
             {String(activeIndex + 1).padStart(2, "0")}
           </span>
           <span className="cc-center__total">
-            of {String(total).padStart(2, "0")}
+            dari {String(total).padStart(2, "0")}
           </span>
         </motion.div>
       </div>

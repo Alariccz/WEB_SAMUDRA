@@ -189,7 +189,7 @@ alurSection.innerHTML = `
           />
           <div class="notched-card__dim"></div>
           <div class="notched-card__badge-wrap">
-            <span class="notched-card__badge">EDGE BROADCAST</span>
+            <span class="notched-card__badge">SIARAN LANGSUNG</span>
           </div>
         </div>
         <div class="notched-card__notch-block" aria-hidden="true"></div>
@@ -200,8 +200,8 @@ alurSection.innerHTML = `
       <h3 class="notched-card__title">Anda Mendapat Notifikasi</h3>
       <p class="notched-card__desc">Peringatan darurat langsung dikirim ke gawai warga pesisir dengan instruksi padat, lugas, dan bebas kepanikan.</p>
       <ul class="notched-card__tags">
-        <li class="notched-card__tag">Edge Push</li>
-        <li class="notched-card__tag">Multi-Platform</li>
+        <li class="notched-card__tag">Notifikasi Langsung</li>
+        <li class="notched-card__tag">Multi-Perangkat</li>
         <li class="notched-card__tag">Siaga Cepat</li>
       </ul>
     </a>
@@ -228,7 +228,7 @@ alurSection.innerHTML = `
       <h3 class="notched-card__title">Anda Mengikuti Rute</h3>
       <p class="notched-card__desc">Navigasi evakuasi mandiri memandu Anda ke titik aman dan bukit terdekat, menghindari jembatan dan area genangan.</p>
       <ul class="notched-card__tags">
-        <li class="notched-card__tag">Offline GPS</li>
+        <li class="notched-card__tag">GPS Luring</li>
         <li class="notched-card__tag">Peta Lokal</li>
         <li class="notched-card__tag">Elevasi Aman</li>
       </ul>
@@ -311,7 +311,7 @@ fiturSection.innerHTML = `
         <div class="fui-bento-card__fade-bottom"></div>
       </div>
       <div class="fui-bento-card__content">
-        <span class="fui-bento-card__eyebrow">Offline Readiness</span>
+        <span class="fui-bento-card__eyebrow">Kesiapan Luring</span>
         <h3 class="fui-bento-card__title">Siaga Mode Offline Penuh</h3>
         <p class="fui-bento-card__desc">Peta jalur evakuasi dan materi keselamatan tersimpan di gawai lokal sehingga tetap berfungsi saat pemancar BTS dan internet padam pascagempa.</p>
       </div>
@@ -364,7 +364,7 @@ ctaSection.innerHTML = `
         <div class="apk-meta-grid">
           <div class="apk-meta-item">
             <span class="apk-meta-label">VERSI</span>
-            <span class="apk-meta-val">v2.4.1 (Stable)</span>
+            <span class="apk-meta-val">v2.4.1 (Stabil)</span>
           </div>
           <div class="apk-meta-item">
             <span class="apk-meta-label">UKURAN FILE</span>
@@ -537,8 +537,10 @@ function showToast(message) {
 // Footer
 const footer = document.createElement('footer');
 footer.innerHTML = `
-  <span>SAMUDRA.3D &mdash; Sistem Antisipasi &amp; Mitigasi Tsunami</span>
-  <span>Data resmi: <a href="https://bmkg.go.id" target="_blank" rel="noopener">bmkg.go.id</a></span>
+  <div class="footer__inner">
+    <span>SAMUDRA.3D &mdash; Sistem Antisipasi &amp; Mitigasi Tsunami</span>
+    <span>Data resmi: <a href="https://bmkg.go.id" target="_blank" rel="noopener">bmkg.go.id</a></span>
+  </div>
 `;
 homeView.appendChild(footer);
 

@@ -93,10 +93,10 @@ export async function renderArticlePage(container, articleId, onBack) {
         width: 100%;
         position: relative;
         background:
-          radial-gradient(ellipse 80% 45% at 50% 0%, rgba(0, 210, 255, 0.11) 0%, transparent 60%),
-          linear-gradient(180deg, #0b223d 0%, #07172b 45%, #040d1a 100%);
-        color: #f8fafc;
-        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          radial-gradient(ellipse 80% 45% at 50% 0%, var(--color-accent-soft) 0%, transparent 60%),
+          linear-gradient(180deg, #0b223d 0%, var(--color-bg) 45%, var(--color-bg-deep) 100%);
+        color: var(--color-text);
+        font-family: var(--font-sans);
         overflow-x: clip;
       }
 
@@ -105,7 +105,7 @@ export async function renderArticlePage(container, articleId, onBack) {
         position: fixed;
         inset: 0;
         background-image:
-          radial-gradient(rgba(56, 189, 248, 0.14) 1.5px, transparent 1.5px),
+          radial-gradient(rgba(0, 210, 255, 0.14) 1.5px, transparent 1.5px),
           linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
           linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
         background-size: 36px 36px, 72px 72px, 72px 72px;
@@ -129,39 +129,38 @@ export async function renderArticlePage(container, articleId, onBack) {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 16px;
-        padding: 16px clamp(20px, 4vw, 48px);
+        gap: var(--space-4);
+        padding: var(--space-4) var(--container-pad);
         background: rgba(6, 18, 34, 0.85);
-        backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border-bottom: 1px solid rgba(56, 189, 248, 0.16);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--color-border);
       }
 
       .artp-btn-back {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        background: rgba(14, 34, 58, 0.72);
-        border: 1px solid rgba(56, 189, 248, 0.24);
-        color: #f8fafc;
+        gap: var(--space-2);
+        background: var(--color-surface-solid);
+        border: 1px solid var(--color-border-accent);
+        color: var(--color-text-strong);
         padding: 9px 18px;
-        border-radius: 999px;
+        border-radius: var(--radius-pill);
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all var(--transition-fast);
       }
 
       .artp-btn-back:hover {
-        background: rgba(0, 210, 255, 0.16);
-        color: #ffffff;
-        border-color: rgba(0, 210, 255, 0.55);
-        box-shadow: 0 0 18px rgba(0, 210, 255, 0.2);
-        transform: translateX(-3px);
+        background: var(--color-accent-soft-hover);
+        color: var(--color-text-strong);
+        border-color: var(--color-accent);
+        box-shadow: var(--shadow-glow);
       }
 
       .artp-btn-back svg {
-        transition: transform 0.2s ease;
+        transition: transform var(--transition-fast);
       }
 
       .artp-btn-back:hover svg {
@@ -169,13 +168,13 @@ export async function renderArticlePage(container, articleId, onBack) {
       }
 
       .artp-logo {
-        color: #f8fafc;
+        color: var(--color-text-strong);
         text-decoration: none;
-        font-size: 20px;
+        font-size: var(--text-xl);
         font-weight: 800;
         letter-spacing: 0.16em;
-        text-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
-        transition: opacity 0.2s ease;
+        text-shadow: 0 0 20px var(--color-accent-glow);
+        transition: opacity var(--transition-fast);
       }
 
       .artp-logo:hover {
@@ -185,32 +184,31 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-btn-share {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        background: rgba(14, 34, 58, 0.72);
-        border: 1px solid rgba(56, 189, 248, 0.24);
-        color: #f8fafc;
+        gap: var(--space-2);
+        background: var(--color-surface-solid);
+        border: 1px solid var(--color-border-accent);
+        color: var(--color-text-strong);
         padding: 9px 18px;
-        border-radius: 999px;
+        border-radius: var(--radius-pill);
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all var(--transition-fast);
       }
 
       .artp-btn-share:hover {
-        background: rgba(0, 210, 255, 0.16);
-        color: #ffffff;
-        border-color: rgba(0, 210, 255, 0.55);
-        box-shadow: 0 0 18px rgba(0, 210, 255, 0.2);
-        transform: translateY(-2px);
+        background: var(--color-accent-soft-hover);
+        color: var(--color-text-strong);
+        border-color: var(--color-accent);
+        box-shadow: var(--shadow-glow);
       }
 
       /* MAIN CONTAINER */
       .artp-main-container {
         width: 100%;
-        max-width: 1120px;
+        max-width: var(--container-max);
         margin: 0 auto;
-        padding: clamp(32px, 5vw, 64px) clamp(20px, 4vw, 40px) 96px;
+        padding: clamp(32px, 5vw, 64px) var(--container-pad) 96px;
         box-sizing: border-box;
       }
 
@@ -220,20 +218,21 @@ export async function renderArticlePage(container, articleId, onBack) {
         align-items: center;
         gap: 10px;
         font-size: 12.5px;
-        color: #64748b;
-        margin-bottom: 24px;
+        color: var(--color-text-subtle);
+        margin-bottom: var(--space-6);
         flex-wrap: wrap;
       }
 
       .artp-bc-link {
-        color: #38bdf8;
+        color: var(--color-accent);
         text-decoration: none;
         cursor: pointer;
-        transition: color 0.2s ease;
+        transition: opacity var(--transition-fast);
       }
 
       .artp-bc-link:hover {
-        color: #7dd3fc;
+        opacity: 0.82;
+        text-decoration: underline;
       }
 
       .artp-bc-sep {
@@ -241,7 +240,7 @@ export async function renderArticlePage(container, articleId, onBack) {
       }
 
       .artp-bc-current {
-        color: #cbd5e1;
+        color: var(--color-text-muted);
         max-width: 320px;
         white-space: nowrap;
         overflow: hidden;
@@ -256,25 +255,24 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-category-badge {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 6px 14px;
-        border-radius: 999px;
-        background: rgba(0, 210, 255, 0.1);
-        border: 1px solid rgba(56, 189, 248, 0.32);
-        color: #38bdf8;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
+        gap: var(--space-2);
+        padding: 7px 14px;
+        border-radius: var(--radius-pill);
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-border-accent);
+        color: var(--color-accent);
+        font: 600 var(--text-xs)/1 var(--font-mono);
+        letter-spacing: 0.14em;
         text-transform: uppercase;
-        margin-bottom: 16px;
+        margin-bottom: var(--space-4);
       }
 
       .artp-badge-dot {
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background-color: #00d2ff;
-        box-shadow: 0 0 8px rgba(0, 210, 255, 0.65);
+        background-color: var(--color-accent);
+        box-shadow: 0 0 8px var(--color-accent);
       }
 
       .artp-title {
@@ -282,8 +280,8 @@ export async function renderArticlePage(container, articleId, onBack) {
         font-weight: 700;
         line-height: 1.22;
         letter-spacing: -0.025em;
-        color: #f8fafc;
-        margin: 0 0 20px;
+        color: var(--color-text-strong);
+        margin: 0 0 var(--space-5);
       }
 
       /* AUTHOR & METADATA BAR */
@@ -291,17 +289,17 @@ export async function renderArticlePage(container, articleId, onBack) {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
+        gap: var(--space-5);
         flex-wrap: wrap;
-        padding: 16px 0;
-        border-top: 1px solid rgba(56, 189, 248, 0.16);
-        border-bottom: 1px solid rgba(56, 189, 248, 0.16);
+        padding: var(--space-4) 0;
+        border-top: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border);
       }
 
       .artp-author-box {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: var(--space-3);
       }
 
       .artp-avatar {
@@ -309,34 +307,34 @@ export async function renderArticlePage(container, articleId, onBack) {
         height: 44px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid rgba(56, 189, 248, 0.38);
+        border: 2px solid var(--color-border-accent);
       }
 
       .artp-avatar-placeholder {
         width: 44px;
         height: 44px;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(0, 210, 255, 0.22) 0%, rgba(14, 34, 58, 0.92) 100%);
-        border: 1px solid rgba(56, 189, 248, 0.4);
-        color: #38bdf8;
+        background: linear-gradient(135deg, rgba(0, 210, 255, 0.22) 0%, var(--color-bg-deep) 100%);
+        border: 1px solid var(--color-border-accent);
+        color: var(--color-accent);
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
-        font-size: 16px;
+        font-size: var(--text-base);
       }
 
       .artp-author-name {
         font-size: 14.5px;
         font-weight: 600;
-        color: #f8fafc;
+        color: var(--color-text-strong);
         margin: 0;
         line-height: 1.3;
       }
 
       .artp-author-role {
-        font-size: 11.5px;
-        color: #38bdf8;
+        font: 600 var(--text-xs)/1.2 var(--font-mono);
+        color: var(--color-accent);
         text-transform: uppercase;
         letter-spacing: 0.08em;
       }
@@ -344,26 +342,34 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-meta-details {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: var(--space-3);
         font-size: 13px;
-        color: #94a3b8;
+        color: var(--color-text-subtle);
       }
 
       .artp-meta-dot {
-        color: #38bdf8;
+        color: var(--color-accent);
       }
 
       /* HERO MEDIA / FEATURED IMAGE */
       .artp-hero-media {
         width: 100%;
         height: clamp(280px, 46vw, 500px);
-        border-radius: 22px;
+        border-radius: var(--radius-card);
         overflow: hidden;
-        border: 1px solid rgba(56, 189, 248, 0.22);
-        background: #0c1e34;
+        border: 1px solid var(--color-border);
+        background: var(--color-bg-deep);
         margin: clamp(28px, 4vw, 44px) 0 clamp(36px, 5vw, 64px);
-        box-shadow: 0 24px 56px -12px rgba(0, 0, 0, 0.65), 0 0 36px rgba(0, 210, 255, 0.08);
+        box-shadow: var(--shadow-card);
         position: relative;
+      }
+
+      .artp-hero-media::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--image-overlay);
+        pointer-events: none;
       }
 
       .artp-hero-img {
@@ -371,7 +377,7 @@ export async function renderArticlePage(container, articleId, onBack) {
         height: 100%;
         object-fit: cover;
         display: block;
-        filter: brightness(0.92) contrast(1.03);
+        filter: var(--image-filter);
       }
 
       .artp-media-fallback {
@@ -382,26 +388,25 @@ export async function renderArticlePage(container, articleId, onBack) {
         align-items: center;
         justify-content: center;
         gap: 14px;
-        background: radial-gradient(circle at 50% 40%, rgba(0, 210, 255, 0.16) 0%, #091a2e 70%);
+        background: radial-gradient(circle at 50% 40%, rgba(0, 210, 255, 0.16) 0%, var(--color-bg-deep) 70%);
       }
 
       .artp-fallback-icon {
         width: 60px;
         height: 60px;
-        border-radius: 16px;
-        background: rgba(0, 210, 255, 0.12);
-        border: 1px solid rgba(56, 189, 248, 0.32);
+        border-radius: var(--radius-md);
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-border-accent);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #38bdf8;
+        color: var(--color-accent);
       }
 
       .artp-fallback-label {
-        font-size: 12px;
-        font-weight: 700;
+        font: 700 var(--text-xs)/1 var(--font-mono);
         letter-spacing: 0.16em;
-        color: #38bdf8;
+        color: var(--color-accent);
         text-transform: uppercase;
       }
 
@@ -414,7 +419,7 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-paragraph {
         font-size: clamp(16px, 1.2vw, 17.5px);
         line-height: 1.88;
-        color: #cbd5e1;
+        color: var(--color-text-muted);
         margin: 0 0 28px;
         white-space: pre-line;
       }
@@ -423,40 +428,37 @@ export async function renderArticlePage(container, articleId, onBack) {
         font-size: clamp(20px, 2.2vw, 25px);
         font-weight: 700;
         letter-spacing: -0.015em;
-        color: #f8fafc;
-        margin: 44px 0 16px;
+        color: var(--color-text-strong);
+        margin: 44px 0 var(--space-4);
         line-height: 1.35;
       }
 
       /* SAMUDRA CALLOUT BOX */
       .artp-callout {
-        background: linear-gradient(
-          145deg,
-          rgba(255, 255, 255, 0.06) 0%,
-          rgba(255, 255, 255, 0.015) 45%,
-          rgba(56, 189, 248, 0.08) 100%
-        ), rgba(12, 30, 52, 0.86);
-        border: 1px solid rgba(56, 189, 248, 0.22);
-        border-left: 4px solid #00d2ff;
-        border-radius: 16px;
-        padding: 24px 28px;
+        background: var(--color-surface);
+        -webkit-backdrop-filter: blur(18px) saturate(165%);
+        backdrop-filter: blur(18px) saturate(165%);
+        border: 1px solid var(--color-border);
+        border-left: 4px solid var(--color-accent);
+        border-radius: var(--radius-md);
+        padding: var(--space-6) 28px;
         margin: 36px 0;
         display: flex;
         gap: 18px;
         align-items: flex-start;
-        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        box-shadow: var(--shadow-card);
       }
 
       .artp-callout-icon {
         width: 38px;
         height: 38px;
-        border-radius: 10px;
-        background: rgba(0, 210, 255, 0.12);
-        border: 1px solid rgba(56, 189, 248, 0.32);
+        border-radius: var(--radius-sm);
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-border-accent);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #00d2ff;
+        color: var(--color-accent);
         flex-shrink: 0;
         margin-top: 2px;
       }
@@ -464,136 +466,128 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-callout-body {
         font-size: 14.5px;
         line-height: 1.75;
-        color: #cbd5e1;
+        color: var(--color-text-muted);
       }
 
       .artp-callout-body strong {
-        color: #f8fafc;
+        color: var(--color-text-strong);
         display: block;
         margin-bottom: 4px;
-        font-size: 15px;
+        font-size: var(--text-base);
       }
 
       /* SHARE & ACTIONS FOOTER */
       .artp-share-section {
         margin: 56px 0 clamp(56px, 7vw, 84px);
         padding: 28px clamp(20px, 4vw, 36px);
-        background: linear-gradient(
-          145deg,
-          rgba(255, 255, 255, 0.06) 0%,
-          rgba(255, 255, 255, 0.015) 45%,
-          rgba(56, 189, 248, 0.08) 100%
-        ), rgba(12, 30, 52, 0.86);
-        border: 1px solid rgba(56, 189, 248, 0.2);
-        border-radius: 20px;
-        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        background: var(--color-surface);
+        -webkit-backdrop-filter: blur(18px) saturate(165%);
+        backdrop-filter: blur(18px) saturate(165%);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow-card);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
+        gap: var(--space-5);
         flex-wrap: wrap;
       }
 
       .artp-share-title {
-        font-size: 15px;
+        font-size: var(--text-base);
         font-weight: 700;
-        color: #f8fafc;
+        color: var(--color-text-strong);
         margin: 0 0 4px;
       }
 
       .artp-share-desc {
         font-size: 13px;
-        color: #94a3b8;
+        color: var(--color-text-subtle);
         margin: 0;
       }
 
       .artp-share-buttons {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: var(--space-3);
         flex-wrap: wrap;
       }
 
       .artp-action-btn {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--space-2);
         padding: 10px 18px;
-        border-radius: 999px;
+        border-radius: var(--radius-pill);
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all var(--transition-fast);
       }
 
       .artp-btn-copy {
-        background: linear-gradient(135deg, #00d2ff 0%, #38bdf8 100%);
-        border: 1px solid rgba(255, 255, 255, 0.22);
-        color: #041424;
-        box-shadow: 0 4px 16px rgba(0, 210, 255, 0.3);
+        background: var(--color-accent);
+        border: 1px solid var(--color-border-accent);
+        color: var(--color-bg-deep);
+        box-shadow: var(--shadow-glow);
       }
 
       .artp-btn-copy:hover {
-        background: linear-gradient(135deg, #38bdf8 0%, #7dd3fc 100%);
+        background: var(--color-accent);
+        border-color: rgba(255, 255, 255, 0.45);
         box-shadow: 0 6px 22px rgba(0, 210, 255, 0.48);
-        transform: translateY(-2px);
       }
 
       .artp-btn-wa {
-        background: rgba(14, 34, 58, 0.85);
-        border: 1px solid rgba(56, 189, 248, 0.28);
-        color: #f8fafc;
+        background: var(--color-surface-solid);
+        border: 1px solid var(--color-border-accent);
+        color: var(--color-text-strong);
       }
 
       .artp-btn-wa:hover {
-        background: rgba(0, 210, 255, 0.14);
-        border-color: rgba(0, 210, 255, 0.5);
-        transform: translateY(-2px);
+        background: var(--color-accent-soft-hover);
+        border-color: var(--color-accent);
       }
 
       /* CTA BANNER: SIMULASI & PORTAL RESMI */
       .artp-cta-banner {
-        background: linear-gradient(
-          145deg,
-          rgba(255, 255, 255, 0.07) 0%,
-          rgba(255, 255, 255, 0.02) 45%,
-          rgba(56, 189, 248, 0.1) 100%
-        ), rgba(12, 30, 52, 0.88);
-        border: 1px solid rgba(56, 189, 248, 0.24);
-        border-left: 4px solid #00d2ff;
-        border-radius: 22px;
+        background: var(--color-surface);
+        -webkit-backdrop-filter: blur(18px) saturate(165%);
+        backdrop-filter: blur(18px) saturate(165%);
+        border: 1px solid var(--color-border);
+        border-left: 4px solid var(--color-accent);
+        border-radius: var(--radius-card);
         padding: clamp(32px, 5vw, 48px);
         margin: 0 0 clamp(64px, 8vw, 96px);
         text-align: center;
-        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+        box-shadow: var(--shadow-card);
       }
 
       .artp-cta-eyebrow {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        font-size: 11px;
-        font-weight: 700;
+        gap: var(--space-2);
+        font: 700 var(--text-xs)/1 var(--font-mono);
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: #38bdf8;
-        margin-bottom: 12px;
+        color: var(--color-accent);
+        margin-bottom: var(--space-3);
       }
 
       .artp-cta-title {
         font-size: clamp(22px, 3.2vw, 30px);
         font-weight: 700;
-        color: #f8fafc;
+        color: var(--color-text-strong);
         line-height: 1.35;
-        margin: 0 0 12px;
+        margin: 0 0 var(--space-3);
       }
 
       .artp-cta-desc {
         font-size: 14.5px;
         line-height: 1.75;
-        color: #94a3b8;
+        color: var(--color-text-subtle);
         max-width: 620px;
-        margin: 0 auto 24px;
+        margin: 0 auto var(--space-6);
       }
 
       .artp-cta-actions {
@@ -606,54 +600,53 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-btn-primary {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        background: linear-gradient(135deg, #00d2ff 0%, #38bdf8 100%);
-        color: #041424;
+        gap: var(--space-2);
+        background: var(--color-accent);
+        color: var(--color-bg-deep);
         padding: 12px 24px;
-        border-radius: 999px;
-        font-size: 13.5px;
+        border-radius: var(--radius-pill);
+        font-size: var(--text-sm);
         font-weight: 600;
         text-decoration: none;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        box-shadow: 0 4px 20px rgba(0, 210, 255, 0.36);
+        border: 1px solid var(--color-border-accent);
+        box-shadow: var(--shadow-glow);
         cursor: pointer;
-        transition: all 0.22s ease;
+        transition: all var(--transition-fast);
       }
 
       .artp-btn-primary:hover {
-        background: linear-gradient(135deg, #38bdf8 0%, #7dd3fc 100%);
-        color: #041424;
-        transform: translateY(-2px);
+        background: var(--color-accent);
+        color: var(--color-bg-deep);
+        border-color: rgba(255, 255, 255, 0.45);
         box-shadow: 0 6px 26px rgba(0, 210, 255, 0.55);
       }
 
       .artp-btn-secondary {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        background: rgba(14, 34, 58, 0.78);
-        color: #f8fafc;
+        gap: var(--space-2);
+        background: var(--color-surface-solid);
+        color: var(--color-text-strong);
         padding: 12px 24px;
-        border-radius: 999px;
-        font-size: 13.5px;
+        border-radius: var(--radius-pill);
+        font-size: var(--text-sm);
         font-weight: 600;
-        border: 1px solid rgba(56, 189, 248, 0.28);
+        border: 1px solid var(--color-border-accent);
         cursor: pointer;
-        transition: all 0.22s ease;
+        transition: all var(--transition-fast);
       }
 
       .artp-btn-secondary:hover {
-        background: rgba(0, 210, 255, 0.14);
-        color: #ffffff;
-        border-color: rgba(0, 210, 255, 0.52);
-        transform: translateY(-2px);
+        background: var(--color-accent-soft-hover);
+        color: var(--color-text-strong);
+        border-color: var(--color-accent);
       }
 
       /* ARTIKEL TERKAIT SECTION */
       .artp-related-section {
-        margin-top: 24px;
+        margin-top: var(--space-6);
         padding-top: clamp(48px, 6vw, 72px);
-        border-top: 1px solid rgba(56, 189, 248, 0.16);
+        border-top: 1px solid var(--color-border);
       }
 
       .artp-related-header {
@@ -663,65 +656,69 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-related-eyebrow {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        font-size: 11px;
-        font-weight: 700;
+        gap: var(--space-2);
+        font: 700 var(--text-xs)/1 var(--font-mono);
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: #38bdf8;
+        color: var(--color-accent);
         margin-bottom: 10px;
       }
 
       .artp-related-title {
         font-size: clamp(24px, 3.2vw, 32px);
         font-weight: 700;
-        color: #f8fafc;
+        color: var(--color-text-strong);
         margin: 0 0 10px;
       }
 
       .artp-related-desc {
         font-size: 14.5px;
-        color: #94a3b8;
+        color: var(--color-text-subtle);
         margin: 0;
       }
 
       .artp-related-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 24px;
+        gap: var(--space-6);
       }
 
       .artp-related-card {
-        background: linear-gradient(
-          145deg,
-          rgba(255, 255, 255, 0.06) 0%,
-          rgba(255, 255, 255, 0.015) 45%,
-          rgba(56, 189, 248, 0.07) 100%
-        ), rgba(12, 30, 52, 0.86);
-        border: 1px solid rgba(56, 189, 248, 0.2);
-        border-radius: 18px;
+        background: var(--color-surface);
+        -webkit-backdrop-filter: blur(18px) saturate(165%);
+        backdrop-filter: blur(18px) saturate(165%);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
         overflow: hidden;
         display: flex;
         flex-direction: column;
         text-decoration: none;
         color: inherit;
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        box-shadow: var(--shadow-card);
+        transition: border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
         cursor: pointer;
         height: 100%;
       }
 
       .artp-related-card:hover {
-        transform: translateY(-5px);
-        border-color: rgba(0, 210, 255, 0.48);
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.55), 0 0 24px rgba(0, 210, 255, 0.14);
+        background: var(--color-surface-hover);
+        border-color: var(--color-border-accent);
+        box-shadow: var(--shadow-card-hover);
       }
 
       .artp-related-thumb {
         position: relative;
         height: 170px;
-        background: #0a1b30;
+        background: var(--color-bg-deep);
         overflow: hidden;
+      }
+
+      .artp-related-thumb::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--image-overlay);
+        pointer-events: none;
       }
 
       .artp-related-img {
@@ -729,7 +726,7 @@ export async function renderArticlePage(container, articleId, onBack) {
         height: 100%;
         object-fit: cover;
         display: block;
-        filter: brightness(0.9);
+        filter: var(--image-filter);
         transition: transform 0.4s ease;
       }
 
@@ -741,34 +738,34 @@ export async function renderArticlePage(container, articleId, onBack) {
         position: absolute;
         top: 12px;
         left: 12px;
-        background: rgba(6, 18, 34, 0.88);
-        border: 1px solid rgba(56, 189, 248, 0.35);
+        z-index: 2;
+        background: var(--color-surface-solid);
+        border: 1px solid var(--color-border-accent);
         padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 9.5px;
-        font-weight: 700;
+        border-radius: var(--radius-pill);
+        font: 700 9.5px/1 var(--font-mono);
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: #38bdf8;
+        color: var(--color-accent);
       }
 
       .artp-related-body {
-        padding: 20px;
+        padding: var(--space-5);
         display: flex;
         flex-direction: column;
         flex-grow: 1;
       }
 
       .artp-related-date {
-        font-size: 11.5px;
-        color: #38bdf8;
-        margin-bottom: 8px;
+        font: 500 11.5px/1.2 var(--font-mono);
+        color: var(--color-accent);
+        margin-bottom: var(--space-2);
       }
 
       .artp-related-card-title {
-        font-size: 16px;
+        font-size: var(--text-base);
         font-weight: 600;
-        color: #f8fafc;
+        color: var(--color-text-strong);
         line-height: 1.45;
         margin: 0 0 10px;
         display: -webkit-box;
@@ -780,8 +777,8 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-related-card-desc {
         font-size: 13px;
         line-height: 1.65;
-        color: #94a3b8;
-        margin: 0 0 16px;
+        color: var(--color-text-subtle);
+        margin: 0 0 var(--space-4);
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
@@ -790,46 +787,47 @@ export async function renderArticlePage(container, articleId, onBack) {
       }
 
       .artp-related-action {
-        border-top: 1px solid rgba(56, 189, 248, 0.16);
+        margin-top: auto;
+        border-top: 1px solid var(--color-border);
         padding-top: 14px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        color: #38bdf8;
+        color: var(--color-accent);
         font-size: 12.5px;
         font-weight: 600;
-        transition: color 0.2s ease;
+        transition: color var(--transition-fast);
       }
 
       .artp-related-card:hover .artp-related-action {
-        color: #f8fafc;
+        color: var(--color-text-strong);
       }
 
       .artp-related-action svg {
-        transition: transform 0.25s ease, color 0.25s ease;
+        transition: transform var(--transition-fast), color var(--transition-fast);
       }
 
       .artp-related-card:hover .artp-related-action svg {
         transform: translateX(4px);
-        color: #00d2ff;
+        color: var(--color-accent);
       }
 
       /* FOOTER */
       .artp-footer {
-        padding: 32px clamp(20px, 4vw, 48px);
+        padding: var(--space-8) var(--container-pad);
         background: rgba(6, 18, 34, 0.9);
-        border-top: 1px solid rgba(56, 189, 248, 0.16);
-        color: #94a3b8;
+        border-top: 1px solid var(--color-border);
+        color: var(--color-text-subtle);
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 16px;
+        gap: var(--space-4);
         font-size: 12.5px;
       }
 
       .artp-footer a {
-        color: #38bdf8;
+        color: var(--color-accent);
         text-decoration: none;
         font-weight: 600;
       }
@@ -848,7 +846,7 @@ export async function renderArticlePage(container, articleId, onBack) {
       @media (max-width: 960px) {
         .artp-related-grid {
           grid-template-columns: repeat(2, 1fr);
-          gap: 20px;
+          gap: var(--space-5);
         }
       }
 
@@ -913,8 +911,8 @@ export async function renderArticlePage(container, articleId, onBack) {
 
       <!-- MAIN CONTENT SLOT -->
       <main id="article-content-slot" class="artp-main-container">
-        <div style="padding: 80px 20px; text-align: center; color: #94a3b8;">
-          <div style="width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(56, 189, 248, 0.18); border-top-color: #00d2ff; animation: artp-spin 0.8s linear infinite;"></div>
+        <div style="padding: 80px 20px; text-align: center; color: var(--color-text-subtle);">
+          <div style="width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid var(--color-border); border-top-color: var(--color-accent); animation: artp-spin 0.8s linear infinite;"></div>
           Memuat publikasi dan informasi kebencanaan SAMUDRA...
         </div>
       </main>

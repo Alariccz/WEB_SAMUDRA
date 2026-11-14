@@ -9,7 +9,7 @@
 const OCEAN_PALETTES = {
   risiko: ['#031a38', '#0a4a7a', '#0ea5e9', '#a5e8ff'],
   aman: ['#02262b', '#0b6b6b', '#14b8a6', '#b6fff0'],
-  siaga: ['#061a4d', '#1d4ed8', '#38bdf8', '#cdeeff'],
+  siaga: ['#061a4d', '#1d4ed8', '#00d2ff', '#cdeeff'],
   cepat: ['#021f3a', '#0e7490', '#22d3ee', '#d8fbff']
 };
 
@@ -51,7 +51,7 @@ const WATER_CARDS = [
     unit: 'm',
     footer: 'Tinggi gelombang ekstrem',
     detail: 'ring',
-    numeral: ['#e6fbff', '#7dd3fc'],
+    numeral: ['#e6fbff', '#00d2ff'],
     accent: '#a5e8ff',
     glow: '#0ea5e9',
     mesh: oceanMesh(OCEAN_PALETTES.risiko, 0.4)
@@ -74,9 +74,9 @@ const WATER_CARDS = [
     unit: 'jam',
     footer: 'Perbekalan darurat',
     detail: 'wave',
-    numeral: ['#ffffff', '#7dd3fc'],
-    accent: '#38bdf8',
-    glow: '#38bdf8',
+    numeral: ['#ffffff', '#00d2ff'],
+    accent: '#00d2ff',
+    glow: '#00d2ff',
     mesh: oceanMesh(OCEAN_PALETTES.siaga, 3.1)
   },
   {
@@ -138,7 +138,7 @@ export const waterStageStyles = `
   .mit-water-light { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; mix-blend-mode: screen; }
   .mit-ray {
     position: absolute; top: -12%; height: 105%; width: 18%;
-    background: linear-gradient(to bottom, rgba(125, 211, 252, 0.2), rgba(56, 189, 248, 0.06) 55%, transparent 90%);
+    background: linear-gradient(to bottom, rgba(0, 210, 255, 0.2), rgba(0, 210, 255, 0.06) 55%, transparent 90%);
     filter: blur(22px);
     transform-origin: 50% 0;
     animation: mit-ray-sway 12s ease-in-out infinite alternate;
@@ -166,7 +166,7 @@ export const waterStageStyles = `
   .mit-water-floor { position: absolute; left: 0; right: 0; bottom: 0; height: 30%; z-index: 2; pointer-events: none; }
   .mit-water-glow {
     position: absolute; left: 50%; bottom: 6%; width: 72%; height: 70%; translate: -50% 0;
-    background: radial-gradient(50% 50% at 50% 50%, rgba(56, 189, 248, 0.2), rgba(0, 210, 255, 0.06) 55%, transparent 75%);
+    background: radial-gradient(50% 50% at 50% 50%, rgba(0, 210, 255, 0.2), rgba(0, 210, 255, 0.06) 55%, transparent 75%);
     filter: blur(6px);
     animation: mit-glow-breathe 7s ease-in-out infinite alternate;
   }
@@ -178,7 +178,7 @@ export const waterStageStyles = `
     position: absolute; left: 50%; bottom: 22%; width: 34%; height: 15%; translate: -50% 50%;
     border-radius: 50%;
     border: 1px solid rgba(165, 232, 255, 0.4);
-    box-shadow: 0 0 14px rgba(56, 189, 248, 0.18), inset 0 0 14px rgba(56, 189, 248, 0.08);
+    box-shadow: 0 0 14px rgba(0, 210, 255, 0.18), inset 0 0 14px rgba(0, 210, 255, 0.08);
     opacity: 0;
     transform: scale(0.35);
     animation: mit-ripple-out 7.5s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;

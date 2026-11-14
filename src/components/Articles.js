@@ -14,8 +14,8 @@ const SVGS = {
           <circle cx="8" cy="8" r="1.4" fill="#00d2ff" opacity="0.3"/>
         </pattern>
         <linearGradient id="barGrad1" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#38bdf8"/>
-          <stop offset="100%" stop-color="#0284c7"/>
+          <stop offset="0%" stop-color="#00d2ff"/>
+          <stop offset="100%" stop-color="#008bb3"/>
         </linearGradient>
         <linearGradient id="barGrad2" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#0c4a6e"/>
@@ -45,7 +45,7 @@ const SVGS = {
       <g transform="translate(15, 12)">
         <polygon points="55,18 150,18 130,78 35,78" fill="#00d2ff" fill-opacity="0.12" stroke="#00d2ff" stroke-width="1.8"/>
         <polygon points="45,32 140,32 120,92 25,92" fill="#00d2ff" fill-opacity="0.18" stroke="#00d2ff" stroke-width="1.8"/>
-        <polygon points="35,46 130,46 110,106 15,106" fill="#00d2ff" fill-opacity="0.28" stroke="#38bdf8" stroke-width="2"/>
+        <polygon points="35,46 130,46 110,106 15,106" fill="#00d2ff" fill-opacity="0.28" stroke="#00d2ff" stroke-width="2"/>
         <path d="M35 46 Q 75 16 130 46" stroke="#ffffff" stroke-width="1.5" fill="none"/>
         <path d="M25 60 Q 65 30 120 60" stroke="#ffffff" stroke-width="1.5" fill="none"/>
       </g>
@@ -71,7 +71,7 @@ const SVGS = {
         <rect x="8"  y="55" width="15" height="48" fill="#062544" stroke="#00d2ff" stroke-width="1"/>
         <rect x="30" y="40" width="15" height="63" fill="#083159" stroke="#00d2ff" stroke-width="1.2"/>
         <rect x="52" y="24" width="15" height="79" fill="#0d4782" stroke="#00d2ff" stroke-width="1.4"/>
-        <rect x="74" y="10" width="15" height="93" fill="#0284c7" stroke="#38bdf8" stroke-width="1.8"/>
+        <rect x="74" y="10" width="15" height="93" fill="#008bb3" stroke="#00d2ff" stroke-width="1.8"/>
         <rect x="96" y="30" width="15" height="73" fill="#0d4782" stroke="#00d2ff" stroke-width="1.4"/>
         <rect x="118" y="46" width="15" height="57" fill="#083159" stroke="#00d2ff" stroke-width="1"/>
         <rect x="140" y="60" width="15" height="43" fill="#062544" stroke="#00d2ff" stroke-width="1"/>
@@ -85,7 +85,7 @@ const SVGS = {
       <circle cx="100" cy="65" r="32" stroke="#00d2ff" stroke-opacity="0.4" stroke-width="1"/>
       <circle cx="100" cy="65" r="16" stroke="#00d2ff" stroke-opacity="0.5" stroke-width="1"/>
       <path d="M100 65 L135 30 A 48 48 0 0 0 100 17 Z" fill="#00d2ff" fill-opacity="0.3"/>
-      <line x1="100" y1="65" x2="135" y2="30" stroke="#38bdf8" stroke-width="2"/>
+      <line x1="100" y1="65" x2="135" y2="30" stroke="#00d2ff" stroke-width="2"/>
     </svg>
   `,
   satelliteOrbit: `
@@ -122,35 +122,15 @@ export function renderArticles(container) {
       </div>
       <div class="morgana-header__right">
         <p class="morgana-lede">
-          Artikel, edukasi, dan dokumentasi mitigasi bencana resmi yang tersinkronisasi langsung dari database server SAMUDRA. Arahkan kursor pada kartu untuk melihat pratinjau visual dan baca selengkapnya.
+          Artikel, edukasi, dan dokumentasi mitigasi bencana resmi yang tersinkronisasi langsung dari database server SAMUDRA serta panduan kesiapsiagaan lapangan.
         </p>
-        <button type="button" class="info-card-restore-btn" id="info-card-restore-btn" style="display: none;">
-          Tampilkan Kembali Kartu yang Disembunyikan
-        </button>
       </div>
     </div>
 
-    <!-- Primary InfoCard News Grid (Sorotan Utama) -->
-    <div class="info-card-news-grid" id="morgana-hero-container">
-      <!-- Populated dynamically with InfoCard components -->
-    </div>
-
-    <!-- Hidden legacy hook container for backwards compatibility -->
-    <div id="morgana-stack-container" style="display: none;"></div>
-
-    <!-- Second Row: Latest Insights (3-column InfoCard grid) -->
-    <div class="morgana-latest">
-      <div class="morgana-latest__header">
-        <div>
-          <span class="morgana-eyebrow" style="margin-bottom: 8px;">Eksplorasi Lapangan</span>
-          <h3 class="morgana-subheading">Mitigasi &amp; Pengetahuan Terkini</h3>
-        </div>
-        <p class="morgana-sublede">
-          Instruksi kesiapsiagaan, panduan lapangan, dan dokumentasi tindakan saat krisis tiba.
-        </p>
-      </div>
-      <div class="info-card-news-grid" id="morgana-latest-container">
-        <!-- Populated dynamically with InfoCard components -->
+    <!-- Unified News & Insights Showcase (blog-3 React Component) -->
+    <div class="morgana-unified">
+      <div class="blog3-host" id="morgana-latest-container">
+        <!-- Populated dynamically with BlogBlock React component -->
       </div>
     </div>
 
@@ -221,29 +201,16 @@ export function renderArticles(container) {
   // Setup Accordion Interactions
   initAccordion(section);
 
-  // Containers
-  const heroContainer = section.querySelector('#morgana-hero-container');
-  const stackContainer = section.querySelector('#morgana-stack-container');
+  // Unified Showcase Container
   const latestContainer = section.querySelector('#morgana-latest-container');
-  const restoreBtn = section.querySelector('#info-card-restore-btn');
-
-  if (restoreBtn) {
-    restoreBtn.addEventListener('click', () => {
-      section.querySelectorAll('.info-card--dismissed').forEach(card => {
-        card.classList.remove('info-card--dismissed');
-        card.style.display = '';
-      });
-      restoreBtn.style.display = 'none';
-    });
-  }
 
   // Load from real backend API: /api/articles
   fetchArticles()
     .then(articles => {
-      renderRealContent(heroContainer, stackContainer, latestContainer, Array.isArray(articles) ? articles : [], restoreBtn);
+      renderRealContent(null, null, latestContainer, Array.isArray(articles) ? articles : [], null);
     })
     .catch(() => {
-      renderRealContent(heroContainer, stackContainer, latestContainer, [], restoreBtn);
+      renderRealContent(null, null, latestContainer, [], null);
     });
 }
 
@@ -390,7 +357,7 @@ function createInfoCardHTML(item, idx, fallbackPrefix, shrinkHeight = 140, expan
         <div class="info-card__footer">
           <div class="info-card__footer-inner">
             <button type="button" class="info-card__dismiss" aria-label="Sembunyikan berita ini">
-              Dismiss
+              Tutup
             </button>
             <div class="info-card__action">
               <a href="${href}" class="info-card__action-link">
@@ -546,12 +513,12 @@ Gunakan selalu rute darat terbuka dan hindari jembatan muara atau jalan tepi teb
 
 Data diubah menjadi sinyal akustik bawah air menuju pelampung (buoy) di permukaan, diteruskan ke satelit komunikasi geodesi, lalu dikonfirmasi ke pusat analisis komputasi BMKG dalam hitungan mikrodetik sebelum disebarkan ke publik lewat push notification.`,
       authorName: 'Divisi Instrumentasi Kelautan',
-      authorRole: 'ENGINEERING LAB',
+      authorRole: 'LABORATORIUM TEKNIK',
       coverImg: '/img/cover-3.jpg',
       svgThumb: SVGS.matrixBars,
     },
     {
-      category: 'Market Intelligence',
+      category: 'Intelijen Pesisir',
       readTime: '8 Menit Baca',
       title: 'Deteksi Cepat Penurunan Muka Tanah Pesisir',
       excerpt: 'Korelasi antara subsiden tanah dan amplifikasi tinggi rayapan tsunami di teluk tertutup.',
@@ -559,12 +526,12 @@ Data diubah menjadi sinyal akustik bawah air menuju pelampung (buoy) di permukaa
 
 SAMUDRA mengintegrasikan data elevasi topografi digital terbaru (DEMNAS) agar zona risiko genangan selalu merefleksikan kontur ketinggian daratan riil saat ini.`,
       authorName: 'Analisis Geospasial',
-      authorRole: 'DATA SCIENTIST',
+      authorRole: 'ANALIS DATA',
       coverImg: '/img/cover-4.jpg',
       svgThumb: SVGS.radarDial,
     },
     {
-      category: 'Digital Education',
+      category: 'Edukasi Digital',
       readTime: '6 Menit Baca',
       title: 'Protokol Golden Time: 20-20-20 di Tepi Pantai',
       excerpt: 'Panduan baku 20 detik guncangan gempa, 20 menit evakuasi mandiri, menuju tempat dengan ketinggian minimal 20 meter.',
@@ -598,14 +565,23 @@ Sebaliknya, ekosistem terumbu karang penghalang yang sehat dan hutan mangrove te
       const cat = item.category ? item.category.replace(/_/g, ' ').toUpperCase() : 'ARTIKEL RESMI';
       const dateStr = item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Baru';
       const authorName = item.author?.name ? item.author.name.split('_').pop() : 'Rizal Zaky Firmansyah';
-      const authorRole = item.author?.role ? item.author.role.replace(/_/g, ' ').toUpperCase() : 'AUTHOR SAMUDRA';
+      const authorRole = item.author?.role ? item.author.role.replace(/_/g, ' ').toUpperCase() : 'PENULIS SAMUDRA';
+
+      const rawExcerpt = item.content
+        ? (item.content.length > 130 ? item.content.slice(0, 130) + '...' : item.content)
+        : '';
+      const displayExcerpt = !rawExcerpt
+        ? 'Dokumentasi laporan lapangan dan publikasi kesiapsiagaan bencana resmi dari database sistem SAMUDRA.3D.'
+        : rawExcerpt.length < 45
+          ? `${rawExcerpt} — Dokumentasi laporan lapangan dan publikasi kesiapsiagaan bencana yang tersinkronisasi pada kanal informasi SAMUDRA.3D.`
+          : rawExcerpt;
 
       allCards.push({
         isBackend: true,
         id: item.id,
         title: item.title,
         content: item.content || 'Konten edukasi dan panduan resmi dari sistem database SAMUDRA.',
-        excerpt: item.content ? (item.content.length > 130 ? item.content.slice(0, 130) + '...' : item.content) : 'Konten edukasi dan panduan resmi dari sistem database SAMUDRA.',
+        excerpt: displayExcerpt,
         category: cat,
         readTime: `${dateStr} • ${authorName}`,
         dateStr: dateStr,
@@ -618,29 +594,158 @@ Sebaliknya, ekosistem terumbu karang penghalang yang sehat dan hutan mangrove te
     });
   }
 
-  defaultGuides.forEach(guide => {
-    if (allCards.length < 6) {
-      allCards.push(guide);
+  // Guides tambahan untuk memastikan section Berita & Edukasi Tsunami lengkap dan proporsional
+  const extraFieldGuides = [
+    {
+      category: 'Strategi Evakuasi',
+      readTime: '6 Menit Baca',
+      dateStr: '12 Nov 2026',
+      title: 'Penandaan Jalur Evakuasi Malam & Pemanfaatan Tiang Reflektif Pesisir',
+      excerpt: 'Strategi visibilitas jalur darurat ketika gempa memutus pasokan listrik kawasan pantai saat malam hari.',
+      content: `Gempa besar di zona subduksi kerap langsung diikuti pemadaman listrik total. Warga pesisir membutuhkan patokan visual yang tidak bergantung pada jaringan PLN.\n\nTiang reflektif tahan korosi garam dan marka jalan berpendar memandu arah lari ke dataran tinggi meski dalam gelap gulita atau hujan lebat.`,
+      authorName: 'Tim Infrastruktur Pesisir',
+      authorRole: 'NAVIGASI LAPANGAN',
+      coverImg: '/img/step-3-evacuation-route.jpg',
+      svgThumb: SVGS.controlCenter,
+    },
+    {
+      category: 'Teknologi Sensor',
+      readTime: '5 Menit Baca',
+      dateStr: '09 Nov 2026',
+      title: 'Arsitektur Siaran Peringatan Multi-Jalur Bebas Bottleneck Seluler',
+      excerpt: 'Bagaimana pesan darurat menjangkau ponsel warga lewat siaran seluler langsung meski jaringan suara padat.',
+      content: `Saat bencana terjadi, ribuan panggilan telepon serentak melumpuhkan lalu lintas data biasa. Sistem peringatan SAMUDRA memanfaatkan jalur broadcast prioritas agar paket informasi pendek tetap lolos dalam hitungan detik.\n\nData ringkas berisi estimasi waktu tiba (ETA) dan arah elevasi terdekat langsung tercache di perangkat.`,
+      authorName: 'Divisi Telemetri & Siaran',
+      authorRole: 'INFRASTRUKTUR DARURAT',
+      coverImg: '/img/bento-emergency-dispatch.jpg',
+      svgThumb: SVGS.satelliteOrbit,
+    },
+    {
+      category: 'Edukasi Digital',
+      readTime: '4 Menit Baca',
+      dateStr: '05 Nov 2026',
+      title: 'Peta Evakuasi Luring: Cara Memastikan Perangkat Tetap Memandu Tanpa Sinyal',
+      excerpt: 'Panduan mengaktifkan cache ubin peta lokal agar kompas elevasi bekerja bahkan dalam mode pesawat.',
+      content: `Ketergantungan penuh pada kuota seluler sangat berisiko sesaat setelah lindhu mengguncang pemancar BTS terdekat.\n\nDengan mengunduh vektor kontur elevasi dan titik shelter kecamatan terlebih dahulu, warga dapat membaca jarak aman secara real-time murni lewat sinyal GPS satelit.`,
+      authorName: 'Tim Peta Terdistribusi',
+      authorRole: 'EDUKASI APLIKASI',
+      coverImg: '/img/bento-offline-navigation.jpg',
+      svgThumb: SVGS.radarDial,
+    },
+    {
+      category: 'Intelijen Pesisir',
+      readTime: '7 Menit Baca',
+      dateStr: '01 Nov 2026',
+      title: 'Audit Kapasitas & Struktur Tempat Evakuasi Sementara Bertingkat',
+      excerpt: 'Kriteria kelayakan bangunan bertingkat di pesisir datar sebagai shelter vertikal tahan hantaman puing tsunami.',
+      content: `Pada pesisir yang datar dan jarak menuju bukit melebihi 2 kilometer, gedung bertingkat berstruktur beton bertulang menjadi solusi vital.\n\nShelter vertikal wajib memiliki tangga eksternal lebar, lantai dasar terbuka untuk aliran air tanpa menghambat kolom struktur, serta persediaan air bersih darurat.`,
+      authorName: 'Komite Shelter Nasional',
+      authorRole: 'STANDAR BANGUNAN AMAN',
+      coverImg: '/img/bento-shelter-tes.jpg',
+      svgThumb: SVGS.matrixBars,
+    },
+  ];
+
+  const usedTitles = new Set(allCards.map(c => c.title));
+  const unifiedItems = [...allCards];
+
+  [...defaultGuides, ...extraFieldGuides].forEach(guide => {
+    if (unifiedItems.length < 7 && !usedTitles.has(guide.title)) {
+      unifiedItems.push(guide);
+      usedTitles.add(guide.title);
     }
   });
 
-  // Top Row: 3 Featured InfoCards
-  const topCards = allCards.slice(0, 3);
-  if (heroContainer) {
-    heroContainer.innerHTML = topCards
-      .map((item, idx) => createInfoCardHTML(item, idx, 'sorotan', 140, 210))
-      .join('');
-    attachInfoCardInteractions(heroContainer, topCards, 'sorotan', restoreBtn);
-  }
-
-  // Second Row: 3 Latest Insight InfoCards
-  const latestCards = allCards.slice(3, 6);
   if (latestContainer) {
-    latestContainer.innerHTML = latestCards
-      .map((item, idx) => createInfoCardHTML(item, idx + 3, 'edukasi', 140, 210))
-      .join('');
-    attachInfoCardInteractions(latestContainer, latestCards, 'edukasi', restoreBtn);
+    mountBlog3Section(latestContainer, unifiedItems);
   }
+}
+
+let blog3RenderToken = 0;
+
+function makeAuthorInitials(name) {
+  const clean = String(name || 'Tim SAMUDRA').trim();
+  const parts = clean.split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return clean.slice(0, 2).toUpperCase();
+}
+
+function mountBlog3Section(containerEl, sourceItems) {
+  const currentToken = ++blog3RenderToken;
+  const fallbackCovers = [
+    '/img/bento-evacuation-route.jpg',
+    '/img/bento-buoy-warning.jpg',
+    '/img/cover-1.jpg',
+    '/img/cover-2.jpg',
+    '/img/cover-3.jpg',
+    '/img/cover-4.jpg',
+    '/img/bento-offline-navigation.jpg',
+  ];
+  const fallbackDates = [
+    '14 Nov 2026',
+    '11 Nov 2026',
+    '08 Nov 2026',
+    '05 Nov 2026',
+    '02 Nov 2026',
+    '29 Okt 2026',
+    '24 Okt 2026',
+  ];
+
+  const mappedPosts = sourceItems.map((item, idx) => ({
+    id: item.id ?? `samudra-guide-${idx}`,
+    category: item.category || 'Mitigasi Tsunami',
+    title: item.title || 'Panduan Mitigasi Pesisir',
+    image: item.coverImg || fallbackCovers[idx % fallbackCovers.length],
+    excerpt: item.excerpt || 'Dokumentasi edukasi kebencanaan resmi SAMUDRA.3D.',
+    author: {
+      name: item.authorName || 'Tim Mitigasi SAMUDRA',
+      initials: makeAuthorInitials(item.authorName),
+      avatarUrl: item.authorAvatar || undefined,
+      role: item.authorRole || 'KONTRIBUTOR SAMUDRA',
+    },
+    date: item.dateStr || fallbackDates[idx % fallbackDates.length],
+    readTime: item.isBackend ? '4 Menit Baca' : (item.readTime || '5 Menit Baca'),
+    rawItem: item,
+  }));
+
+  const featuredPost = mappedPosts[0];
+  const gridPosts = mappedPosts.slice(1);
+
+  Promise.all([
+    import('react'),
+    import('react-dom/client'),
+    import('../../components/ui/blog-3'),
+  ])
+    .then(([React, { createRoot }, blogModule]) => {
+      if (currentToken !== blog3RenderToken || !containerEl.isConnected) return;
+      const BlogBlock = blogModule.default;
+      if (!containerEl.__blog3Root) {
+        containerEl.__blog3Root = createRoot(containerEl);
+      }
+      containerEl.__blog3Root.render(
+        React.createElement(BlogBlock, {
+          hideHeader: true,
+          featuredPost,
+          posts: gridPosts,
+          showSectionWrapper: false,
+          onSelectPost: (post) => {
+            const raw = post?.rawItem;
+            if (raw && raw.isBackend && raw.id && typeof window.__navigateToArticle === 'function') {
+              window.__navigateToArticle(raw.id);
+              return;
+            }
+            if (raw) {
+              openArticleModal(raw);
+            }
+          },
+        })
+      );
+    })
+    .catch((err) => {
+      console.error('[SAMUDRA] Gagal memuat komponen blog-3:', err);
+    });
 }
 
 // ===== ARTICLE READER MODAL POPUP =====

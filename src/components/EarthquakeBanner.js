@@ -16,12 +16,14 @@ export function renderEarthquakeBanner(container) {
   const banner = document.createElement('div');
   banner.className = 'quake-banner';
   banner.innerHTML = `
-    <span class="quake-banner__dot"></span>
-    <span class="quake-banner__label">GEMPA TERKINI</span>
-    <span class="quake-banner__value" id="qMag">— M</span>
-    <span class="quake-banner__value" id="qDepth">— km</span>
-    <span class="quake-banner__value" id="qTsunami">Memuat…</span>
-    <span class="quake-banner__region" id="qRegion">Menghubungi BMKG…</span>
+    <div class="quake-banner__inner">
+      <span class="quake-banner__dot"></span>
+      <span class="quake-banner__label">GEMPA TERKINI</span>
+      <span class="quake-banner__value" id="qMag">— M</span>
+      <span class="quake-banner__value" id="qDepth">— km</span>
+      <span class="quake-banner__value" id="qTsunami">Memuat…</span>
+      <span class="quake-banner__region" id="qRegion">Menghubungi BMKG…</span>
+    </div>
   `;
   container.appendChild(banner);
 

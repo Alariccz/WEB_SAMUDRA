@@ -1,57 +1,130 @@
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
-import { cn } from "@/lib/utils"
+export type ButtonVariant =
+  | "default"
+  | "destructive"
+  | "outline"
+  | "secondary"
+  | "ghost"
+  | "link";
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  },
-)
+export type ButtonSize =
+  | "default"
+  | "xs"
+  | "sm"
+  | "lg"
+  | "icon"
+  | "icon-xs"
+  | "icon-sm"
+  | "icon-lg";
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  asChild?: boolean;
+  render?: React.ReactElement<Record<string, unknown>>;
+  nativeButton?: boolean;
+}
+
+export function buttonVariants({
+  variant = "default",
+  size = "default",
+  className,
+}: {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  className?: string;
+} = {}) {
+  const variantClasses: Record<ButtonVariant, string> = {
+    default: "blog3-btn--default bg-primary text-primary-foreground",
+    destructive: "blog3-btn--destructive bg-destructive text-white",
+    outline: "blog3-btn--outline border bg-background",
+    secondary: "blog3-btn--secondary bg-secondary text-secondary-foreground",
+    ghost: "blog3-btn--ghost",
+    link: "blog3-btn--link text-primary underline-offset-4",
+  };
+
+  const sizeClasses: Record<ButtonSize, string> = {
+    default: "blog3-btn--size-default h-9 px-4 py-2",
+    xs: "blog3-btn--size-xs h-7 px-2.5 text-xs",
+    sm: "blog3-btn--size-sm h-8 rounded-md gap-1.5 px-3 text-xs",
+    lg: "blog3-btn--size-lg h-10 rounded-md px-6",
+    icon: "blog3-btn--size-icon size-9",
+    "icon-xs": "blog3-btn--size-icon-xs size-6",
+    "icon-sm": "blog3-btn--size-icon-sm size-8",
+    "icon-lg": "blog3-btn--size-icon-lg size-10",
+  };
+
+  return cn(
+    "blog3-btn inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 shrink-0 outline-none",
+    variantClasses[variant],
+    sizeClasses[size],
+    className
+  );
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
+  (
+    {
+      className,
+      variant = "default",
+      size = "default",
+      asChild = false,
+      render,
+      nativeButton: _nativeButton,
+      children,
+      type = "button",
+      ...props
+    },
+    ref
+  ) => {
+    const mergedClassName = buttonVariants({ variant, size, className });
+
+    if (render && React.isValidElement(render)) {
+      const renderProps = render.props as Record<string, unknown>;
+      return React.cloneElement(render, {
+        ...props,
+        ...renderProps,
+        ref,
+        "data-slot": "button",
+        "data-variant": variant,
+        "data-size": size,
+        className: cn(mergedClassName, renderProps.className as string | undefined),
+        children: renderProps.children ?? children,
+      });
+    }
+
+    if (asChild && React.isValidElement(children)) {
+      const childProps = children.props as Record<string, unknown>;
+      return React.cloneElement(
+        children as React.ReactElement<Record<string, unknown>>,
+        {
+          ...props,
+          ...childProps,
+          ref,
+          "data-slot": "button",
+          className: cn(mergedClassName, childProps.className as string | undefined),
+        }
+      );
+    }
+
     return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+      <button
         ref={ref}
+        type={type}
+        data-slot="button"
+        data-variant={variant}
+        data-size={size}
+        className={mergedClassName}
         {...props}
-      />
-    )
-  },
-)
-Button.displayName = "Button"
+      >
+        {children}
+      </button>
+    );
+  }
+);
+Button.displayName = "Button";
 
-export { Button, buttonVariants }
-
+export { Button };

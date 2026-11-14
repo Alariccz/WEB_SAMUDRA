@@ -181,12 +181,12 @@ export function renderSimulation(container) {
               </svg>
               <span>Mulai Simulasi</span>
             </button>
-            <button type="button" id="sim-btn-reset" class="seismic-action-btn seismic-action-btn--secondary" title="Reset Simulasi">
+            <button type="button" id="sim-btn-reset" class="seismic-action-btn seismic-action-btn--secondary" title="Atur Ulang Simulasi">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
                 <path d="M3 3v5h5"></path>
               </svg>
-              <span>Reset</span>
+              <span>Atur Ulang</span>
             </button>
           </div>
         </div>
@@ -248,7 +248,7 @@ export function renderSimulation(container) {
 
         <!-- Quick Location Jump Tabs for SeismicID Mode -->
         <div class="seismic-quick-bar" id="seismic-quick-bar" style="display: none;">
-          <span class="seismic-quick-title">TOP RISIKO:</span>
+          <span class="seismic-quick-title">RISIKO TERTINGGI:</span>
           <div class="seismic-quick-tags" id="seismic-quick-tags"></div>
         </div>
 
@@ -272,11 +272,11 @@ export function renderSimulation(container) {
             </div>
             <div class="sim-hud-item">
               <span class="sim-hud-lbl">ESTIMASI GELOMBANG</span>
-              <span class="sim-hud-val" id="sim-hud-height" style="color: #00d2ff;">▲ 6.4 m</span>
+              <span class="sim-hud-val" id="sim-hud-height" style="color: var(--color-accent);">▲ 6.4 m</span>
             </div>
             <div class="sim-hud-item">
               <span class="sim-hud-lbl">ETA TERCEPAT</span>
-              <span class="sim-hud-val" id="sim-hud-eta" style="color: #f59e0b;">⏱ 22 Menit</span>
+              <span class="sim-hud-val" id="sim-hud-eta" style="color: var(--color-warning);">⏱ 22 Menit</span>
             </div>
           </div>
 
@@ -334,7 +334,7 @@ export function renderSimulation(container) {
               <span class="seismic-pill__val">Persamaan Shallow Water (Green's Law)</span>
             </div>
             <div class="seismic-pill">
-              <span class="seismic-pill__lbl">DATA FEED</span>
+              <span class="seismic-pill__lbl">SUMBER DATA</span>
               <span class="seismic-pill__val">USGS &bull; BMKG &bull; EMSC</span>
             </div>
             <div class="seismic-pill">

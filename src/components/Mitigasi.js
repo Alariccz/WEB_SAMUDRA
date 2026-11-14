@@ -79,17 +79,17 @@ export function renderMitigasi(container) {
         position: relative;
         width: 100%;
         background-color: transparent;
-        color: #f8fafc;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: var(--color-text);
+        font-family: var(--font-sans);
         overflow: hidden;
-        padding: 0 clamp(20px, 5vw, 72px);
+        padding: 0 var(--container-pad);
         border: none;
         box-sizing: border-box;
       }
 
       .mit-container {
         width: 100%;
-        max-width: 1140px;
+        max-width: var(--container-max);
         margin: 0 auto;
         padding: 0;
         box-sizing: border-box;
@@ -97,32 +97,32 @@ export function renderMitigasi(container) {
 
       /* EYEBROW / BADGES */
       .mit-eyebrow {
-        font: 500 11px/1 'JetBrains Mono', monospace;
+        font: 600 var(--text-xs)/1 var(--font-mono);
         letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: #00d2ff;
-        margin-bottom: 16px;
+        color: var(--color-accent);
+        margin-bottom: var(--space-4);
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        background: rgba(0, 210, 255, 0.08);
-        border: 1px solid rgba(0, 210, 255, 0.25);
-        padding: 6px 14px;
-        border-radius: 999px;
+        gap: var(--space-2);
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-border-accent);
+        padding: 7px 14px;
+        border-radius: var(--radius-pill);
       }
 
       .mit-eyebrow-dot {
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background-color: #00d2ff;
-        box-shadow: 0 0 8px #00d2ff;
+        background-color: var(--color-accent);
+        box-shadow: 0 0 8px var(--color-accent);
         display: inline-block;
       }
 
       /* HERO SECTION */
       .mit-hero {
-        padding: clamp(64px, 8vw, 100px) 0 clamp(48px, 6vw, 76px);
+        padding: var(--space-section) 0 clamp(48px, 6vw, 76px);
       }
 
       .mit-hero-grid {
@@ -133,57 +133,58 @@ export function renderMitigasi(container) {
       }
 
       .mit-hero-title {
-        font: 300 clamp(34px, 4.5vw, 54px)/1.12 'Inter', sans-serif;
+        font: 300 var(--text-3xl)/1.12 var(--font-sans);
         letter-spacing: -0.025em;
-        color: #ffffff;
-        margin: 0 0 20px;
+        color: var(--color-text-strong);
+        margin: 0 0 var(--space-5);
         text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
       }
 
       .mit-hero-title-accent {
-        color: #7dd3fc;
+        color: var(--color-accent);
       }
 
       .mit-hero-desc {
-        font: 300 15px/1.7 'Inter', sans-serif;
-        color: #b8cadc;
+        font: 300 var(--text-base)/1.7 var(--font-sans);
+        color: var(--color-text-muted);
         max-width: 520px;
-        margin: 0 0 32px;
+        margin: 0 0 var(--space-8);
       }
 
       .mit-hero-actions {
         display: flex;
         align-items: center;
-        gap: 24px;
+        gap: var(--space-6);
         flex-wrap: wrap;
       }
 
       .mit-btn-primary {
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        background: linear-gradient(135deg, #00d2ff 0%, #38bdf8 100%);
-        color: #041424;
-        padding: 14px 26px;
-        border-radius: 999px;
-        font-size: 14px;
+        gap: var(--space-2);
+        background: var(--color-accent);
+        color: var(--color-bg-deep);
+        padding: 13px 26px;
+        border-radius: var(--radius-pill);
+        font-size: var(--text-sm);
         font-weight: 600;
         text-decoration: none;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        box-shadow: 0 4px 20px rgba(0, 210, 255, 0.42), 0 0 25px rgba(0, 210, 255, 0.2);
-        transition: all 0.25s ease;
+        border: 1px solid var(--color-border-accent);
+        box-shadow: var(--shadow-glow);
+        transition: transform var(--transition-base), background var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
         cursor: pointer;
       }
 
       .mit-btn-primary:hover {
-        background: linear-gradient(135deg, #38bdf8 0%, #7dd3fc 100%);
-        color: #041424;
+        background: var(--color-accent);
+        color: var(--color-bg-deep);
+        border-color: rgba(255, 255, 255, 0.45);
         transform: translateY(-2px);
-        box-shadow: 0 6px 26px rgba(0, 210, 255, 0.65), 0 0 35px rgba(0, 210, 255, 0.4);
+        box-shadow: 0 6px 26px rgba(0, 210, 255, 0.55), 0 0 32px rgba(0, 210, 255, 0.35);
       }
 
       .mit-btn-primary svg {
-        transition: transform 0.25s ease;
+        transition: transform var(--transition-fast);
       }
 
       .mit-btn-primary:hover svg {
@@ -193,20 +194,20 @@ export function renderMitigasi(container) {
       .mit-hero-stat {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding-left: 20px;
-        border-left: 1px solid rgba(56, 189, 248, 0.25);
+        gap: var(--space-3);
+        padding-left: var(--space-5);
+        border-left: 1px solid var(--color-border-accent);
       }
 
       .mit-stat-num {
-        font: 300 28px/1 'Inter', sans-serif;
-        color: #ffffff;
+        font: 300 var(--text-2xl)/1 var(--font-sans);
+        color: var(--color-text-strong);
         letter-spacing: -0.02em;
       }
 
       .mit-stat-label {
-        font: 500 11px/1.4 'JetBrains Mono', monospace;
-        color: #94a3b8;
+        font: 500 var(--text-xs)/1.4 var(--font-mono);
+        color: var(--color-text-muted);
         text-transform: uppercase;
         letter-spacing: 0.08em;
       }
@@ -214,11 +215,19 @@ export function renderMitigasi(container) {
       /* Hero Media */
       .mit-hero-media {
         position: relative;
-        border-radius: 24px;
+        border-radius: var(--radius-card);
         overflow: hidden;
-        border: 1px solid rgba(125, 211, 252, 0.26);
-        background-color: #07182c;
-        box-shadow: 0 24px 56px -12px rgba(2, 8, 20, 0.8), 0 0 32px rgba(0, 210, 255, 0.1);
+        border: 1px solid var(--color-border);
+        background-color: var(--color-bg-deep);
+        box-shadow: var(--shadow-card);
+      }
+
+      .mit-hero-media::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--image-overlay);
+        pointer-events: none;
       }
 
       .mit-hero-img {
@@ -226,7 +235,7 @@ export function renderMitigasi(container) {
         height: 380px;
         object-fit: cover;
         display: block;
-        filter: brightness(0.85) contrast(1.05);
+        filter: var(--image-filter);
         transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
@@ -253,17 +262,17 @@ export function renderMitigasi(container) {
       }
 
       .mit-intro-title {
-        font: 300 clamp(32px, 4.5vw, 54px)/1.12 'Inter', sans-serif;
+        font: 300 var(--text-3xl)/1.12 var(--font-sans);
         letter-spacing: -0.025em;
-        color: #ffffff;
+        color: var(--color-text-strong);
         margin: 0 0 16px;
         text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
         text-wrap: balance;
       }
 
       .mit-intro-desc {
-        font: 300 15px/1.7 'Inter', sans-serif;
-        color: #b8cadc;
+        font: 300 15px/1.7 var(--font-sans);
+        color: var(--color-text-muted);
         max-width: 60ch;
         margin: 0 auto;
         text-wrap: balance;
@@ -274,65 +283,66 @@ export function renderMitigasi(container) {
       .mit-intro-cards {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: clamp(16px, 2.5vw, 28px);
+        gap: var(--space-6);
       }
 
       .mit-pillar-card {
-        background: linear-gradient(
-          145deg,
-          rgba(255, 255, 255, 0.06) 0%,
-          rgba(255, 255, 255, 0.015) 45%,
-          rgba(56, 189, 248, 0.07) 100%
-        ), rgba(12, 30, 52, 0.86);
-        border: 1px solid rgba(56, 189, 248, 0.2);
-        border-radius: 20px;
+        background: var(--color-surface);
+        -webkit-backdrop-filter: blur(18px) saturate(165%);
+        backdrop-filter: blur(18px) saturate(165%);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
         padding: clamp(24px, 3vw, 32px);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.14);
-        transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        box-shadow: var(--shadow-card);
+        transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
       }
 
       .mit-pillar-card:hover {
         transform: translateY(-4px);
-        border-color: rgba(0, 210, 255, 0.45);
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.5), 0 0 24px rgba(0, 210, 255, 0.14);
+        background: var(--color-surface-hover);
+        border-color: var(--color-border-accent);
+        box-shadow: var(--shadow-card-hover);
       }
 
       .mit-pillar-icon-box {
         width: 50px;
         height: 50px;
-        border-radius: 14px;
-        background: rgba(0, 210, 255, 0.12);
-        border: 1px solid rgba(56, 189, 248, 0.32);
+        border-radius: var(--radius-md);
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-border-accent);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #38bdf8;
-        margin-bottom: 20px;
-        transition: background-color 0.25s ease, border-color 0.25s ease;
+        color: var(--color-accent);
+        margin-bottom: var(--space-5);
+        transition: background-color var(--transition-fast), border-color var(--transition-fast);
       }
 
       .mit-pillar-card:hover .mit-pillar-icon-box {
-        background: rgba(0, 210, 255, 0.22);
-        border-color: rgba(0, 210, 255, 0.55);
+        background: var(--color-accent-soft-hover);
+        border-color: var(--color-accent);
       }
 
       .mit-pillar-title {
-        font-size: 18px;
+        font-size: var(--text-lg);
         font-weight: 600;
-        color: #f8fafc;
-        margin: 0 0 10px;
+        color: var(--color-text-strong);
+        margin: 0 0 var(--space-2);
       }
 
       .mit-pillar-desc {
-        font-size: 13.5px;
+        font-size: var(--text-sm);
         line-height: 1.7;
-        color: #94a3b8;
+        color: var(--color-text-muted);
         margin: 0;
       }
 
       /* EVACUATION GUIDE SECTION */
       .mit-guide-section {
-        padding: clamp(64px, 8vw, 96px) 0 clamp(48px, 6vw, 72px);
+        padding: var(--space-section) 0;
         scroll-margin-top: 80px;
       }
 
@@ -340,22 +350,22 @@ export function renderMitigasi(container) {
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        gap: 24px;
+        gap: var(--space-6);
         flex-wrap: wrap;
-        margin-bottom: 32px;
+        margin-bottom: var(--space-8);
       }
 
       .mit-guide-title {
-        font: 300 clamp(32px, 4.5vw, 54px)/1.12 'Inter', sans-serif;
-        color: #ffffff;
+        font: 300 var(--text-3xl)/1.12 var(--font-sans);
+        color: var(--color-text-strong);
         letter-spacing: -0.025em;
-        margin: 0 0 14px;
+        margin: 0 0 var(--space-4);
         text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
       }
 
       .mit-guide-desc {
-        font: 300 15px/1.7 'Inter', sans-serif;
-        color: #b8cadc;
+        font: 300 var(--text-base)/1.7 var(--font-sans);
+        color: var(--color-text-muted);
         max-width: 58ch;
         margin: 0;
       }
@@ -363,7 +373,7 @@ export function renderMitigasi(container) {
       .mit-guide-controls {
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: var(--space-4);
         flex-wrap: wrap;
       }
 
@@ -371,12 +381,12 @@ export function renderMitigasi(container) {
         display: inline-flex;
         align-items: center;
         padding: 8px 18px;
-        border-radius: 999px;
-        font-size: 12.5px;
+        border-radius: var(--radius-pill);
+        font-size: var(--text-xs);
         font-weight: 600;
-        color: #ffffff;
-        background: rgba(11, 27, 45, 0.72);
-        border: 1px solid rgba(56, 189, 248, 0.3);
+        color: var(--color-text-strong);
+        background: var(--color-surface-solid);
+        border: 1px solid var(--color-border-accent);
         white-space: nowrap;
       }
 
@@ -389,26 +399,27 @@ export function renderMitigasi(container) {
         width: 44px;
         height: 44px;
         border-radius: 50%;
-        background: rgba(11, 27, 45, 0.72);
-        border: 1px solid rgba(56, 189, 248, 0.3);
-        color: #ffffff;
+        background: var(--color-surface-solid);
+        border: 1px solid var(--color-border-accent);
+        color: var(--color-text-strong);
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.22s ease;
+        transition: transform var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
         padding: 0;
       }
 
       .mit-nav-btn:hover {
-        background: rgba(0, 210, 255, 0.16);
-        border-color: rgba(0, 210, 255, 0.55);
+        background: var(--color-accent-soft-hover);
+        border-color: var(--color-accent);
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        box-shadow: var(--shadow-glow);
       }
 
       .mit-nav-btn:active {
         transform: translateY(0);
+        opacity: 0.9;
       }
 
       /* CAROUSEL TRACK */
@@ -427,35 +438,44 @@ export function renderMitigasi(container) {
       .mitigasi-card {
         flex: 0 0 min(330px, 85%);
         scroll-snap-align: start;
-        background: linear-gradient(
-          145deg,
-          rgba(255, 255, 255, 0.06) 0%,
-          rgba(255, 255, 255, 0.015) 45%,
-          rgba(56, 189, 248, 0.07) 100%
-        ), rgba(12, 30, 52, 0.86);
-        border: 1px solid rgba(56, 189, 248, 0.2);
-        border-radius: 20px;
+        background: var(--color-surface);
+        -webkit-backdrop-filter: blur(18px) saturate(165%);
+        backdrop-filter: blur(18px) saturate(165%);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
         overflow: hidden;
         text-decoration: none;
         color: inherit;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.14);
-        transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+        height: 100%;
+        box-shadow: var(--shadow-card);
+        transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
         cursor: pointer;
       }
 
       .mitigasi-card:hover {
         transform: translateY(-6px);
-        border-color: rgba(0, 210, 255, 0.45);
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.55), 0 0 24px rgba(0, 210, 255, 0.16);
+        background: var(--color-surface-hover);
+        border-color: var(--color-border-accent);
+        box-shadow: var(--shadow-card-hover);
       }
 
       .mit-card-media {
         position: relative;
         height: 195px;
-        background: #07182c;
+        background: transparent;
         overflow: hidden;
+        -webkit-mask-image: linear-gradient(180deg, #000 50%, rgba(0, 0, 0, 0.7) 78%, transparent 100%);
+        mask-image: linear-gradient(180deg, #000 50%, rgba(0, 0, 0, 0.7) 78%, transparent 100%);
+      }
+
+      .mit-card-media::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--image-overlay);
+        pointer-events: none;
       }
 
       .mit-card-img {
@@ -463,12 +483,12 @@ export function renderMitigasi(container) {
         height: 100%;
         object-fit: cover;
         display: block;
-        filter: brightness(0.85);
+        filter: var(--image-filter);
         transition: transform 0.4s ease;
       }
 
       .mitigasi-card:hover .mit-card-img {
-        transform: scale(1.04);
+        transform: scale(1.05);
       }
 
       /* Fallback Card Placeholder */
@@ -479,27 +499,26 @@ export function renderMitigasi(container) {
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 12px;
-        background: radial-gradient(circle at 50% 40%, rgba(14, 165, 233, 0.22) 0%, #07182c 70%);
+        gap: var(--space-3);
+        background: radial-gradient(circle at 50% 40%, rgba(0, 210, 255, 0.18) 0%, var(--color-bg-deep) 70%);
       }
 
       .mit-fallback-icon-box {
         width: 48px;
         height: 48px;
-        border-radius: 12px;
-        background: rgba(56, 189, 248, 0.14);
-        border: 1px solid rgba(56, 189, 248, 0.32);
+        border-radius: var(--radius-md);
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-border-accent);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #38bdf8;
+        color: var(--color-accent);
       }
 
       .mit-fallback-text {
-        font-size: 11px;
-        font-weight: 700;
+        font: 700 var(--text-xs)/1 var(--font-mono);
         letter-spacing: 0.14em;
-        color: #7dd3fc;
+        color: var(--color-accent);
         text-transform: uppercase;
       }
 
@@ -507,107 +526,104 @@ export function renderMitigasi(container) {
         position: absolute;
         top: 14px;
         left: 14px;
-        background: rgba(6, 18, 34, 0.88);
-        border: 1px solid rgba(56, 189, 248, 0.35);
+        z-index: 2;
+        background: var(--color-surface-solid);
+        border: 1px solid var(--color-border-accent);
         padding: 6px 12px;
-        border-radius: 999px;
-        font-size: 10.5px;
-        font-weight: 700;
+        border-radius: var(--radius-pill);
+        font: 700 10.5px/1 var(--font-mono);
         letter-spacing: 0.1em;
-        color: #ffffff;
+        color: var(--color-text-strong);
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
       }
 
       .mit-step-dot {
         width: 5px;
         height: 5px;
         border-radius: 50%;
-        background-color: #00d2ff;
+        background-color: var(--color-accent);
       }
 
       .mit-card-content {
-        padding: 24px;
+        padding: var(--space-6);
         display: flex;
         flex-direction: column;
         flex-grow: 1;
       }
 
       .mit-card-tag {
-        font-size: 10.5px;
-        font-weight: 700;
+        font: 700 10.5px/1 var(--font-mono);
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: #38bdf8;
-        margin-bottom: 8px;
+        color: var(--color-accent);
+        margin-bottom: var(--space-2);
       }
 
       .mit-card-title {
-        font-size: 18px;
+        font-size: var(--text-lg);
         font-weight: 600;
-        color: #ffffff;
+        color: var(--color-text-strong);
         line-height: 1.4;
         margin: 0 0 10px;
-        transition: color 0.2s ease;
+        transition: color var(--transition-fast);
       }
 
       .mit-card-desc {
-        font-size: 13.5px;
+        font-size: var(--text-sm);
         line-height: 1.7;
-        color: #b8cadc;
-        margin: 0 0 20px;
+        color: var(--color-text-muted);
+        margin: 0 0 var(--space-5);
         flex-grow: 1;
       }
 
       .mit-card-action {
-        border-top: 1px solid rgba(125, 211, 252, 0.16);
-        padding-top: 16px;
+        margin-top: auto;
+        border-top: 1px solid var(--color-border);
+        padding-top: var(--space-4);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        color: #38bdf8;
+        color: var(--color-accent);
         font-size: 13px;
         font-weight: 600;
-        transition: color 0.2s ease;
+        transition: color var(--transition-fast);
       }
 
       .mitigasi-card:hover .mit-card-action {
-        color: #ffffff;
+        color: var(--color-text-strong);
       }
 
       .mit-card-action svg {
-        transition: transform 0.25s ease, color 0.25s ease;
+        transition: transform var(--transition-fast), color var(--transition-fast);
       }
 
       .mitigasi-card:hover .mit-card-action svg {
         transform: translateX(4px);
-        color: #00d2ff;
+        color: var(--color-accent);
       }
 
       /* EVACUATION REMINDER SECTION */
       .mit-reminder {
-        padding: 0 0 clamp(64px, 8vw, 100px);
+        padding: 0 0 var(--space-section);
       }
 
       .mit-reminder-card {
-        background: linear-gradient(
-          145deg,
-          rgba(255, 255, 255, 0.06) 0%,
-          rgba(255, 255, 255, 0.015) 45%,
-          rgba(56, 189, 248, 0.07) 100%
-        ), rgba(12, 30, 52, 0.88);
-        border: 1px solid rgba(56, 189, 248, 0.22);
-        border-left: 4px solid #00d2ff;
-        border-radius: 22px;
+        background: var(--color-surface);
+        -webkit-backdrop-filter: blur(18px) saturate(165%);
+        backdrop-filter: blur(18px) saturate(165%);
+        border: 1px solid var(--color-border);
+        border-left: 4px solid var(--color-accent);
+        border-radius: var(--radius-card);
         padding: clamp(28px, 4vw, 44px);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 32px;
-        box-shadow: 0 16px 38px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+        gap: var(--space-8);
+        box-shadow: var(--shadow-card);
       }
 
       .mit-reminder-body {
@@ -618,28 +634,28 @@ export function renderMitigasi(container) {
       .mit-reminder-eyebrow {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 5px 12px;
-        border-radius: 999px;
-        background: rgba(0, 210, 255, 0.08);
-        border: 1px solid rgba(0, 210, 255, 0.25);
-        font: 500 11px/1 'JetBrains Mono', monospace;
+        gap: var(--space-2);
+        padding: 7px 14px;
+        border-radius: var(--radius-pill);
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-border-accent);
+        font: 600 var(--text-xs)/1 var(--font-mono);
         letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: #00d2ff;
-        margin-bottom: 14px;
+        color: var(--color-accent);
+        margin-bottom: var(--space-4);
       }
 
       .mit-reminder-title {
-        font: 300 clamp(24px, 3vw, 34px)/1.2 'Inter', sans-serif;
+        font: 300 clamp(24px, 3vw, 34px)/1.2 var(--font-sans);
         letter-spacing: -0.02em;
-        color: #ffffff;
-        margin: 0 0 12px;
+        color: var(--color-text-strong);
+        margin: 0 0 var(--space-3);
       }
 
       .mit-reminder-desc {
-        font: 300 15px/1.7 'Inter', sans-serif;
-        color: #b8cadc;
+        font: 300 var(--text-base)/1.7 var(--font-sans);
+        color: var(--color-text-muted);
         max-width: 640px;
         margin: 0;
       }
@@ -648,12 +664,12 @@ export function renderMitigasi(container) {
         width: 76px;
         height: 76px;
         border-radius: 50%;
-        background: rgba(0, 210, 255, 0.12);
-        border: 1px solid rgba(0, 210, 255, 0.35);
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-border-accent);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #00d2ff;
+        color: var(--color-accent);
         flex-shrink: 0;
       }
 
@@ -665,7 +681,7 @@ export function renderMitigasi(container) {
         }
         .mit-intro-cards {
           grid-template-columns: 1fr;
-          gap: 16px;
+          gap: var(--space-4);
         }
         .mit-hero-media {
           max-width: 600px;
@@ -676,17 +692,17 @@ export function renderMitigasi(container) {
         .mit-reminder-card {
           flex-direction: column;
           align-items: flex-start;
-          gap: 24px;
+          gap: var(--space-6);
         }
         .mit-hero-actions {
           flex-direction: column;
           align-items: flex-start;
-          gap: 16px;
+          gap: var(--space-4);
         }
         .mit-hero-stat {
           padding-left: 0;
           border-left: none;
-          border-top: 1px solid rgba(56, 189, 248, 0.25);
+          border-top: 1px solid var(--color-border-accent);
           padding-top: 14px;
           width: 100%;
         }
@@ -793,7 +809,7 @@ export function renderMitigasi(container) {
 
           <!-- CAROUSEL TRACK -->
           <div id="mitigasi-grid" class="mit-carousel-track">
-            <div style="flex: 0 0 100%; padding: 48px; text-align: center; color: #b8cadc; background: rgba(11, 27, 45, 0.65); border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.22); backdrop-filter: blur(12px);">
+            <div style="flex: 0 0 100%; padding: 48px; text-align: center; color: var(--color-text-muted); background: var(--color-surface); border-radius: var(--radius-card); border: 1px solid var(--color-border); -webkit-backdrop-filter: blur(18px) saturate(165%); backdrop-filter: blur(18px) saturate(165%); box-shadow: var(--shadow-card);">
               Memuat langkah mitigasi...
             </div>
           </div>
@@ -983,7 +999,7 @@ function renderCards(grid, items, counter) {
                       <path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
                     </svg>
                   </div>
-                  <span class="mit-fallback-text">SAMUDRA GUIDE</span>
+                  <span class="mit-fallback-text">PANDUAN SAMUDRA</span>
                 </div>
               `
       }

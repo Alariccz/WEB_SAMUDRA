@@ -347,7 +347,7 @@ export function renderWeatherSection(container) {
             </div>
             <div class="weather-slab__live">
               <span class="weather-led"></span>
-              <span class="weather-live-badge">LIVE BMKG</span>
+              <span class="weather-live-badge">LANGSUNG BMKG</span>
               <span class="weather-clock" id="weather-clock">12:00 WIB</span>
             </div>
           </div>
@@ -363,14 +363,14 @@ export function renderWeatherSection(container) {
 
           <!-- Sky Canvas Container -->
           <div class="weather-sky" id="weather-sky-wrapper">
-            <svg id="weather-sky-svg" aria-hidden="true" shape-rendering="crispEdges" viewBox="0 0 ${46 * PITCH} ${28 * PITCH}">
+            <svg id="weather-sky-svg" aria-hidden="true" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid slice" viewBox="0 0 ${52 * PITCH} ${25 * PITCH}">
               ${WEATHER_SKY_LAYERS.map(l => `<path id="sky-layer-${l}" d="" fill="${SKY_PAINT[l]}"/>`).join('')}
             </svg>
             <div class="weather-now-overlay">
               <div class="weather-now-temp" id="weather-temp-val">--°</div>
               <div class="weather-now-meta">
                 <span class="weather-now-cond" id="weather-cond-val">Memuat data...</span>
-                <span class="weather-now-readout" id="weather-readout-val">Feels --° &bull; Lembap --% &bull; Angin -- km/h</span>
+                <span class="weather-now-readout" id="weather-readout-val">Terasa --° &bull; Lembap --% &bull; Angin -- km/h</span>
               </div>
             </div>
           </div>
@@ -414,7 +414,7 @@ export function renderWeatherSection(container) {
               <span class="intel-stat__val" id="stat-humidity">--%</span>
             </div>
             <div class="intel-stat">
-              <span class="intel-stat__lbl">SUHU TERASA (FEELS)</span>
+              <span class="intel-stat__lbl">SUHU TERASA</span>
               <span class="intel-stat__val" id="stat-feels">--°C</span>
             </div>
             <div class="intel-stat">
@@ -435,7 +435,15 @@ export function renderWeatherSection(container) {
           <div class="intel-stats-grid">
             <div class="intel-stat">
               <span class="intel-stat__lbl">GELOMBANG SIGNIFIKAN</span>
-              <span class="intel-stat__val" id="stat-wave" style="color: #38bdf8;">1.5 &ndash; 2.8 m</span>
+              <span class="intel-stat__val" id="stat-wave" style="color: var(--color-accent);">1.5 &ndash; 2.8 m</span>
+            </div>
+            <div class="intel-stat">
+              <span class="intel-stat__lbl">PERIODE ALUN (SWELL)</span>
+              <span class="intel-stat__val" id="stat-swell">11 &ndash; 13 dtk</span>
+            </div>
+            <div class="intel-stat">
+              <span class="intel-stat__lbl">PASANG SURUT LAUT</span>
+              <span class="intel-stat__val" id="stat-tide">Pasang Normal &middot; 1.3 m</span>
             </div>
             <div class="intel-stat">
               <span class="intel-stat__lbl">INTERVAL TELEMETRI</span>
@@ -475,6 +483,15 @@ function initWeatherStation(section) {
   const statFeels = section.querySelector('#stat-feels');
   const statRisk = section.querySelector('#stat-risk');
   const statWave = section.querySelector('#stat-wave');
+  const statSwell = section.querySelector('#stat-swell');
+  const statTide = section.querySelector('#stat-tide');
+
+  const MARINE_TELEMETRY = {
+    parangtritis: { wave: '2.1 – 3.2 m', swell: '12 – 14 dtk', tide: 'Pasang Naik · 1.6 m' },
+    glagah: { wave: '1.8 – 2.9 m', swell: '11 – 13 dtk', tide: 'Pasang Sedang · 1.4 m' },
+    baron: { wave: '2.3 – 3.5 m', swell: '13 – 15 dtk', tide: 'Pasang Tinggi · 1.8 m' },
+    jogja: { wave: '1.5 – 2.8 m', swell: '11 – 13 dtk', tide: 'Pasang Normal · 1.3 m' }
+  };
 
   // Clock updater
   setInterval(() => {
@@ -490,6 +507,15 @@ function initWeatherStation(section) {
       isAwake = entry.isIntersecting;
     });
     observer.observe(section);
+  }
+
+  // Re-render grid to match container dimensions on resize
+  const skyWrapper = section.querySelector('#weather-sky-wrapper');
+  if (skyWrapper && 'ResizeObserver' in window) {
+    const resizeObs = new ResizeObserver(() => {
+      if (weatherData) renderSkyFrame(section, weatherData, tick);
+    });
+    resizeObs.observe(skyWrapper);
   }
 
   // Animation frame loop
@@ -598,17 +624,10 @@ function initWeatherStation(section) {
       statRisk.className = 'intel-stat__val intel-stat__val--safe';
     }
 
-    if (statWave) {
-      if (loc.id === 'parangtritis') {
-        statWave.textContent = '2.1 – 3.2 m';
-      } else if (loc.id === 'glagah') {
-        statWave.textContent = '1.8 – 2.9 m';
-      } else if (loc.id === 'baron') {
-        statWave.textContent = '2.3 – 3.5 m';
-      } else {
-        statWave.textContent = '1.5 – 2.8 m';
-      }
-    }
+    const marine = MARINE_TELEMETRY[loc.id] || MARINE_TELEMETRY.jogja;
+    if (statWave) statWave.textContent = marine.wave;
+    if (statSwell) statSwell.textContent = marine.swell;
+    if (statTide) statTide.textContent = marine.tide;
 
     // Populate next 6 hours
     const currentHr = new Date().getHours();
@@ -672,7 +691,18 @@ function initWeatherStation(section) {
   }
 
   function renderSkyFrame(root, state, t) {
-    const paths = buildWeatherScene(46, 28, 21, state.hour, state.sky, t);
+    const wrapper = root.querySelector('#weather-sky-wrapper');
+    const svg = root.querySelector('#weather-sky-svg');
+    const w = wrapper?.clientWidth || 410;
+    const h = wrapper?.clientHeight || 196;
+    const cols = Math.max(32, Math.ceil(w / PITCH));
+    const rows = Math.max(20, Math.ceil(h / PITCH));
+    const hz = Math.max(12, rows - 6);
+    if (svg) {
+      const vb = `0 0 ${cols * PITCH} ${rows * PITCH}`;
+      if (svg.getAttribute('viewBox') !== vb) svg.setAttribute('viewBox', vb);
+    }
+    const paths = buildWeatherScene(cols, rows, hz, state.hour, state.sky, t);
     WEATHER_SKY_LAYERS.forEach((layer) => {
       const el = root.querySelector(`#sky-layer-${layer}`);
       if (el) el.setAttribute('d', paths[layer] || '');
