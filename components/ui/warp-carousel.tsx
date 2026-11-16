@@ -125,7 +125,7 @@ export const WARP_CAROUSEL_CARDS: WarpCard[] = [
 
 const CW = 256;
 const CH = 320;
-const CR = 10;
+const CR = 14;
 const FOCAL = 734.103;
 const G = {
   qA: 0.46401,
@@ -398,18 +398,56 @@ function paintCard(cv: HTMLCanvasElement, card: WarpCard, family: string) {
   ctx.clearRect(0, 0, w, h);
   paintMesh(ctx, w, h, card.mesh);
   ctx.setTransform(k, 0, 0, k, 0, 0);
+
+  // Unified SAMUDRA frosted-glass surface sheen & ambient cyan depth
+  const sheen = ctx.createLinearGradient(0, 0, CW, CH);
+  sheen.addColorStop(0, "rgba(255, 255, 255, 0.14)");
+  sheen.addColorStop(0.45, "rgba(255, 255, 255, 0.03)");
+  sheen.addColorStop(1, "rgba(0, 210, 255, 0.09)");
+  ctx.fillStyle = sheen;
+  ctx.fillRect(0, 0, CW, CH);
+
+  const amb = ctx.createRadialGradient(128, 158, 6, 128, 158, 120);
+  amb.addColorStop(0, "rgba(0, 210, 255, 0.11)");
+  amb.addColorStop(1, "rgba(0, 210, 255, 0)");
+  ctx.fillStyle = amb;
+  ctx.fillRect(0, 0, CW, CH);
+
   ctx.textBaseline = "alphabetic";
   const white: [number, number, number] = [255, 255, 255];
-  const accent = parseColor(card.accent || "#ffffff");
+  const accent = parseColor(card.accent || "#00d2ff");
+
+  // Top-right SAMUDRA pill badge (if labels[0] is present)
+  const labAll = card.labels || [];
+  if (labAll[0]) {
+    ctx.font = fontStr(600, 5.2, family);
+    const badgeText = labAll[0].toUpperCase();
+    const tw = ctx.measureText(badgeText).width;
+    const bw = tw + 13;
+    const bh = 13;
+    const bx = CW - 17 - bw;
+    const by = 26;
+    ctx.fillStyle = "rgba(0, 210, 255, 0.12)";
+    ctx.strokeStyle = "rgba(0, 210, 255, 0.38)";
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bw, bh, 4);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = rgba(accent, 0.95);
+    ctx.fillText(badgeText, bx + 6.5, by + 8.6);
+  }
 
   // title and footer
-  const small = sizeForCap(ctx, 300, family, 7.9, "H");
-  ctx.font = fontStr(300, small, family);
-  ctx.fillStyle = rgba(white, 0.9);
+  const small = sizeForCap(ctx, 500, family, 8.2, "H");
+  ctx.font = fontStr(500, small, family);
+  ctx.fillStyle = rgba(white, 0.95);
   const lines = (card.title || "").split("\n");
-  lines.slice(0, 2).forEach((ln, i) => ctx.fillText(ln, 17, 37 + i * 14));
+  lines.slice(0, 2).forEach((ln, i) => ctx.fillText(ln, 17, 36 + i * 14.5));
   if (card.footer) {
-    ctx.fillStyle = rgba(white, 0.88);
+    const footPx = sizeForCap(ctx, 400, family, 7.4, "H");
+    ctx.font = fontStr(400, footPx, family);
+    ctx.fillStyle = "rgba(186, 208, 228, 0.88)";
     ctx.fillText(card.footer, 17, 295);
   }
 
@@ -469,20 +507,25 @@ function paintCard(cv: HTMLCanvasElement, card: WarpCard, family: string) {
     ctx.fill();
     ctx.restore();
     const lab = card.labels || [];
+    const leftLab = lab.length > 2 ? lab[1] : lab[0];
+    const rightLab = lab.length > 2 ? lab[2] : lab[1];
     const lpx = sizeForCap(ctx, 400, family, 5.2, "H");
     ctx.font = fontStr(400, lpx, family);
-    ctx.fillStyle = rgba(white, 0.6);
-    if (lab[0]) ctx.fillText(lab[0], 14, 208);
-    if (lab[1]) {
+    ctx.fillStyle = "rgba(186, 208, 228, 0.72)";
+    if (leftLab) ctx.fillText(leftLab, 24, 210);
+    if (rightLab) {
       ctx.textAlign = "right";
-      ctx.fillText(lab[1], 230, 208);
+      ctx.fillText(rightLab, 232, 210);
       ctx.textAlign = "left";
     }
   } else if (detail === "wave") {
-    ctx.fillStyle = "rgba(20, 0, 8, 0.32)";
+    ctx.fillStyle = "rgba(6, 19, 32, 0.55)";
+    ctx.strokeStyle = "rgba(0, 210, 255, 0.32)";
+    ctx.lineWidth = 0.8;
     ctx.beginPath();
     ctx.arc(27, 157, 18, 0, Math.PI * 2);
     ctx.fill();
+    ctx.stroke();
     ctx.strokeStyle = rgba(white, 0.75);
     ctx.lineWidth = 0.9;
     const plus = (px: number, py: number, r: number) => {
@@ -500,26 +543,29 @@ function paintCard(cv: HTMLCanvasElement, card: WarpCard, family: string) {
       const r1 = Math.abs(Math.sin(i * 1.7 + 0.4) * Math.cos(i * 0.53));
       const hh = 1.5 + 6.5 * r1;
       const mark = i === 23;
-      ctx.fillStyle = mark ? rgba(accent, 0.95) : rgba(white, 0.3);
+      ctx.fillStyle = mark ? rgba(accent, 0.95) : rgba(white, 0.28);
       ctx.fillRect(x, 204 - (mark ? 8 : hh), mark ? 1.4 : 0.9, mark ? 16 : hh * 2);
     }
   } else if (detail === "cross") {
-    ctx.fillStyle = rgba(white, 0.28);
+    ctx.fillStyle = rgba(white, 0.22);
     ctx.fillRect(105.5, 66, 0.8, 182);
     ctx.fillRect(12, 156.5, 186, 0.8);
     const lab = card.labels || [];
     // ghost numeral
     ctx.font = fontStr(300, big * 0.72, family);
-    ctx.fillStyle = rgba(white, 0.07);
+    ctx.fillStyle = rgba(white, 0.08);
     ctx.textAlign = "center";
     ctx.fillText(String(Math.max(0, (parseFloat(value) || 0) - 8)), 106, 122);
     ctx.textAlign = "left";
     const badge = (x: number, y: number, t: string) => {
-      ctx.fillStyle = "rgba(10, 0, 30, 0.35)";
+      ctx.fillStyle = "rgba(6, 19, 32, 0.65)";
+      ctx.strokeStyle = "rgba(0, 210, 255, 0.38)";
+      ctx.lineWidth = 0.75;
       ctx.beginPath();
       ctx.arc(x, y, 6.5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = rgba(white, 0.7);
+      ctx.stroke();
+      ctx.fillStyle = rgba(white, 0.85);
       ctx.font = fontStr(500, 4.2, family);
       ctx.textAlign = "center";
       ctx.fillText(t, x, y + 1.5);
@@ -527,17 +573,6 @@ function paintCard(cv: HTMLCanvasElement, card: WarpCard, family: string) {
     };
     if (lab[1]) badge(28, 137, lab[1]);
     if (lab[2]) badge(181, 170, lab[2]);
-    if (lab[0]) {
-      ctx.font = fontStr(400, 5.2, family);
-      const tw = ctx.measureText(lab[0]).width;
-      const px = 208 - tw - 10;
-      ctx.fillStyle = rgba(white, 0.1);
-      ctx.beginPath();
-      ctx.roundRect(px, 25, tw + 10, 11, 3);
-      ctx.fill();
-      ctx.fillStyle = rgba(white, 0.55);
-      ctx.fillText(lab[0], px + 5, 32.5);
-    }
   }
 
   ctx.save();
@@ -551,6 +586,27 @@ function paintCard(cv: HTMLCanvasElement, card: WarpCard, family: string) {
     ctx.fillStyle = rgba(n1, 1);
     ctx.fillText(card.unit, x0 + vw + 4, 186 - 50 + unitPx * 0.72);
   }
+  ctx.restore();
+
+  // Rounded glass card border + top specular cyan/white rim highlight (for 2D fallback & texture edge)
+  ctx.save();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.24)";
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.roundRect(0.6, 0.6, CW - 1.2, CH - 1.2, CR - 0.4);
+  ctx.stroke();
+
+  const topRim = ctx.createLinearGradient(14, 0, CW - 14, 0);
+  topRim.addColorStop(0, "rgba(255, 255, 255, 0)");
+  topRim.addColorStop(0.32, "rgba(255, 255, 255, 0.55)");
+  topRim.addColorStop(0.62, "rgba(0, 210, 255, 0.85)");
+  topRim.addColorStop(1, "rgba(0, 210, 255, 0)");
+  ctx.strokeStyle = topRim;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(CR, 0.8);
+  ctx.lineTo(CW - CR, 0.8);
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -571,7 +627,7 @@ function glowShape(pose: Pose): [number, number, number] {
   let m = 0;
   let mx = 0;
   let mxx = 0;
-  for (let u = -360; u <= 360; u += 3) {
+  for (let u = -360; u <= 360; u += 8) {
     const h = Math.exp(-((Math.abs(u - 9) / 138) ** 4));
     if (h < 0.003) continue;
     const k = u / 1.8 / FOCAL;
@@ -681,8 +737,14 @@ vec4 shadeCard(vec4 pose, vec2 ps, float fx, float fy, out float depth){
   if (cov <= 0.0) return vec4(0.0);
   vec2 uv = vec2(s / CW + 0.5, 0.5 - y / CH);
   vec4 tex = textureGrad(uTex, vec3(uv, pose.w), vec2(fs / CW, 0.0), vec2(0.0, fyc / CH));
+  // Crisp procedural glass border & top cyan/white specular rim along sdRound boundary
+  float borderMask = smoothstep(-1.6 - fp * 0.6, -0.35, d);
+  float topEdge = smoothstep(CH * 0.5 - 2.6, CH * 0.5 - 0.4, y) * smoothstep(CW * 0.5, CW * 0.15, abs(s));
+  vec3 borderCol = mix(vec3(1.0), vec3(0.22, 0.86, 1.0), 0.45 + 0.45 * topEdge);
+  float borderAlpha = mix(0.24, 0.72, topEdge) * borderMask;
+  vec3 rgb = mix(tex.rgb, borderCol, borderAlpha);
   depth = t;
-  return vec4(tex.rgb, 1.0) * cov;
+  return vec4(rgb, 1.0) * cov;
 }
 
 vec4 scene(vec2 ps, float fx, float fy, int base){
@@ -1129,14 +1191,14 @@ export function WarpCarousel({
     let unit = 1;
     const resize = () => {
       const r = wrap.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       W = Math.max(2, Math.round(r.width * dpr));
       H = Math.max(2, Math.round(r.height * dpr));
       if (canvas.width !== W) canvas.width = W;
       if (canvas.height !== H) canvas.height = H;
       // the 720 unit stage fills the width; short, wide boxes shrink it so the cards always fit the height
       unit = Math.min(W / 720, H / 440);
-      const want = Math.min(1024, Math.max(256, Math.round(CW * unit * 1.25)));
+      const want = Math.min(768, Math.max(256, Math.round(CW * unit * 1.15)));
       if (want !== texW) paintAll(want);
     };
 

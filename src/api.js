@@ -6,13 +6,21 @@ export async function fetchLatestEarthquake() {
   return res.json();
 }
 
+let articlesCache = { data: null, ts: 0, cat: null };
+
 export async function fetchArticles(category = '') {
+  const now = Date.now();
+  if (articlesCache.data && articlesCache.cat === category && now - articlesCache.ts < 30000) {
+    return articlesCache.data;
+  }
   const url = category
     ? `${API_BASE}/articles?category=${category}`
     : `${API_BASE}/articles`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Gagal memuat artikel');
-  return res.json();
+  const data = await res.json();
+  articlesCache = { data, ts: Date.now(), cat: category };
+  return data;
 }
 
 export async function fetchArticleById(id) {

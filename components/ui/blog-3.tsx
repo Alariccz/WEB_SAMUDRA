@@ -250,6 +250,7 @@ export function BlogBlock({
             src={activeFeatured.image || "/img/bento-evacuation-route.jpg"}
             alt={activeFeatured.title}
             loading="lazy"
+            decoding="async"
             onError={(e) => {
               const target = e.currentTarget;
               if (!target.dataset.fallbackApplied) {
@@ -378,6 +379,7 @@ export function BlogBlock({
                 src={post.image || "/img/cover-1.jpg"}
                 alt={post.title}
                 loading="lazy"
+                decoding="async"
                 onError={(e) => {
                   const target = e.currentTarget;
                   if (!target.dataset.fallbackApplied) {

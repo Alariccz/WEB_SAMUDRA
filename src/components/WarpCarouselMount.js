@@ -7,10 +7,10 @@
  */
 
 const OCEAN_PALETTES = {
-  risiko: ['#031a38', '#0a4a7a', '#0ea5e9', '#a5e8ff'],
-  aman: ['#02262b', '#0b6b6b', '#14b8a6', '#b6fff0'],
-  siaga: ['#061a4d', '#1d4ed8', '#00d2ff', '#cdeeff'],
-  cepat: ['#021f3a', '#0e7490', '#22d3ee', '#d8fbff']
+  risiko: ['#1e354d', '#0d2136', '#0b253c', '#123a58'],
+  aman: ['#1d344c', '#0d2136', '#0c2740', '#133d5c'],
+  siaga: ['#1f364e', '#0d2136', '#0b263e', '#143f5e'],
+  cepat: ['#1e354d', '#0d2136', '#0c2841', '#133c5a']
 };
 
 function hexToRgb(hex) {
@@ -36,8 +36,9 @@ function oceanMesh(palette, seed) {
   const colors = [];
   for (let j = 0; j < 7; j++) {
     for (let i = 0; i < 6; i++) {
-      const ripple = 0.16 * Math.sin(i * 1.55 + j * 0.85 + seed) + 0.08 * Math.cos(i * 2.7 - j * 1.3 + seed * 2);
-      const t = 0.12 + 0.62 * (j / 6) + 0.2 * (i / 5) * (j / 6) + ripple;
+      const diag = 0.45 * (i / 5) + 0.55 * (j / 6);
+      const ripple = 0.05 * Math.sin(i * 1.4 + j * 0.9 + seed);
+      const t = Math.min(1, Math.max(0, diag + ripple));
       colors.push(rampColor(palette, t));
     }
   }
@@ -51,9 +52,10 @@ const WATER_CARDS = [
     unit: 'm',
     footer: 'Tinggi gelombang ekstrem',
     detail: 'ring',
-    numeral: ['#e6fbff', '#00d2ff'],
-    accent: '#a5e8ff',
-    glow: '#0ea5e9',
+    labels: ['BAHAYA'],
+    numeral: ['#f8fafc', '#38bdf8'],
+    accent: '#00d2ff',
+    glow: '#00d2ff',
     mesh: oceanMesh(OCEAN_PALETTES.risiko, 0.4)
   },
   {
@@ -62,10 +64,10 @@ const WATER_CARDS = [
     unit: 'm',
     footer: 'Dataran tinggi evakuasi',
     detail: 'cross',
-    labels: ['Titik kumpul', 'A', 'B'],
-    numeral: ['#e8fffb', '#5eead4'],
-    accent: '#99f6e4',
-    glow: '#14b8a6',
+    labels: ['TITIK KUMPUL', 'A', 'B'],
+    numeral: ['#f8fafc', '#38bdf8'],
+    accent: '#00d2ff',
+    glow: '#00d2ff',
     mesh: oceanMesh(OCEAN_PALETTES.aman, 1.9)
   },
   {
@@ -74,7 +76,8 @@ const WATER_CARDS = [
     unit: 'jam',
     footer: 'Perbekalan darurat',
     detail: 'wave',
-    numeral: ['#ffffff', '#00d2ff'],
+    labels: ['LOGISTIK'],
+    numeral: ['#f8fafc', '#38bdf8'],
     accent: '#00d2ff',
     glow: '#00d2ff',
     mesh: oceanMesh(OCEAN_PALETTES.siaga, 3.1)
@@ -85,16 +88,13 @@ const WATER_CARDS = [
     unit: 'mnt',
     footer: 'Segera menjauh dari pantai',
     detail: 'slider',
-    labels: ['Cepat', 'Aman'],
-    numeral: ['#d8fbff', '#22d3ee'],
-    accent: '#67e8f9',
-    glow: '#22d3ee',
+    labels: ['RESPON', 'Cepat', 'Aman'],
+    numeral: ['#f8fafc', '#38bdf8'],
+    accent: '#00d2ff',
+    glow: '#00d2ff',
     mesh: oceanMesh(OCEAN_PALETTES.cepat, 4.6)
   }
 ];
-
-const CAUSTIC_A = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.011 0.017' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.62 0 0 0 0 0.92 0 0 0 0 1 9 0 0 0 -4.1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E\")";
-const CAUSTIC_B = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='560'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.009 0.013' numOctaves='3' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.85 0 0 0 0 1 9 0 0 0 -4.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E\")";
 
 /** Static markup for the water stage; the carousel mounts into `[data-warp-host]`. */
 export function waterStageMarkup() {
@@ -106,12 +106,10 @@ export function waterStageMarkup() {
         <span class="mit-ray mit-ray-3"></span>
       </div>
       <div class="mit-water-caustics mit-water-caustics-a" aria-hidden="true"></div>
-      <div class="mit-water-caustics mit-water-caustics-b" aria-hidden="true"></div>
       <div class="mit-water-floor" aria-hidden="true">
         <span class="mit-water-glow"></span>
         <span class="mit-ripple mit-ripple-1"></span>
         <span class="mit-ripple mit-ripple-2"></span>
-        <span class="mit-ripple mit-ripple-3"></span>
         <span class="mit-waterline"></span>
       </div>
       <div class="mit-water-host" data-warp-host></div>
@@ -127,19 +125,26 @@ export const waterStageStyles = `
     margin: -18px auto 0;
     height: clamp(420px, 48vw, 540px);
     background: transparent;
+    contain: layout paint;
     -webkit-mask-image: linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%);
     -webkit-mask-composite: source-in;
     mask-image: linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%);
     mask-composite: intersect;
   }
+  .mit-water-stage:not([data-in-view="true"]) .mit-ray,
+  .mit-water-stage:not([data-in-view="true"]) .mit-water-glow,
+  .mit-water-stage:not([data-in-view="true"]) .mit-ripple,
+  .mit-water-stage:not([data-in-view="true"]) .mit-waterline {
+    animation-play-state: paused;
+  }
   .mit-water-host { position: absolute; inset: 0; z-index: 3; }
 
   /* soft shafts of light falling through the water */
-  .mit-water-light { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; mix-blend-mode: screen; }
+  .mit-water-light { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
   .mit-ray {
     position: absolute; top: -12%; height: 105%; width: 18%;
-    background: linear-gradient(to bottom, rgba(0, 210, 255, 0.2), rgba(0, 210, 255, 0.06) 55%, transparent 90%);
-    filter: blur(22px);
+    background: linear-gradient(to bottom, rgba(0, 210, 255, 0.16), rgba(0, 210, 255, 0.04) 55%, transparent 90%);
+    filter: blur(14px);
     transform-origin: 50% 0;
     animation: mit-ray-sway 12s ease-in-out infinite alternate;
   }
@@ -151,23 +156,19 @@ export const waterStageStyles = `
     to { opacity: 1; translate: 3% 0; }
   }
 
-  /* caustics: two slow, opposing light networks, faded at the edges */
+  /* lightweight radial caustic glow (replaces heavy SVG feTurbulence filters) */
   .mit-water-caustics {
-    position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: screen;
-    -webkit-mask-image: radial-gradient(70% 60% at 50% 55%, #000 10%, transparent 75%);
-    mask-image: radial-gradient(70% 60% at 50% 55%, #000 10%, transparent 75%);
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      radial-gradient(36% 28% at 35% 48%, rgba(0, 210, 255, 0.08), transparent 70%),
+      radial-gradient(40% 30% at 65% 54%, rgba(56, 189, 248, 0.07), transparent 72%);
   }
-  .mit-water-caustics-a { background-image: ${CAUSTIC_A}; background-size: 420px 420px; opacity: 0.1; animation: mit-caustic-a 38s linear infinite; }
-  .mit-water-caustics-b { background-image: ${CAUSTIC_B}; background-size: 560px 560px; opacity: 0.07; animation: mit-caustic-b 52s linear infinite; }
-  @keyframes mit-caustic-a { to { background-position: 420px 210px; } }
-  @keyframes mit-caustic-b { to { background-position: -560px 280px; } }
 
   /* the water surface under the cards: reflected glow, expanding ripples, a thin waterline */
   .mit-water-floor { position: absolute; left: 0; right: 0; bottom: 0; height: 30%; z-index: 2; pointer-events: none; }
   .mit-water-glow {
     position: absolute; left: 50%; bottom: 6%; width: 72%; height: 70%; translate: -50% 0;
-    background: radial-gradient(50% 50% at 50% 50%, rgba(0, 210, 255, 0.2), rgba(0, 210, 255, 0.06) 55%, transparent 75%);
-    filter: blur(6px);
+    background: radial-gradient(50% 50% at 50% 50%, rgba(0, 210, 255, 0.18), rgba(0, 210, 255, 0.05) 55%, transparent 75%);
     animation: mit-glow-breathe 7s ease-in-out infinite alternate;
   }
   @keyframes mit-glow-breathe {
@@ -213,7 +214,20 @@ export const waterStageStyles = `
 /** Lazily loads React + the carousel and mounts it inside the water stage. */
 export async function mountWarpCarousel(root) {
   const host = root.querySelector('[data-warp-host]');
+  const stage = root.querySelector('[data-warp-stage]');
   if (!host) return null;
+
+  let io = null;
+  if (stage && typeof IntersectionObserver !== 'undefined') {
+    io = new IntersectionObserver(
+      (entries) => {
+        const vis = entries.some((e) => e.isIntersecting);
+        stage.setAttribute('data-in-view', vis ? 'true' : 'false');
+      },
+      { threshold: 0.05 }
+    );
+    io.observe(stage);
+  }
 
   const [React, { createRoot }, { WarpCarousel }] = await Promise.all([
     import('react'),
@@ -238,5 +252,8 @@ export async function mountWarpCarousel(root) {
     })
   );
 
-  return () => reactRoot.unmount();
+  return () => {
+    if (io) io.disconnect();
+    reactRoot.unmount();
+  };
 }

@@ -37,27 +37,32 @@ function getItemPosition(
   radiusY = RADIUS_Y,
 ) {
   if (total <= 0) return null;
-  const offset = index - activeIndex;
   const half = Math.floor(VISIBLE_COUNT / 2);
-  let adjustedOffset = offset;
+  let adjustedOffset = (index - activeIndex) % total;
+  if (adjustedOffset > total / 2) adjustedOffset -= total;
+  if (adjustedOffset <= -total / 2) adjustedOffset += total;
 
-  if (offset > half) adjustedOffset = offset - total;
-  if (offset < -half) adjustedOffset = offset + total;
+  const isHidden = Math.abs(adjustedOffset) > half;
+  const visualOffset = isHidden
+    ? Math.sign(adjustedOffset || 1) * (half + 0.32)
+    : adjustedOffset;
 
-  if (Math.abs(adjustedOffset) > half * 2) return null;
-
-  const angle = (adjustedOffset / VISIBLE_COUNT) * Math.PI;
+  const angle = (visualOffset / VISIBLE_COUNT) * Math.PI;
   const x = Math.sin(angle) * radiusX;
   const y = -Math.cos(angle) * radiusY;
 
   const distance = Math.abs(adjustedOffset);
   const maxDistance = half + 1;
-  const scale = distance === 0 ? 1 : Math.max(0.72, 1 - (distance / maxDistance) * 0.28);
-  const opacity = distance === 0 ? 1 : distance === 1 ? 0.82 : 0.48;
-  const rotate = adjustedOffset * 3.2;
-  const zIndex = VISIBLE_COUNT - distance;
+  const scale = isHidden
+    ? 0.64
+    : distance === 0
+      ? 1
+      : Math.max(0.74, 1 - (distance / maxDistance) * 0.26);
+  const opacity = isHidden ? 0 : distance === 0 ? 1 : distance === 1 ? 0.84 : 0.5;
+  const rotate = visualOffset * 3.2;
+  const zIndex = isHidden ? 0 : VISIBLE_COUNT + 2 - distance;
 
-  return { x, y, scale, opacity, rotate, zIndex, adjustedOffset };
+  return { x, y, scale, opacity, rotate, zIndex, adjustedOffset, isHidden };
 }
 
 const CIRCULAR_CAROUSEL_STYLES = `
@@ -124,6 +129,8 @@ const CIRCULAR_CAROUSEL_STYLES = `
     font-family: var(--font-sans);
     transition: border-color var(--transition-base), box-shadow var(--transition-base), filter var(--transition-base), background var(--transition-fast);
     transform-origin: center center;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
   }
 
   .cc-card::before {
@@ -150,13 +157,21 @@ const CIRCULAR_CAROUSEL_STYLES = `
   }
 
   .cc-card--inactive {
-    filter: brightness(0.88) saturate(0.95);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: linear-gradient(
+      145deg,
+      rgba(32, 54, 78, 0.92) 0%,
+      rgba(15, 34, 56, 0.94) 50%,
+      rgba(14, 46, 72, 0.94) 100%
+    );
+    filter: brightness(1) saturate(1.02);
   }
 
   .cc-card:hover {
     background: var(--color-surface-hover);
     border-color: var(--color-accent);
-    filter: brightness(1.03);
+    filter: brightness(1.08);
     box-shadow: var(--shadow-card-hover);
   }
 
@@ -227,10 +242,6 @@ const CIRCULAR_CAROUSEL_STYLES = `
     margin-top: -92px;
     flex: 1;
     padding: 34px 24px 22px;
-    -webkit-backdrop-filter: blur(18px) saturate(165%);
-    backdrop-filter: blur(18px) saturate(165%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 28%, black 45%, black 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 28%, black 45%, black 100%);
     background: linear-gradient(
       180deg,
       rgba(13, 33, 54, 0) 0%,
@@ -445,6 +456,7 @@ export function CircularCarousel({
   const [internalIndex, setInternalIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [isInView, setIsInView] = useState(true);
   const [compact, setCompact] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -459,6 +471,17 @@ export function CircularCarousel({
     update();
     mq.addEventListener?.("change", update);
     return () => mq.removeEventListener?.("change", update);
+  }, []);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => setIsInView(entries.some((e) => e.isIntersecting)),
+      { threshold: 0.05 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
   const goTo = useCallback(
@@ -477,12 +500,12 @@ export function CircularCarousel({
   const prev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
 
   useEffect(() => {
-    if (!autoPlay || isHovered || isFocused || total <= 1) return;
+    if (!autoPlay || !isInView || isHovered || isFocused || total <= 1) return;
     intervalRef.current = setInterval(next, autoPlayInterval);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [autoPlay, autoPlayInterval, isHovered, isFocused, next, total]);
+  }, [autoPlay, autoPlayInterval, isInView, isHovered, isFocused, next, total]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -525,65 +548,68 @@ export function CircularCarousel({
 
       {/* Circular track */}
       <div className="cc-track relative h-[280px] w-full max-w-lg">
-        <AnimatePresence mode="popLayout">
-          {items.map((item, i) => {
-            const pos = getItemPosition(i, activeIndex, total, radiusX, radiusY);
-            if (!pos) return null;
+        {items.map((item, i) => {
+          const pos = getItemPosition(i, activeIndex, total, radiusX, radiusY);
+          if (!pos) return null;
 
-            const isActive = i === activeIndex;
+          const isActive = i === activeIndex;
 
-            return (
-              <motion.button
-                key={item.id}
-                type="button"
-                layout
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{
-                  x: pos.x,
-                  y: pos.y,
-                  scale: pos.scale,
-                  opacity: pos.opacity,
-                  rotate: pos.rotate,
-                  zIndex: pos.zIndex,
-                }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{
-                  duration: 0.65,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                onClick={() => handleCardClick(item, i)}
-                aria-label={`Buka panduan: ${item.title}`}
-                aria-selected={isActive}
-                role="option"
-                className={cn(
-                  "cc-card",
-                  isActive ? "cc-card--active" : "cc-card--inactive",
-                )}
-              >
-                <div className="cc-card__graphic">
-                  {item.imageUrl ? (
-                    <img
-                      src={item.imageUrl}
-                      alt={item.title}
-                      loading="lazy"
-                      className="cc-card__img"
-                    />
-                  ) : null}
-                  <div className="cc-card__fade-top" />
-                  <div className="cc-card__fade-bottom" />
-                </div>
+          return (
+            <motion.button
+              key={item.id}
+              type="button"
+              initial={false}
+              animate={{
+                x: pos.x,
+                y: pos.y,
+                scale: pos.scale,
+                opacity: pos.opacity,
+                rotate: pos.rotate,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 190,
+                damping: 26,
+                mass: 0.85,
+              }}
+              style={{
+                zIndex: pos.zIndex,
+                pointerEvents: pos.isHidden ? "none" : "auto",
+              }}
+              onClick={() => handleCardClick(item, i)}
+              aria-label={`Buka panduan: ${item.title}`}
+              aria-selected={isActive}
+              aria-hidden={pos.isHidden}
+              tabIndex={pos.isHidden ? -1 : 0}
+              role="option"
+              className={cn(
+                "cc-card",
+                isActive ? "cc-card--active" : "cc-card--inactive",
+              )}
+            >
+              <div className="cc-card__graphic">
+                {item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    loading="lazy"
+                    className="cc-card__img"
+                  />
+                ) : null}
+                <div className="cc-card__fade-top" />
+                <div className="cc-card__fade-bottom" />
+              </div>
 
-                <div className="cc-card__content">
-                  <span className="cc-card__eyebrow">
-                    {item.tag ? `${item.tag} · Panduan Evakuasi` : "Panduan Evakuasi"}
-                  </span>
-                  <h3 className="cc-card__title">{item.title}</h3>
-                  <p className="cc-card__desc">{item.description}</p>
-                </div>
-              </motion.button>
-            );
-          })}
-        </AnimatePresence>
+              <div className="cc-card__content">
+                <span className="cc-card__eyebrow">
+                  {item.tag ? `${item.tag} · Panduan Evakuasi` : "Panduan Evakuasi"}
+                </span>
+                <h3 className="cc-card__title">{item.title}</h3>
+                <p className="cc-card__desc">{item.description}</p>
+              </div>
+            </motion.button>
+          );
+        })}
 
         {/* Center content */}
         <motion.div

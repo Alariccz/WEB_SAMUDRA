@@ -2229,62 +2229,222 @@ void main(){
     bldGroup.add(lowWall, highWall, midPillar, backPillar, sideGlass);
   });
 
-  // 3. BACK WALL (x = 3.35) & BMKG COMMAND / TELEMETRY CENTER INSIDE THE HALL
+    // 3. BACK WALL (x = 3.35) & REALISTIC BMKG COMMAND / TELEMETRY CENTER INSIDE THE HALL
   const backWall = new THREE.Mesh(new THREE.BoxGeometry(0.22, wallH, 4.95), wallMatInt);
   backWall.position.set(3.35, deckH + wallH * 0.5, 0);
 
-  // Large Illuminated BMKG Tsunami & Safe-Zone Wall Display Screen (facing the doorway)
-  const screenBezel = new THREE.Mesh(
-    new THREE.BoxGeometry(0.08, 1.35, 2.50),
-    new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.3, metalness: 0.6 })
-  );
-  screenBezel.position.set(3.21, deckH + 1.62, 0);
+  const commandCenterGroup = new THREE.Group();
 
-  const screenDisplay = new THREE.Mesh(
-    new THREE.BoxGeometry(0.04, 1.18, 2.34),
-    new THREE.MeshStandardMaterial({ color: 0x082f49, emissive: 0x0284c7, emissiveIntensity: 0.75, roughness: 0.15 })
-  );
-  screenDisplay.position.set(3.18, deckH + 1.62, 0);
+  // Architectural Acoustic Wall Slats & LED Accent Pillars flanking the Main Video Wall
+  const slatMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.55, metalness: 0.35 });
+  [-1.95, -1.78, -1.61, 1.61, 1.78, 1.95].forEach(zSlat => {
+    const slat = new THREE.Mesh(new THREE.BoxGeometry(0.06, wallH - 0.30, 0.09), slatMat);
+    slat.position.set(3.22, deckH + wallH * 0.5, zSlat);
+    commandCenterGroup.add(slat);
+  });
+  [-1.46, 1.46].forEach(zLight => {
+    const wallAccent = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.62, 0.025), trimCyanMat);
+    wallAccent.position.set(3.22, deckH + 1.62, zLight);
+    commandCenterGroup.add(wallAccent);
+  });
 
-  // Safe-Zone Status Header Bar on Screen (Glowing Emerald)
-  const screenHeader = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.16, 2.18), trimEmeraldMat);
-  screenHeader.position.set(3.17, deckH + 2.06, 0);
+  // Load exact SAMUDRA 3D Hero screenshot texture for the Command Center monitors
+  const samudraScreenTex = new THREE.TextureLoader().load('/samudra-screen.jpg');
+  samudraScreenTex.colorSpace = THREE.SRGBColorSpace;
+  samudraScreenTex.minFilter = THREE.LinearFilter;
+  samudraScreenTex.magFilter = THREE.LinearFilter;
+  samudraScreenTex.anisotropy = 4;
 
-  // Radar Ring & Telemetry Bars on the Main Wall Screen
-  const radarRing = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.025, 8, 24), trimCyanMat);
-  radarRing.rotation.y = Math.PI / 2;
-  radarRing.position.set(3.16, deckH + 1.52, -0.52);
-  const radarCore = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), trimEmeraldMat);
-  radarCore.position.set(3.16, deckH + 1.52, -0.52);
+  // Main Video Wall Chassis & High-Res Screen
+  const bezelOuterMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.32, metalness: 0.78 });
+  const bezelInnerMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.25, metalness: 0.65 });
 
-  for (let b = 0; b < 5; b++) {
-    const barH = 0.22 + (b % 3) * 0.14;
-    const bar = new THREE.Mesh(
-      new THREE.BoxGeometry(0.05, barH, 0.12),
-      b === 4 ? trimEmeraldMat : trimCyanMat
+  const wallFrameOuter = new THREE.Mesh(new THREE.BoxGeometry(0.07, 1.44, 2.68), bezelOuterMat);
+  wallFrameOuter.position.set(3.21, deckH + 1.66, 0);
+
+  const wallFrameInner = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.36, 2.58), bezelInnerMat);
+  wallFrameInner.position.set(3.19, deckH + 1.66, 0);
+
+  const wallScreenMat = new THREE.MeshBasicMaterial({
+    map: samudraScreenTex,
+    toneMapped: false
+  });
+  const wallScreenMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.48, 1.26), wallScreenMat);
+  wallScreenMesh.rotation.y = -Math.PI / 2;
+  wallScreenMesh.position.set(3.148, deckH + 1.66, 0);
+
+  // Subtle top LED status bar above the video wall frame
+  const wallTopLed = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.022, 1.80), trimCyanMat);
+  wallTopLed.position.set(3.17, deckH + 2.39, 0);
+
+  commandCenterGroup.add(wallFrameOuter, wallFrameInner, wallScreenMesh, wallTopLed);
+
+  // ---- MODERN ARCHITECTURAL OPERATIONS CONSOLE DESK (Open Leg Well, Beveled Trim) ----
+  const consoleTopMat = new THREE.MeshStandardMaterial({ color: 0x162032, roughness: 0.32, metalness: 0.45 });
+  const consoleLegMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.35, metalness: 0.75 });
+  const darkBodyMat = new THREE.MeshStandardMaterial({ color: 0x0b1120, roughness: 0.5, metalness: 0.4 });
+
+  // Main Desk Surface
+  const deskSurface = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.055, 2.28), consoleTopMat);
+  deskSurface.position.set(2.42, deckH + 0.78, 0);
+
+  // Glowing Cyan Front Edge Strip on Console Desk
+  const deskFrontLed = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.018, 2.24), trimCyanMat);
+  deskFrontLed.position.set(2.005, deckH + 0.78, 0);
+
+  // Sleek Side Support Legs (Left & Right) + Modesty Back Panel (Open legroom underneath!)
+  [-1.04, 1.04].forEach(zLeg => {
+    const sidePanel = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.75, 0.07), consoleLegMat);
+    sidePanel.position.set(2.42, deckH + 0.375, zLeg);
+    const footBar = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.04, 0.11), steelFrameMat);
+    footBar.position.set(2.42, deckH + 0.02, zLeg);
+    commandCenterGroup.add(sidePanel, footBar);
+  });
+  const modestyPanel = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.52, 2.02), darkBodyMat);
+  modestyPanel.position.set(2.68, deckH + 0.44, 0);
+
+  // Under-desk Workstation PC / UPS Tower on Right Bay
+  const pcTower = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.46, 0.20), darkBodyMat);
+  pcTower.position.set(2.45, deckH + 0.25, 0.86);
+  const pcLed = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.18, 0.02), trimCyanMat);
+  pcLed.position.set(2.225, deckH + 0.32, 0.82);
+
+  commandCenterGroup.add(deskSurface, deskFrontLed, modestyPanel, pcTower, pcLed);
+
+  // ---- DUAL WIDESCREEN OPERATOR WORKSTATIONS (Bezel + Stand + CanvasTexture + Keyboard + Mouse) ----
+  function createWorkstation(zPos, rotY, isRight) {
+    const wsGroup = new THREE.Group();
+    wsGroup.position.set(2.42, deckH + 0.808, zPos);
+    wsGroup.rotation.y = rotY;
+
+    // Weighted Monitor Base & Cylindrical Stand Arm
+    const standBase = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.016, 20), steelFrameMat);
+    standBase.position.set(0.10, 0.008, 0);
+    const standNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.028, 0.28, 12), steelFrameMat);
+    standNeck.position.set(0.12, 0.14, 0);
+    standNeck.rotation.z = -0.12;
+
+    // Slim Monitor Chassis
+    const monW = 0.62, monH = 0.36;
+    const monCase = new THREE.Mesh(new THREE.BoxGeometry(0.026, monH, monW), bezelInnerMat);
+    monCase.position.set(0.06, 0.27, 0);
+
+    // High-Res Operator Screen Plane facing -X
+    const opScreenMat = new THREE.MeshBasicMaterial({
+      map: samudraScreenTex,
+      toneMapped: false
+    });
+    const opScreen = new THREE.Mesh(new THREE.PlaneGeometry(monW - 0.03, monH - 0.03), opScreenMat);
+    opScreen.rotation.y = -Math.PI / 2;
+    opScreen.position.set(0.045, 0.27, 0);
+
+    // Desk Mat
+    const deskMat = new THREE.Mesh(
+      new THREE.BoxGeometry(0.32, 0.004, 0.58),
+      new THREE.MeshStandardMaterial({ color: 0x090f1a, roughness: 0.85 })
     );
-    bar.position.set(3.16, deckH + 1.22 + barH * 0.5, 0.18 + b * 0.18);
-    bldGroup.add(bar);
+    deskMat.position.set(-0.14, 0.002, 0);
+
+    // Backlit Mechanical Keyboard
+    const kbBody = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.016, 0.36), bezelInnerMat);
+    kbBody.position.set(-0.14, 0.010, -0.05);
+    kbBody.rotation.z = 0.06;
+    const kbGlow = new THREE.Mesh(
+      new THREE.BoxGeometry(0.11, 0.018, 0.33),
+      isRight ? trimEmeraldMat : trimCyanMat
+    );
+    kbGlow.position.set(-0.14, 0.011, -0.05);
+    kbGlow.rotation.z = 0.06;
+
+    // Ergonomic Wireless Mouse
+    const mouse = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.022, 0.055), bezelOuterMat);
+    mouse.position.set(-0.14, 0.012, 0.20);
+
+    wsGroup.add(standBase, standNeck, monCase, opScreen, deskMat, kbBody, kbGlow, mouse);
+    return wsGroup;
   }
 
-  // Operations Console Desk & Dual Operator Monitors in front of the Back Wall
-  const deskTop = new THREE.Mesh(
-    new THREE.BoxGeometry(0.75, 0.08, 2.10),
-    new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.3 })
-  );
-  deskTop.position.set(2.45, deckH + 0.82, 0);
-  const deskBase = new THREE.Mesh(
-    new THREE.BoxGeometry(0.55, 0.80, 1.80),
-    new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.7 })
-  );
-  deskBase.position.set(2.50, deckH + 0.40, 0);
+  const wsLeft = createWorkstation(-0.54, 0.16, false);
+  const wsRight = createWorkstation(0.54, -0.16, true);
+  commandCenterGroup.add(wsLeft, wsRight);
 
-  const monL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.34, 0.55), trimCyanMat);
-  monL.position.set(2.38, deckH + 1.05, -0.42);
-  monL.rotation.y = 0.18;
-  const monR = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.34, 0.55), trimEmeraldMat);
-  monR.position.set(2.38, deckH + 1.05, 0.42);
-  monR.rotation.y = -0.18;
+  // ---- ERGONOMIC OPERATOR TASK CHAIRS (5-Star Caster Base, Mesh Backrest, Headrest & Armrests) ----
+  function createOperatorChair(xPos, zPos, rotY) {
+    const chair = new THREE.Group();
+    chair.position.set(xPos, deckH, zPos);
+    chair.rotation.y = rotY;
+
+    const cushionMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.65, metalness: 0.12 });
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4, metalness: 0.5 });
+
+    // Central Pneumatic Cylinder
+    const gasLift = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.032, 0.42, 12), steelFrameMat);
+    gasLift.position.y = 0.24;
+    chair.add(gasLift);
+
+    // 5-Spoke Star Base + Caster Wheels
+    for (let s = 0; s < 5; s++) {
+      const ang = (s / 5) * Math.PI * 2;
+      const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.025, 0.032), steelFrameMat);
+      spoke.position.set(Math.cos(ang) * 0.13, 0.055, Math.sin(ang) * 0.13);
+      spoke.rotation.y = -ang;
+      const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.022, 10), frameMat);
+      wheel.rotation.x = Math.PI / 2;
+      wheel.position.set(Math.cos(ang) * 0.26, 0.025, Math.sin(ang) * 0.26);
+      chair.add(spoke, wheel);
+    }
+
+    // Seat Cushion
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.065, 0.48), cushionMat);
+    seat.position.set(0.02, 0.46, 0);
+
+    // Curved Backrest Spine & Mesh Backrest
+    const spine = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.56, 0.07), frameMat);
+    spine.position.set(-0.20, 0.72, 0);
+    spine.rotation.z = 0.10;
+
+    const backrest = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.54, 0.44), cushionMat);
+    backrest.position.set(-0.18, 0.78, 0);
+    backrest.rotation.z = 0.10;
+
+    // Headrest
+    const headrest = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.14, 0.24), cushionMat);
+    headrest.position.set(-0.21, 1.14, 0);
+    headrest.rotation.z = 0.05;
+
+    // Armrests (Left & Right)
+    [-0.25, 0.25].forEach(zArm => {
+      const armPost = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.20, 0.035), frameMat);
+      armPost.position.set(0.0, 0.56, zArm);
+      const armPad = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.028, 0.065), cushionMat);
+      armPad.position.set(0.02, 0.66, zArm);
+      chair.add(armPost, armPad);
+    });
+
+    chair.add(seat, spine, backrest, headrest);
+    return chair;
+  }
+
+  // Place chairs slightly tucked/angled so the central sightline to the video wall remains crystal clear
+  const chairL = createOperatorChair(1.86, -0.62, 0.32);
+  const chairR = createOperatorChair(1.86, 0.62, -0.32);
+  commandCenterGroup.add(chairL, chairR);
+
+  // ---- TELEMETRY SERVER RACK CABINET (Back-Left Corner of Hall) ----
+  const rackGroup = new THREE.Group();
+  rackGroup.position.set(2.96, deckH, -1.92);
+  const rackBody = new THREE.Mesh(new THREE.BoxGeometry(0.56, 1.95, 0.58), darkBodyMat);
+  rackBody.position.y = 0.975;
+  rackGroup.add(rackBody);
+  for (let u = 0; u < 6; u++) {
+    const bladeLed = new THREE.Mesh(
+      new THREE.BoxGeometry(0.015, 0.022, 0.38),
+      u === 1 || u === 4 ? trimEmeraldMat : trimCyanMat
+    );
+    bladeLed.position.set(-0.282, 0.45 + u * 0.24, 0);
+    rackGroup.add(bladeLed);
+  }
+  commandCenterGroup.add(rackGroup);
 
   // 4. INTERIOR EVACUATION SEATING BENCHES & FIRST-AID / SUPPLY STATION
   const benchSeatMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.65, metalness: 0.08 });
@@ -2376,8 +2536,7 @@ void main(){
     frontWallLeft, frontWallRight, frontWallLintel,
     jambL, jambR, lintelGlow, entranceCanopy,
     leftDoor, rightDoor, crossH, crossV,
-    backWall, screenBezel, screenDisplay, screenHeader, radarRing, radarCore,
-    deskTop, deskBase, monL, monR,
+        backWall, commandCenterGroup,
     medBox, medCrossH, medCrossV,
     roofMesh, solar1, solar2
   );

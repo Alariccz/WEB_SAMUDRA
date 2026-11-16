@@ -342,7 +342,7 @@ export function renderMitigasi(container) {
 
       /* EVACUATION GUIDE SECTION */
       .mit-guide-section {
-        padding: var(--space-section) 0;
+        padding: clamp(28px, 4vw, 48px) 0 clamp(48px, 6vw, 76px);
         scroll-margin-top: 80px;
       }
 
@@ -718,52 +718,6 @@ export function renderMitigasi(container) {
     </style>
 
     <main>
-      <!-- HERO SECTION -->
-      <section class="mit-hero">
-        <div class="mit-container">
-          <div class="mit-hero-grid">
-            <div>
-              <div class="mit-eyebrow">
-                <span class="mit-eyebrow-dot"></span>
-                <span>SAMUDRA &bull; PANDUAN KEBENCANAAN</span>
-              </div>
-
-              <h1 class="mit-hero-title">
-                Kenali Mitigasi,<br><span class="mit-hero-title-accent">Lindungi Diri.</span>
-              </h1>
-
-              <p class="mit-hero-desc">
-                Kenali langkah-langkah penyelamatan diri dan tingkatkan kesiapsiagaan menghadapi ancaman tsunami. Karena mengetahui apa yang harus dilakukan dapat membantu melindungi diri dan orang-orang di sekitar kita.
-              </p>
-
-              <div class="mit-hero-actions">
-                <a href="#panduan-evakuasi" data-learn-button class="mit-btn-primary">
-                  <span>Pelajari Panduan</span>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                </a>
-
-                <div class="mit-hero-stat">
-                  <span class="mit-stat-num">5</span>
-                  <span class="mit-stat-label">Tahapan Kunci<br>Evakuasi</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="mit-hero-media">
-              <img
-                src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
-                alt="Pesisir pantai dan ombak samudra"
-                class="mit-hero-img"
-                loading="lazy"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-
       <!-- INTRODUCTION SECTION -->
       <section class="mit-intro">
         <div class="mit-container">
@@ -815,40 +769,6 @@ export function renderMitigasi(container) {
           </div>
         </div>
       </section>
-
-
-      <!-- EVACUATION REMINDER SECTION -->
-      <section class="mit-reminder">
-        <div class="mit-container">
-          <div class="mit-reminder-card">
-            <div class="mit-reminder-body">
-              <div class="mit-reminder-eyebrow">
-                <span class="mit-eyebrow-dot"></span>
-                <span>INGAT SELALU</span>
-              </div>
-
-              <h2 class="mit-reminder-title">
-                Jangan Tunggu Gelombang Datang untuk Menyelamatkan Diri.
-              </h2>
-
-              <p class="mit-reminder-desc">
-                Jika merasakan gempa kuat atau lama di wilayah pesisir, segera menjauh dari pantai dan menuju tempat yang lebih tinggi. Jangan menunggu sirene atau peringatan resmi apabila terdapat tanda alami tsunami.
-              </p>
-            </div>
-
-            <div class="mit-reminder-icon-box" aria-hidden="true">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="9" cy="4.5" r="2" />
-                <path d="m5 19 3.5-5 2.5 2 2-4.5 3-1.5" />
-                <path d="m6 11 3-2 3 1.5 2.5-2" />
-                <path d="M19 15l3-3-3-3" />
-                <path d="M14 12h8" />
-                <path d="M3 21h18" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
   `;
 
@@ -857,24 +777,6 @@ export function renderMitigasi(container) {
 
   // WARP CAROUSEL (React, dimuat lazy)
   mountWarpCarousel(section).catch(err => console.warn('WarpCarousel gagal dimuat:', err));
-
-  // TOMBOL PELAJARI PANDUAN
-  const learnButton = section.querySelector('[data-learn-button]');
-
-  if (learnButton) {
-    learnButton.addEventListener('click', event => {
-      event.preventDefault();
-
-      const target = section.querySelector('#panduan-evakuasi');
-
-      if (target) {
-        target.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    });
-  }
 
 
   // CAROUSEL

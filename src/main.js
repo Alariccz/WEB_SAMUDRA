@@ -5,6 +5,7 @@ window.onerror = function (msg, url, line, col, error) {
 
 import './style.css';
 import { renderNavbar } from './components/Navbar.js';
+import { getSamudraFooterHTML, attachFooterEvents } from './components/Footer.js';
 import { renderEarthquakeBanner } from './components/EarthquakeBanner.js';
 import { renderArticles } from './components/Articles.js';
 import { renderMitigasi } from './components/Mitigasi.js';
@@ -62,7 +63,6 @@ stage.innerHTML = `
     <div class="vig"></div>
 
     <div class="scene scene--active" id="s0">
-      <span class="scene__eyebrow">Terhubung dengan BMKG</span>
       <h1>Gempa terjadi.<br>Anda tahu lebih dulu.</h1>
       <p class="scene__lede">Aplikasi menerima informasi gempa dan potensi tsunami dari BMKG, lalu mengirim notifikasi dan rute evakuasi ke ponsel Anda.</p>
       <div class="scene__stats">
@@ -83,7 +83,6 @@ stage.innerHTML = `
     </div>
 
     <div class="scene" id="s1">
-      <span class="scene__eyebrow">Potensi tsunami</span>
       <h1>Ketika gelombang<br>menuju daratan.</h1>
       <p class="scene__lede">BMKG memberi rentang potensi tinggi tsunami. Geser magnitudo untuk melihat gambaran skenarionya.</p>
       <div class="scene__stats">
@@ -91,13 +90,12 @@ stage.innerHTML = `
         <div><b id="gH">0,5–3 m</b><small>Rentang potensi tinggi</small></div>
       </div>
       <label class="scene__mag-control">Magnitudo <b id="gM">8.0</b>
-        <input id="gm" type="range" min="7" max="9.2" step=".1" value="8">
+        <input id="gm" type="range" min="7" max="9.2" step="0.005" value="8">
       </label>
       <small style="display:block;margin-top:14px;color:#64748b;font-size:12px">Ilustrasi skenario. Penetapan resmi hanya dari BMKG.</small>
     </div>
 
     <div class="scene" id="s2">
-      <span class="scene__eyebrow">Rute evakuasi</span>
       <h1>Jalur menuju<br>tempat aman.</h1>
       <p class="scene__lede">Rute tercepat dari Jl. Diponegoro ke Bukit Sektor B, menghindari Jembatan Muara Selatan yang masuk zona merah.</p>
       <div class="scene__stats">
@@ -124,7 +122,7 @@ stage.innerHTML = `
     </div>
 
     <div class="hud">
-      <label class="hud__slider">Waktu <input id="tod" type="range" min="0" max="1" step=".01" value=".36"></label>
+      <label class="hud__slider">Waktu <input id="tod" type="range" min="0" max="1" step=".002" value=".36"></label>
       <button class="hud__btn" id="risk" aria-pressed="true">Zona risiko</button>
     </div>
 
@@ -536,13 +534,10 @@ function showToast(message) {
 
 // Footer
 const footer = document.createElement('footer');
-footer.innerHTML = `
-  <div class="footer__inner">
-    <span>SAMUDRA.3D &mdash; Sistem Antisipasi &amp; Mitigasi Tsunami</span>
-    <span>Data resmi: <a href="https://bmkg.go.id" target="_blank" rel="noopener">bmkg.go.id</a></span>
-  </div>
-`;
+footer.className = 'sfooter';
+footer.innerHTML = getSamudraFooterHTML({ isArticlePage: false });
 homeView.appendChild(footer);
+attachFooterEvents(footer);
 
 // ===== INIT THREE.JS SCENE =====
 const canvas = document.getElementById('gl');
@@ -582,8 +577,19 @@ document.getElementById('gm').oninput = function () {
   document.getElementById('gM').textContent = M.toFixed(1);
   document.getElementById('gL').textContent = ['Waspada', 'Siaga', 'Awas'][idx];
   document.getElementById('gH').textContent = ['< 0,5 m', '0,5–3 m', '> 3 m'][idx];
-  threeCtx.setState({ crestT: [1.5, 3.2, 6.5][idx] });
+  threeCtx.setState({ crestT: M <= 8 ? 1.5 + (M - 7) * 1.7 : 3.2 + (M - 8) * (3.3 / 1.2) });
 };
+
+// Keep glass range slider fill in sync with its value
+document.querySelectorAll('.scene__mag-control input[type="range"], .hud__slider input[type="range"]').forEach(input => {
+  const sync = () => {
+    const min = +input.min || 0;
+    const max = +input.max || 100;
+    input.style.setProperty('--p', String((+input.value - min) / (max - min)));
+  };
+  input.addEventListener('input', sync);
+  sync();
+});
 
 // Risk toggle
 document.getElementById('risk').onclick = function () {
@@ -690,6 +696,13 @@ let impactShock = 0;
 let wetLensVal = 0;
 let camJoltX = 0, camJoltY = 0, camJoltPitch = 0, camJoltRoll = 0;
 let dispScale = 0;
+let hadUwCssActive = false;
+let hadWetCssActive = false;
+let hadFilterActive = false;
+const todInputEl = document.getElementById('tod');
+const feDispEl = document.getElementById('uw-fe-disp');
+const feTurbEl = document.getElementById('uw-fe-turb');
+const glCanvasEl = document.getElementById('gl');
 
 const A = new THREE.Vector3(), B = new THREE.Vector3();
 
@@ -845,7 +858,7 @@ function loop() {
   stars.position.copy(cam.position);
 
   // Time of day
-  const todVal = +document.getElementById('tod').value;
+  const todVal = todInputEl ? +todInputEl.value : 0.36;
   U.uTod.value = lerp(U.uTod.value, todVal, 1 - Math.exp(-dt * 5));
   const T = U.uTod.value;
   const { sun, amb } = threeCtx;
@@ -854,7 +867,7 @@ function loop() {
 
   // Tsunami wave
   const front = -26 + (t * 6) % 56;
-  U.uTsuH.value = lerp(U.uTsuH.value, st.crestT, 0.1);
+  U.uTsuH.value = lerp(U.uTsuH.value, st.crestT, 1 - Math.exp(-dt * 6));
 
   // ── REALISTIC CINEMATIC TSUNAMI CAM HIT & HYDRODYNAMIC OPTICS ──────
   const camWaterY = Hj(cam.position.x, cam.position.z, t, S.tsu, front, S.amp);
@@ -892,30 +905,37 @@ function loop() {
     U.uUnderwater.value = uwFactor;
   }
   
+  const uwCssActive = uwFactor > 0.001 || impactShock > 0.001;
+  const wetCssActive = wetLensVal > 0.001;
   if (stage) {
-    stage.style.setProperty('--uw-depth', uwFactor.toFixed(3));
-    stage.style.setProperty('--uw-impact', impactShock.toFixed(3));
-    stage.style.setProperty('--wet-lens', wetLensVal.toFixed(3));
+    if (uwCssActive || hadUwCssActive) {
+      stage.classList.toggle('stage--underwater', uwCssActive);
+      stage.style.setProperty('--uw-depth', uwFactor.toFixed(3));
+      stage.style.setProperty('--uw-impact', impactShock.toFixed(3));
+      hadUwCssActive = uwCssActive;
+    }
+    if (wetCssActive || hadWetCssActive) {
+      stage.classList.toggle('stage--wetlens', wetCssActive);
+      stage.style.setProperty('--wet-lens', wetLensVal.toFixed(3));
+      hadWetCssActive = wetCssActive;
+    }
   }
   
   // Optical liquid refraction displacement on canvas
   const targetDisp = isUnderwater ? (14 + impactShock * 34) : (wetLensVal * 16);
   dispScale += (targetDisp - dispScale) * Math.min(1.0, dt * 12);
-  const feDispEl = document.getElementById('uw-fe-disp');
-  const feTurbEl = document.getElementById('uw-fe-turb');
-  if (feDispEl) {
-    feDispEl.setAttribute('scale', dispScale.toFixed(1));
-  }
-  if (feTurbEl && isUnderwater) {
-    feTurbEl.setAttribute('seed', Math.floor((t * 24) % 100).toString());
-  }
-  const canvasEl = document.getElementById('gl');
-  if (canvasEl) {
-    if (dispScale > 0.6) {
-      canvasEl.style.filter = 'url(#waterRefractFilter)';
-    } else {
-      canvasEl.style.filter = 'none';
+  const filterActive = dispScale > 0.6;
+  if (filterActive || hadFilterActive) {
+    if (feDispEl) {
+      feDispEl.setAttribute('scale', filterActive ? dispScale.toFixed(1) : '0');
     }
+    if (feTurbEl && isUnderwater) {
+      feTurbEl.setAttribute('seed', Math.floor((t * 24) % 100).toString());
+    }
+    if (glCanvasEl) {
+      glCanvasEl.style.filter = filterActive ? 'url(#waterRefractFilter)' : 'none';
+    }
+    hadFilterActive = filterActive;
   }
 
   // Realistic hydrodynamic camera turbulence (violent fluid vorticity & cavitation)
@@ -1034,8 +1054,13 @@ function showArticle(articleId, updateHistory = true) {
     const newUrl = `${window.location.pathname}?article=${encodeURIComponent(articleId)}`;
     window.history.pushState({ articleId }, '', newUrl);
   }
+  isStageVisible = false;
   homeView.style.display = 'none';
   articleView.style.display = 'block';
+  if (lenisInstance) {
+    lenisInstance.scrollTo(0, { immediate: true });
+  }
+  window.scrollTo(0, 0);
   renderArticlePage(articleView, articleId, () => showHome(true));
 }
 

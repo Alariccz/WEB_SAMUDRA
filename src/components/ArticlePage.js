@@ -3,6 +3,7 @@ import {
   fetchArticles,
   fetchMitigasi
 } from '../api.js';
+import { getSamudraFooterHTML, attachFooterEvents } from './Footer.js';
 
 // PALET WARNA (SAMUDRA Oceanic Navy & Cyan Glass)
 // Background utama: #061426 -> #0f2947 | Surface: rgba(12, 30, 52, 0.86)
@@ -102,7 +103,7 @@ export async function renderArticlePage(container, articleId, onBack) {
 
       .artp-root::before {
         content: '';
-        position: fixed;
+        position: absolute;
         inset: 0;
         background-image:
           radial-gradient(rgba(0, 210, 255, 0.14) 1.5px, transparent 1.5px),
@@ -121,7 +122,7 @@ export async function renderArticlePage(container, articleId, onBack) {
         z-index: 1;
       }
 
-      /* TOP STICKY NAVBAR */
+      /* TOP NAVBAR — CLEAN DASHBOARD HEADER STYLE (.nav) */
       .artp-nav {
         position: sticky;
         top: 0;
@@ -130,33 +131,64 @@ export async function renderArticlePage(container, articleId, onBack) {
         align-items: center;
         justify-content: space-between;
         gap: var(--space-4);
-        padding: var(--space-4) var(--container-pad);
-        background: rgba(6, 18, 34, 0.85);
-        -webkit-backdrop-filter: blur(12px);
-        backdrop-filter: blur(12px);
-        border-bottom: 1px solid var(--color-border);
+        padding: calc(18px + env(safe-area-inset-top, 0px)) clamp(20px, 5vw, 72px) 24px;
+        background: linear-gradient(
+          180deg,
+          rgba(8, 20, 34, 0.86) 0%,
+          rgba(8, 20, 34, 0.48) 48%,
+          rgba(8, 20, 34, 0.12) 78%,
+          transparent 100%
+        );
+        font: 400 13px var(--font-sans);
+        letter-spacing: 0.02em;
+        border: none;
+        border-bottom: none;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
       }
 
-      .artp-btn-back {
+      .artp-logo {
+        font: 300 var(--text-base) var(--font-sans);
+        letter-spacing: 0.45em;
+        text-transform: uppercase;
+        color: var(--color-text-strong);
+        text-decoration: none;
+        transition: opacity var(--transition-fast);
+      }
+
+      .artp-logo:hover {
+        opacity: 0.85;
+      }
+
+      .artp-nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .artp-btn-back,
+      .artp-btn-share {
         display: inline-flex;
         align-items: center;
-        gap: var(--space-2);
-        background: var(--color-surface-solid);
+        gap: 7px;
+        background: var(--color-accent-soft);
         border: 1px solid var(--color-border-accent);
-        color: var(--color-text-strong);
-        padding: 9px 18px;
+        color: var(--color-accent);
+        padding: 8px 16px;
         border-radius: var(--radius-pill);
-        font-size: 13px;
-        font-weight: 600;
+        font: 500 var(--text-xs)/1 var(--font-sans);
         cursor: pointer;
+        white-space: nowrap;
         transition: all var(--transition-fast);
       }
 
-      .artp-btn-back:hover {
-        background: var(--color-accent-soft-hover);
-        color: var(--color-text-strong);
+      .artp-btn-back:hover,
+      .artp-btn-share:hover {
+        background: var(--color-accent);
+        color: var(--color-bg-deep);
         border-color: var(--color-accent);
         box-shadow: var(--shadow-glow);
+        transform: translateY(-1px);
       }
 
       .artp-btn-back svg {
@@ -165,42 +197,6 @@ export async function renderArticlePage(container, articleId, onBack) {
 
       .artp-btn-back:hover svg {
         transform: translateX(-2px);
-      }
-
-      .artp-logo {
-        color: var(--color-text-strong);
-        text-decoration: none;
-        font-size: var(--text-xl);
-        font-weight: 800;
-        letter-spacing: 0.16em;
-        text-shadow: 0 0 20px var(--color-accent-glow);
-        transition: opacity var(--transition-fast);
-      }
-
-      .artp-logo:hover {
-        opacity: 0.88;
-      }
-
-      .artp-btn-share {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-2);
-        background: var(--color-surface-solid);
-        border: 1px solid var(--color-border-accent);
-        color: var(--color-text-strong);
-        padding: 9px 18px;
-        border-radius: var(--radius-pill);
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-      }
-
-      .artp-btn-share:hover {
-        background: var(--color-accent-soft-hover);
-        color: var(--color-text-strong);
-        border-color: var(--color-accent);
-        box-shadow: var(--shadow-glow);
       }
 
       /* MAIN CONTAINER */
@@ -285,15 +281,51 @@ export async function renderArticlePage(container, articleId, onBack) {
       }
 
       /* AUTHOR & METADATA BAR */
+      .artp-hero-top-meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: var(--space-4);
+      }
+
+      .artp-category-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: 7px 14px;
+        border-radius: var(--radius-pill);
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-border-accent);
+        color: var(--color-accent);
+        font: 600 var(--text-xs)/1 var(--font-mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 0;
+      }
+
+      .artp-readtime-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 13px;
+        border-radius: var(--radius-pill);
+        background: rgba(6, 19, 32, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        color: var(--color-text-muted);
+        font: 500 11.5px/1 var(--font-mono);
+      }
+
       .artp-meta-bar {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: var(--space-5);
         flex-wrap: wrap;
-        padding: var(--space-4) 0;
-        border-top: 1px solid var(--color-border);
-        border-bottom: 1px solid var(--color-border);
+        padding: 4px 0 0;
+        background: transparent;
+        border: none;
+        box-shadow: none;
       }
 
       .artp-author-box {
@@ -351,25 +383,57 @@ export async function renderArticlePage(container, articleId, onBack) {
         color: var(--color-accent);
       }
 
-      /* HERO MEDIA / FEATURED IMAGE */
+      /* HERO MEDIA / FEATURED IMAGE (CLICKABLE FULL IMAGE) */
       .artp-hero-media {
         width: 100%;
-        height: clamp(280px, 46vw, 500px);
-        border-radius: var(--radius-card);
+        height: clamp(300px, 48vw, 520px);
+        border-radius: 22px;
         overflow: hidden;
-        border: 1px solid var(--color-border);
-        background: var(--color-bg-deep);
-        margin: clamp(28px, 4vw, 44px) 0 clamp(36px, 5vw, 64px);
-        box-shadow: var(--shadow-card);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.1) 0%, rgba(13, 33, 54, 0.88) 100%);
+        margin: clamp(24px, 3.5vw, 36px) 0 clamp(36px, 5vw, 56px);
+        box-shadow:
+          0 20px 48px rgba(0, 0, 0, 0.38),
+          0 0 28px rgba(0, 210, 255, 0.08),
+          inset 0 1px 1.5px rgba(255, 255, 255, 0.45);
         position: relative;
+      }
+
+      .artp-hero-media--clickable {
+        cursor: zoom-in;
+      }
+
+      .artp-hero-media::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 24px;
+        right: 24px;
+        height: 1.5px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.65),
+          rgba(0, 210, 255, 0.85),
+          transparent
+        );
+        z-index: 4;
+        pointer-events: none;
       }
 
       .artp-hero-media::after {
         content: '';
         position: absolute;
         inset: 0;
-        background: var(--image-overlay);
+        background: linear-gradient(
+          180deg,
+          rgba(9, 26, 43, 0.08) 0%,
+          rgba(9, 26, 43, 0.04) 55%,
+          rgba(6, 19, 32, 0.62) 100%
+        );
         pointer-events: none;
+        z-index: 1;
       }
 
       .artp-hero-img {
@@ -377,7 +441,175 @@ export async function renderArticlePage(container, articleId, onBack) {
         height: 100%;
         object-fit: cover;
         display: block;
-        filter: var(--image-filter);
+        transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .artp-hero-media--clickable:hover .artp-hero-img {
+        transform: scale(1.03);
+      }
+
+      .artp-zoom-pill {
+        position: absolute;
+        right: 18px;
+        bottom: 18px;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 16px;
+        border-radius: var(--radius-pill);
+        background: rgba(6, 19, 32, 0.84);
+        border: 1px solid rgba(0, 210, 255, 0.45);
+        color: var(--color-text-strong);
+        font: 600 12px/1 var(--font-sans);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 16px rgba(0, 210, 255, 0.16);
+        transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+        pointer-events: none;
+      }
+
+      .artp-hero-media--clickable:hover .artp-zoom-pill {
+        background: rgba(0, 210, 255, 0.22);
+        border-color: var(--color-accent);
+        transform: translateY(-2px);
+      }
+
+      .artp-img-caption {
+        position: absolute;
+        left: 20px;
+        bottom: 18px;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 13px;
+        border-radius: var(--radius-pill);
+        background: rgba(6, 19, 32, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        color: var(--color-text-muted);
+        font: 500 11px/1 var(--font-mono);
+        max-width: calc(100% - 240px);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        pointer-events: none;
+      }
+
+      /* FULLSCREEN IMAGE LIGHTBOX MODAL */
+      .artp-lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(16px, 3vw, 36px);
+        background: rgba(3, 10, 20, 0.92);
+        -webkit-backdrop-filter: blur(14px);
+        backdrop-filter: blur(14px);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.24s ease, visibility 0.24s ease;
+      }
+
+      .artp-lightbox.is-open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      .artp-lightbox__toolbar {
+        position: absolute;
+        top: clamp(14px, 2.5vw, 24px);
+        left: clamp(16px, 3vw, 32px);
+        right: clamp(16px, 3vw, 32px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        z-index: 2;
+      }
+
+      .artp-lightbox__badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 14px;
+        border-radius: var(--radius-pill);
+        background: rgba(13, 33, 54, 0.88);
+        border: 1px solid rgba(0, 210, 255, 0.4);
+        color: var(--color-accent);
+        font: 600 11px/1 var(--font-mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .artp-lightbox__actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .artp-lightbox__btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 16px;
+        border-radius: var(--radius-pill);
+        background: rgba(13, 33, 54, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        color: var(--color-text-strong);
+        font: 600 12.5px/1 var(--font-sans);
+        text-decoration: none;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+
+      .artp-lightbox__btn:hover {
+        background: rgba(0, 210, 255, 0.22);
+        border-color: var(--color-accent);
+        box-shadow: 0 0 18px rgba(0, 210, 255, 0.28);
+      }
+
+      .artp-lightbox__stage {
+        position: relative;
+        max-width: 92vw;
+        max-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        background: rgba(6, 16, 28, 0.95);
+        box-shadow:
+          0 28px 70px rgba(0, 0, 0, 0.75),
+          0 0 36px rgba(0, 210, 255, 0.14);
+        transform: scale(0.96);
+        transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .artp-lightbox.is-open .artp-lightbox__stage {
+        transform: scale(1);
+      }
+
+      .artp-lightbox__img {
+        display: block;
+        max-width: 92vw;
+        max-height: 80vh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        user-select: none;
+      }
+
+      .artp-lightbox__caption {
+        margin-top: 14px;
+        color: var(--color-text-muted);
+        font-size: 13.5px;
+        text-align: center;
+        max-width: 720px;
       }
 
       .artp-media-fallback {
@@ -435,9 +667,13 @@ export async function renderArticlePage(container, articleId, onBack) {
 
       /* SAMUDRA CALLOUT BOX */
       .artp-callout {
-        background: var(--color-surface);
-        -webkit-backdrop-filter: blur(18px) saturate(165%);
-        backdrop-filter: blur(18px) saturate(165%);
+        background: linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.14) 0%,
+            rgba(255, 255, 255, 0.04) 45%,
+            rgba(0, 210, 255, 0.09) 100%
+          ),
+          rgba(13, 33, 54, 0.88);
         border: 1px solid var(--color-border);
         border-left: 4px solid var(--color-accent);
         border-radius: var(--radius-md);
@@ -480,9 +716,13 @@ export async function renderArticlePage(container, articleId, onBack) {
       .artp-share-section {
         margin: 56px 0 clamp(56px, 7vw, 84px);
         padding: 28px clamp(20px, 4vw, 36px);
-        background: var(--color-surface);
-        -webkit-backdrop-filter: blur(18px) saturate(165%);
-        backdrop-filter: blur(18px) saturate(165%);
+        background: linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.14) 0%,
+            rgba(255, 255, 255, 0.04) 45%,
+            rgba(0, 210, 255, 0.09) 100%
+          ),
+          rgba(13, 33, 54, 0.88);
         border: 1px solid var(--color-border);
         border-radius: var(--radius-card);
         box-shadow: var(--shadow-card);
@@ -551,9 +791,13 @@ export async function renderArticlePage(container, articleId, onBack) {
 
       /* CTA BANNER: SIMULASI & PORTAL RESMI */
       .artp-cta-banner {
-        background: var(--color-surface);
-        -webkit-backdrop-filter: blur(18px) saturate(165%);
-        backdrop-filter: blur(18px) saturate(165%);
+        background: linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.14) 0%,
+            rgba(255, 255, 255, 0.04) 45%,
+            rgba(0, 210, 255, 0.09) 100%
+          ),
+          rgba(13, 33, 54, 0.88);
         border: 1px solid var(--color-border);
         border-left: 4px solid var(--color-accent);
         border-radius: var(--radius-card);
@@ -677,139 +921,250 @@ export async function renderArticlePage(container, articleId, onBack) {
         margin: 0;
       }
 
+      /* RELATED ARTICLES CARDS — MATCHING .blog3-post-card OUTSIDE DETAIL */
       .artp-related-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--space-6);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-5);
+        align-items: stretch;
       }
 
       .artp-related-card {
-        background: var(--color-surface);
-        -webkit-backdrop-filter: blur(18px) saturate(165%);
-        backdrop-filter: blur(18px) saturate(165%);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-card);
-        overflow: hidden;
+        position: relative;
         display: flex;
         flex-direction: column;
-        text-decoration: none;
-        color: inherit;
-        box-shadow: var(--shadow-card);
-        transition: border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
-        cursor: pointer;
         height: 100%;
+        border-radius: 20px;
+        background: linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.14) 0%,
+            rgba(255, 255, 255, 0.04) 45%,
+            rgba(0, 210, 255, 0.09) 100%
+          ),
+          rgba(13, 33, 54, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        box-shadow:
+          0 16px 38px rgba(0, 0, 0, 0.32),
+          0 0 22px rgba(0, 210, 255, 0.07),
+          inset 0 1px 1.5px rgba(255, 255, 255, 0.42);
+        overflow: hidden;
+        text-decoration: none;
+        color: var(--color-text);
+        cursor: pointer;
+        box-sizing: border-box;
+        contain: layout paint;
+        transition:
+          transform 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+          border-color 0.28s ease,
+          box-shadow 0.36s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      .artp-related-card:hover {
-        background: var(--color-surface-hover);
-        border-color: var(--color-border-accent);
-        box-shadow: var(--shadow-card-hover);
+      .artp-related-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 18px;
+        right: 18px;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.65),
+          rgba(0, 210, 255, 0.75),
+          transparent
+        );
+        z-index: 4;
+        pointer-events: none;
+      }
+
+      .artp-related-card:hover,
+      .artp-related-card:focus-visible {
+        transform: translateY(-4px);
+        border-color: rgba(0, 210, 255, 0.68);
+        box-shadow:
+          0 24px 54px rgba(0, 0, 0, 0.46),
+          0 0 32px rgba(0, 210, 255, 0.22),
+          inset 0 1px 2px rgba(255, 255, 255, 0.62);
       }
 
       .artp-related-thumb {
         position: relative;
-        height: 170px;
-        background: var(--color-bg-deep);
+        width: 100%;
+        aspect-ratio: 16 / 9;
         overflow: hidden;
+        background: transparent;
+        flex-shrink: 0;
       }
 
       .artp-related-thumb::after {
         content: '';
         position: absolute;
         inset: 0;
-        background: var(--image-overlay);
+        background: linear-gradient(
+          180deg,
+          rgba(13, 33, 54, 0.22) 0%,
+          transparent 45%
+        );
         pointer-events: none;
       }
 
       .artp-related-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 25%;
+        display: block;
+        -webkit-mask-image: linear-gradient(180deg, #000 42%, rgba(0, 0, 0, 0.7) 74%, transparent 100%);
+        mask-image: linear-gradient(180deg, #000 42%, rgba(0, 0, 0, 0.7) 74%, transparent 100%);
+        transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .artp-related-card:hover .artp-related-img {
+        transform: scale(1.04);
+      }
+
+      .artp-related-readtime {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 11px;
+        border-radius: var(--radius-pill);
+        background: rgba(6, 19, 32, 0.84);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: var(--color-text-strong);
+        font: 500 11px/1 var(--font-mono);
+        letter-spacing: 0.04em;
+      }
+
+      .artp-related-body {
+        padding: 20px 20px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-grow: 1;
+      }
+
+      .artp-related-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 11px;
+        border-radius: var(--radius-pill);
+        background: rgba(0, 210, 255, 0.14);
+        border: 1px solid rgba(0, 210, 255, 0.38);
+        font: 600 10.5px/1 var(--font-mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--color-accent);
+        margin-bottom: 10px;
+      }
+
+      .artp-related-card-title {
+        margin: 0 0 10px;
+        font: 600 16.5px/1.35 var(--font-sans);
+        letter-spacing: -0.015em;
+        color: var(--color-text-strong);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 2.7em;
+        transition: color var(--transition-fast);
+      }
+
+      .artp-related-card:hover .artp-related-card-title {
+        color: var(--color-accent);
+      }
+
+      .artp-related-card-desc {
+        margin: 0;
+        font: 300 13.5px/1.6 var(--font-sans);
+        color: var(--color-text-muted);
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 4.6em;
+        flex-grow: 1;
+      }
+
+      .artp-related-footer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 20px 20px;
+        margin-top: 12px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .artp-related-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        border: 1px solid rgba(0, 210, 255, 0.35);
+        background: rgba(0, 210, 255, 0.12);
+        box-shadow: 0 0 14px rgba(0, 210, 255, 0.16);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font: 600 11px/1 var(--font-mono);
+        color: var(--color-accent);
+      }
+
+      .artp-related-avatar img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
-        filter: var(--image-filter);
-        transition: transform 0.4s ease;
       }
 
-      .artp-related-card:hover .artp-related-img {
-        transform: scale(1.05);
+      .artp-related-author-meta {
+        min-width: 0;
+        flex: 1;
       }
 
-      .artp-related-badge {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        z-index: 2;
-        background: var(--color-surface-solid);
-        border: 1px solid var(--color-border-accent);
-        padding: 4px 10px;
-        border-radius: var(--radius-pill);
-        font: 700 9.5px/1 var(--font-mono);
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--color-accent);
-      }
-
-      .artp-related-body {
-        padding: var(--space-5);
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
+      .artp-related-author-name {
+        margin: 0;
+        font: 500 13px/1.3 var(--font-sans);
+        color: var(--color-text-strong);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .artp-related-date {
-        font: 500 11.5px/1.2 var(--font-mono);
-        color: var(--color-accent);
-        margin-bottom: var(--space-2);
-      }
-
-      .artp-related-card-title {
-        font-size: var(--text-base);
-        font-weight: 600;
-        color: var(--color-text-strong);
-        line-height: 1.45;
-        margin: 0 0 10px;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-
-      .artp-related-card-desc {
-        font-size: 13px;
-        line-height: 1.65;
+        margin: 2px 0 0;
+        font: 400 11.5px/1.2 var(--font-mono);
         color: var(--color-text-subtle);
-        margin: 0 0 var(--space-4);
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        flex-grow: 1;
       }
 
-      .artp-related-action {
-        margin-top: auto;
-        border-top: 1px solid var(--color-border);
-        padding-top: 14px;
-        display: flex;
+      .artp-related-arrow {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--color-text-muted);
+        flex-shrink: 0;
+        transition: all var(--transition-fast);
+      }
+
+      .artp-related-card:hover .artp-related-arrow {
+        border-color: var(--color-accent);
+        background: rgba(0, 210, 255, 0.16);
         color: var(--color-accent);
-        font-size: 12.5px;
-        font-weight: 600;
-        transition: color var(--transition-fast);
-      }
-
-      .artp-related-card:hover .artp-related-action {
-        color: var(--color-text-strong);
-      }
-
-      .artp-related-action svg {
-        transition: transform var(--transition-fast), color var(--transition-fast);
-      }
-
-      .artp-related-card:hover .artp-related-action svg {
-        transform: translateX(4px);
-        color: var(--color-accent);
+        transform: translate(1px, -1px);
       }
 
       /* FOOTER */
@@ -852,10 +1207,11 @@ export async function renderArticlePage(container, articleId, onBack) {
 
       @media (max-width: 680px) {
         .artp-nav {
-          padding: 12px 18px;
+          padding: 14px 18px;
         }
         .artp-logo {
-          font-size: 18px;
+          font-size: 14px;
+          letter-spacing: 0.32em;
         }
         .artp-related-grid {
           grid-template-columns: 1fr;
@@ -884,29 +1240,31 @@ export async function renderArticlePage(container, articleId, onBack) {
     </style>
 
     <div class="artp-root">
-      <!-- TOP STICKY NAVBAR -->
+      <!-- TOP NAVBAR (CLEAN DASHBOARD STYLE) -->
       <header class="artp-nav">
-        <button id="article-back-top" class="artp-btn-back" type="button" aria-label="Kembali ke halaman berita">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m15 18-6-6 6-6"/>
-          </svg>
-          <span>Kembali</span>
-        </button>
-
         <a href="/" id="article-nav-logo" class="artp-logo" aria-label="Beranda SAMUDRA">
           SAMUDRA
         </a>
 
-        <button id="article-share-btn" class="artp-btn-share" type="button" aria-label="Bagikan artikel ini">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="5" r="3"/>
-            <circle cx="6" cy="12" r="3"/>
-            <circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          </svg>
-          <span id="share-label">Bagikan</span>
-        </button>
+        <div class="artp-nav-actions">
+          <button id="article-back-top" class="artp-btn-back" type="button" aria-label="Kembali ke halaman berita">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+            <span>Kembali</span>
+          </button>
+
+          <button id="article-share-btn" class="artp-btn-share" type="button" aria-label="Bagikan artikel ini">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            <span id="share-label">Bagikan</span>
+          </button>
+        </div>
       </header>
 
       <!-- MAIN CONTENT SLOT -->
@@ -917,16 +1275,43 @@ export async function renderArticlePage(container, articleId, onBack) {
         </div>
       </main>
 
+      <!-- FULLSCREEN IMAGE LIGHTBOX -->
+      <div id="artp-lightbox" class="artp-lightbox" role="dialog" aria-modal="true" aria-label="Pratinjau gambar penuh">
+        <div class="artp-lightbox__toolbar">
+          <span id="artp-lb-badge" class="artp-lightbox__badge">DOKUMENTASI VISUAL</span>
+          <div class="artp-lightbox__actions">
+            <a id="artp-lb-open" href="#" target="_blank" rel="noopener" class="artp-lightbox__btn">
+              <span>Buka Asli</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 17L17 7M7 7h10v10"/>
+              </svg>
+            </a>
+            <button id="artp-lb-close" type="button" class="artp-lightbox__btn" aria-label="Tutup gambar penuh">
+              <span>Tutup</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="artp-lightbox__stage">
+          <img id="artp-lb-img" class="artp-lightbox__img" src="" alt="" decoding="async">
+        </div>
+        <p id="artp-lb-caption" class="artp-lightbox__caption"></p>
+      </div>
+
       <!-- FOOTER -->
-      <footer class="artp-footer">
-        <span>SAMUDRA.3D &mdash; Sistem Informasi Mitigasi dan Edukasi Bencana Tsunami</span>
-        <span>
-          Data resmi:
-          <a href="https://www.bmkg.go.id" target="_blank" rel="noopener">bmkg.go.id</a>
-        </span>
+      <footer class="sfooter" id="artp-footer">
+        ${getSamudraFooterHTML({ isArticlePage: true })}
       </footer>
     </div>
   `;
+
+  attachFooterEvents(container.querySelector('#artp-footer'), {
+    onNavigateHome: () => {
+      if (typeof onBack === 'function') onBack();
+    }
+  });
 
   // HANDLER TOMBOL NAVIGASI HEADER
   const backBtn = container.querySelector('#article-back-top');
@@ -936,6 +1321,7 @@ export async function renderArticlePage(container, articleId, onBack) {
 
   const goHome = event => {
     if (event) event.preventDefault();
+    document.body.style.overflow = '';
     if (typeof onBack === 'function') {
       onBack();
     }
@@ -948,21 +1334,19 @@ export async function renderArticlePage(container, articleId, onBack) {
   let articleData = null;
   let allArticlesList = [];
 
-  // PENGAMBILAN DATA ARTIKEL
+  // PENGAMBILAN DATA ARTIKEL SECARA PARALEL (CEPAT & RINGAN)
   try {
-    allArticlesList = await fetchArticles().catch(() => []);
-
-    // 1. CARI BERDASARKAN ID DI DETAIL API
-    if (articleId && String(articleId).length > 10) {
-      try {
-        articleData = await fetchArticleById(articleId);
-      } catch (err) {
-        console.warn('Gagal mengambil detail artikel spesifik:', err);
-      }
-    }
+    const [fetchedList, fetchedDetail] = await Promise.all([
+      fetchArticles().catch(() => []),
+      articleId && String(articleId).length > 10
+        ? fetchArticleById(articleId).catch(() => null)
+        : Promise.resolve(null)
+    ]);
+    allArticlesList = Array.isArray(fetchedList) ? fetchedList : [];
+    articleData = fetchedDetail;
 
     // 2. CARI DARI DAFTAR ARTIKEL (ID ATAU SLUG)
-    if (!articleData && Array.isArray(allArticlesList)) {
+    if (!articleData && allArticlesList.length > 0) {
       articleData = allArticlesList.find(item =>
         item.id === articleId || item.slug === articleId
       );
@@ -1087,39 +1471,84 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
       title: 'Langkah Evakuasi Mandiri Saat Ancaman Tsunami',
       category: 'PANDUAN EVAKUASI',
       excerpt: 'Ketahui tindakan taktis yang harus segera dilakukan ketika merasakan gempa kuat di wilayah pesisir.',
-      dateStr: 'Informasi SAMUDRA',
-      coverImg: ''
+      dateStr: '14 Nov 2026',
+      readTime: '4 Menit Baca',
+      authorName: 'Tim Mitigasi SAMUDRA',
+      authorInitials: 'TM',
+      authorAvatar: '',
+      coverImg: '/img/bento-evacuation-route.jpg'
     },
     {
       id: 'rel-2',
       title: 'Bagaimana Sistem Peringatan Dini Tsunami Bekerja?',
       category: 'TEKNOLOGI KEBENCANAAN',
       excerpt: 'Mengenal teknologi sensor seismik pemantauan gempa dan sistem diseminasi peringatan dini BMKG.',
-      dateStr: 'Informasi SAMUDRA',
-      coverImg: ''
+      dateStr: '10 Nov 2026',
+      readTime: '5 Menit Baca',
+      authorName: 'Divisi Telemetri',
+      authorInitials: 'DT',
+      authorAvatar: '',
+      coverImg: '/img/bento-buoy-warning.jpg'
     },
     {
       id: 'rel-3',
       title: 'Persiapkan Tas Siaga Bencana untuk Keluarga',
       category: 'KESIAPSIAGAAN',
       excerpt: 'Kenali perlengkapan penting dan dokumen darurat yang wajib disiapkan untuk menghadapi bencana.',
-      dateStr: 'Informasi SAMUDRA',
-      coverImg: ''
+      dateStr: '06 Nov 2026',
+      readTime: '4 Menit Baca',
+      authorName: 'Edukasi SAMUDRA',
+      authorInitials: 'ES',
+      authorAvatar: '',
+      coverImg: '/img/cover-2.jpg'
     }
   ];
 
+  const fallbackRelCovers = [
+    '/img/bento-evacuation-route.jpg',
+    '/img/bento-buoy-warning.jpg',
+    '/img/cover-1.jpg',
+    '/img/cover-2.jpg',
+  ];
+
+  const makeInitials = (name) => {
+    const clean = String(name || 'Tim SAMUDRA').trim();
+    const parts = clean.split(/\s+/);
+    return parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : clean.slice(0, 2).toUpperCase();
+  };
+
   const displayRelated = relatedArticles.length > 0
-    ? relatedArticles.map(item => ({
-      id: item.id || item.slug,
-      title: item.title || 'Artikel SAMUDRA',
-      category: (item.category || 'Artikel').replace(/_/g, ' ').toUpperCase(),
-      excerpt: item.content
-        ? item.content.slice(0, 115) + (item.content.length > 115 ? '...' : '')
-        : 'Informasi dan edukasi kebencanaan resmi dari SAMUDRA.',
-      dateStr: formatDate(item.publishedAt),
-      coverImg: item.coverImageUrl
-    }))
+    ? relatedArticles.map((item, idx) => {
+      const rawEx = item.content
+        ? (item.content.length > 130 ? item.content.slice(0, 130) + '...' : item.content)
+        : '';
+      const fullExcerpt = !rawEx
+        ? 'Dokumentasi laporan lapangan dan publikasi kesiapsiagaan bencana resmi dari database sistem SAMUDRA.3D.'
+        : rawEx.length < 45
+          ? `${rawEx} — Dokumentasi laporan lapangan dan publikasi kesiapsiagaan bencana yang tersinkronisasi pada kanal informasi SAMUDRA.3D.`
+          : rawEx;
+      const aName = item.author?.name ? item.author.name.split('_').pop() : 'Rizal Zaky Firmansyah';
+      const dStr = item.publishedAt
+        ? new Date(item.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+        : 'Informasi SAMUDRA';
+      return {
+        id: item.id || item.slug,
+        title: item.title || 'Artikel SAMUDRA',
+        category: (item.category || 'Artikel').replace(/_/g, ' ').toUpperCase(),
+        excerpt: fullExcerpt,
+        dateStr: dStr,
+        readTime: '4 Menit Baca',
+        authorName: aName,
+        authorInitials: makeInitials(aName),
+        authorAvatar: item.author?.avatarUrl || '',
+        coverImg: item.coverImageUrl || fallbackRelCovers[idx % fallbackRelCovers.length]
+      };
+    })
     : defaultRelated;
+
+  const estReadMinutes = Math.max(3, Math.min(12, Math.ceil(rawContent.split(/\s+/).length / 130)));
 
   // RENDER KONTEN DETAIL
   contentSlot.innerHTML = `
@@ -1127,16 +1556,25 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
     <nav class="artp-breadcrumb" aria-label="Breadcrumb">
       <a href="/" class="artp-bc-link artp-bc-home">Beranda</a>
       <span class="artp-bc-sep">/</span>
-      <a href="#berita" class="artp-bc-link artp-bc-news">Berita</a>
+      <a href="#berita" class="artp-bc-link artp-bc-news">Berita &amp; Edukasi</a>
       <span class="artp-bc-sep">/</span>
       <span class="artp-bc-current">${escapeHTML(title)}</span>
     </nav>
 
     <!-- 1. HERO ARTIKEL -->
     <header class="artp-hero-header">
-      <div class="artp-category-badge">
-        <span class="artp-badge-dot"></span>
-        <span>${escapeHTML(category)}</span>
+      <div class="artp-hero-top-meta">
+        <div class="artp-category-badge">
+          <span class="artp-badge-dot"></span>
+          <span>${escapeHTML(category)}</span>
+        </div>
+        <span class="artp-readtime-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span>${estReadMinutes} Menit Baca</span>
+        </span>
       </div>
 
       <h1 class="artp-title">
@@ -1146,8 +1584,8 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
       <div class="artp-meta-bar">
         <div class="artp-author-box">
           ${avatarUrl
-      ? `<img src="${avatarUrl}" alt="${escapeHTML(authorName)}" class="artp-avatar">`
-      : `<div class="artp-avatar-placeholder">${escapeHTML(authorName.charAt(0).toUpperCase())}</div>`
+      ? `<img src="${avatarUrl}" alt="${escapeHTML(authorName)}" class="artp-avatar" decoding="async">`
+      : `<div class="artp-avatar-placeholder">${escapeHTML(makeInitials(authorName))}</div>`
     }
           <div>
             <p class="artp-author-name">${escapeHTML(authorName)}</p>
@@ -1158,21 +1596,35 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
         <div class="artp-meta-details">
           <span>${escapeHTML(dateStr)}</span>
           <span class="artp-meta-dot">&bull;</span>
-          <span>Edukasi Resmi</span>
+          <span>Publikasi Terverifikasi</span>
         </div>
       </div>
     </header>
 
-    <!-- GAMBAR UTAMA LANDSCAPE -->
-    <div class="artp-hero-media">
+    <!-- GAMBAR UTAMA LANDSCAPE (CLICKABLE LIGHTBOX) -->
+    <div
+      id="artp-hero-media"
+      class="artp-hero-media ${coverImage ? 'artp-hero-media--clickable' : ''}"
+      ${coverImage ? 'tabindex="0" role="button" aria-label="Klik untuk melihat gambar ukuran penuh"' : ''}
+    >
       ${coverImage
       ? `
             <img
               src="${coverImage}"
               alt="${escapeHTML(title)}"
               class="artp-hero-img"
-              loading="lazy"
+              decoding="async"
             >
+            <span class="artp-img-caption">${escapeHTML(title)}</span>
+            <span class="artp-zoom-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 3 21 3 21 9"/>
+                <polyline points="9 21 3 21 3 15"/>
+                <line x1="21" y1="3" x2="14" y2="10"/>
+                <line x1="3" y1="21" x2="10" y2="14"/>
+              </svg>
+              <span>Lihat Gambar Penuh</span>
+            </span>
           `
       : `
             <div class="artp-media-fallback" aria-hidden="true">
@@ -1291,8 +1743,9 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
       </div>
 
       <div class="artp-related-grid">
-        ${displayRelated.map(card => {
-      const image = safeImageUrl(card.coverImg);
+        ${displayRelated.map((card, rIdx) => {
+      const image = safeImageUrl(card.coverImg) || fallbackRelCovers[rIdx % fallbackRelCovers.length];
+      const relAvatar = safeImageUrl(card.authorAvatar);
 
       return `
             <a
@@ -1302,39 +1755,45 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
               aria-label="Buka artikel terkait: ${escapeHTML(card.title)}"
             >
               <div class="artp-related-thumb">
-                ${image
-          ? `
-                      <img
-                        src="${image}"
-                        alt="${escapeHTML(card.title)}"
-                        loading="lazy"
-                        class="artp-related-img"
-                      >
-                    `
-          : `
-                      <div class="artp-media-fallback" aria-hidden="true">
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                          <path d="M2 7c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                          <path d="M2 17c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
-                        </svg>
-                      </div>
-                    `
-        }
-                <span class="artp-related-badge">${escapeHTML(card.category)}</span>
+                <img
+                  src="${image}"
+                  alt="${escapeHTML(card.title)}"
+                  loading="lazy"
+                  decoding="async"
+                  class="artp-related-img"
+                  onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='/img/cover-1.jpg';}"
+                >
+                <span class="artp-related-readtime">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <span>${escapeHTML(card.readTime || '4 Menit Baca')}</span>
+                </span>
               </div>
 
               <div class="artp-related-body">
-                <span class="artp-related-date">${escapeHTML(card.dateStr || 'Informasi SAMUDRA')}</span>
+                <span class="artp-related-badge">${escapeHTML(card.category)}</span>
                 <h4 class="artp-related-card-title">${escapeHTML(card.title)}</h4>
                 <p class="artp-related-card-desc">${escapeHTML(card.excerpt)}</p>
+              </div>
 
-                <div class="artp-related-action">
-                  <span>Baca Selengkapnya</span>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
+              <div class="artp-related-footer">
+                <span class="artp-related-avatar">
+                  ${relAvatar
+          ? `<img src="${relAvatar}" alt="${escapeHTML(card.authorName || 'SAMUDRA')}" loading="lazy" decoding="async">`
+          : escapeHTML(card.authorInitials || 'SM')
+        }
+                </span>
+                <div class="artp-related-author-meta">
+                  <p class="artp-related-author-name">${escapeHTML(card.authorName || 'Tim SAMUDRA')}</p>
+                  <p class="artp-related-date">${escapeHTML(card.dateStr || 'Informasi SAMUDRA')}</p>
                 </div>
+                <span class="artp-related-arrow" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 17L17 7M7 7h10v10"/>
+                  </svg>
+                </span>
               </div>
             </a>
           `;
@@ -1342,6 +1801,54 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
       </div>
     </section>
   `;
+
+  // FULLSCREEN IMAGE LIGHTBOX INTERACTION
+  const heroMediaEl = contentSlot.querySelector('#artp-hero-media');
+  const lightboxEl = container.querySelector('#artp-lightbox');
+  const lbImg = container.querySelector('#artp-lb-img');
+  const lbCaption = container.querySelector('#artp-lb-caption');
+  const lbBadge = container.querySelector('#artp-lb-badge');
+  const lbOpen = container.querySelector('#artp-lb-open');
+  const lbClose = container.querySelector('#artp-lb-close');
+
+  const openLightbox = (src, captionText, badgeText) => {
+    if (!lightboxEl || !lbImg || !src) return;
+    lbImg.src = src;
+    lbImg.alt = captionText || title;
+    if (lbCaption) lbCaption.textContent = captionText || title;
+    if (lbBadge) lbBadge.textContent = badgeText || category;
+    if (lbOpen) lbOpen.href = src;
+    lightboxEl.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeLightbox = () => {
+    if (!lightboxEl) return;
+    lightboxEl.classList.remove('is-open');
+    document.body.style.overflow = '';
+  };
+
+  if (heroMediaEl && coverImage) {
+    heroMediaEl.onclick = () => openLightbox(coverImage, title, category);
+    heroMediaEl.onkeydown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openLightbox(coverImage, title, category);
+      }
+    };
+  }
+
+  if (lbClose) lbClose.onclick = closeLightbox;
+  if (lightboxEl) {
+    lightboxEl.onclick = (e) => {
+      if (e.target === lightboxEl) closeLightbox();
+    };
+  }
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lightboxEl && lightboxEl.classList.contains('is-open')) {
+      closeLightbox();
+    }
+  });
 
   // BREADCRUMB EVENT LISTENERS
   const bcHome = contentSlot.querySelector('.artp-bc-home');
