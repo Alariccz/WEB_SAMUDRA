@@ -6,11 +6,22 @@
 
 import { fetchAdminArticles, createArticle, updateArticle, deleteArticle, uploadStorageFile } from './adminApi.js';
 import { showToast } from './adminToast.js';
+import { showConfirmModal } from './adminConfirmModal.js';
 
 let articlesState = [];
 let currentCategory = 'all';
 let currentStatus = 'all';
 let searchQuery = '';
+
+function getModalPortal() {
+  let portal = document.getElementById('adm-article-modal-root');
+  if (!portal) {
+    portal = document.createElement('div');
+    portal.id = 'adm-article-modal-root';
+    document.body.appendChild(portal);
+  }
+  return portal;
+}
 
 export function renderAdminArticles(container) {
   container.innerHTML = `
@@ -60,9 +71,6 @@ export function renderAdminArticles(container) {
           <div style="margin-top: 12px; font-size: 14px;">Memuat data artikel dari server...</div>
         </div>
       </div>
-
-      <!-- Modal Container (Inserted into DOM) -->
-      <div id="adm-article-modal-root"></div>
     </div>
   `;
 
@@ -70,7 +78,6 @@ export function renderAdminArticles(container) {
   const catFilters = container.querySelectorAll('#adm-category-filters .adm-filter-pill');
   const statusFilters = container.querySelectorAll('#adm-status-filters .adm-filter-pill');
   const btnCreate = container.querySelector('#adm-btn-create-article');
-  const modalRoot = container.querySelector('#adm-article-modal-root');
 
   // Search input handler
   searchInput.oninput = (e) => {
@@ -100,7 +107,7 @@ export function renderAdminArticles(container) {
 
   // Create Article button
   btnCreate.onclick = () => {
-    openArticleModal(modalRoot, null, () => loadArticles(container));
+    openArticleModal(getModalPortal(), null, () => loadArticles(container));
   };
 
   // Initial Load
@@ -109,8 +116,7 @@ export function renderAdminArticles(container) {
 
 // Expose open modal for dashboard shortcut
 export function openCreateArticleModalDirectly(container) {
-  const modalRoot = container.querySelector('#adm-article-modal-root') || container;
-  openArticleModal(modalRoot, null, () => loadArticles(container));
+  openArticleModal(getModalPortal(), null, () => loadArticles(container));
 }
 
 async function loadArticles(container) {
@@ -133,7 +139,6 @@ async function loadArticles(container) {
 
 function renderFilteredArticles(container) {
   const grid = container.querySelector('#adm-articles-grid');
-  const modalRoot = container.querySelector('#adm-article-modal-root');
 
   const filtered = articlesState.filter(art => {
     const matchesSearch = !searchQuery || (art.title && art.title.toLowerCase().includes(searchQuery)) || (art.content && art.content.toLowerCase().includes(searchQuery));
@@ -201,7 +206,7 @@ function renderFilteredArticles(container) {
       const id = btn.getAttribute('data-id');
       const article = articlesState.find(a => a.id === id);
       if (article) {
-        openArticleModal(modalRoot, article, () => loadArticles(container));
+        openArticleModal(getModalPortal(), article, () => loadArticles(container));
       }
     };
   });
@@ -247,7 +252,7 @@ function openArticleModal(root, article = null, onSaved) {
             <input class="adm-input adm-input--no-icon" id="art-title" type="text" placeholder="Contoh: Langkah Antisipasi Tsunami..." value="${article ? escapeHtml(article.title || '') : ''}" required>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
             <div class="adm-form-group">
               <label class="adm-form-label" for="art-category">Kategori</label>
               <select class="adm-select" id="art-category">
@@ -311,8 +316,18 @@ function openArticleModal(root, article = null, onSaved) {
   const uploadStatus = root.querySelector('#upload-status-text');
 
   const closeModal = () => {
+    document.removeEventListener('keydown', handleKey);
     modalEl.classList.remove('adm-modal-backdrop--open');
     setTimeout(() => { root.innerHTML = ''; }, 250);
+  };
+
+  const handleKey = (e) => {
+    if (e.key === 'Escape') closeModal();
+  };
+  document.addEventListener('keydown', handleKey);
+
+  modalEl.onclick = (e) => {
+    if (e.target === modalEl) closeModal();
   };
 
   closeBtn.onclick = closeModal;
@@ -405,17 +420,26 @@ function openArticleModal(root, article = null, onSaved) {
 }
 
 function confirmDeleteArticle(id, title, onDeleted) {
-  if (!confirm(`Hapus artikel "${title || 'ini'}"? Tindakan ini tidak dapat dibatalkan.`)) return;
-
-  deleteArticle(id)
-    .then(() => {
-      showToast('Artikel berhasil dihapus', 'success');
-      window.dispatchEvent(new CustomEvent('samudra:content-updated', { detail: { type: 'articles' } }));
-      if (onDeleted) onDeleted();
-    })
-    .catch(err => {
-      showToast(err.message || 'Gagal menghapus artikel', 'error');
-    });
+  showConfirmModal({
+    title: 'Hapus Artikel',
+    subtitle: 'Apakah Anda yakin ingin menghapus artikel ini dari sistem SAMUDRA?',
+    itemName: title || 'Artikel Tanpa Judul',
+    itemDetails: `ID: ${id}`,
+    warningText: 'Artikel akan dihapus permanen dan tidak lagi muncul di website publik.',
+    confirmLabel: 'Hapus Artikel',
+    confirmVariant: 'danger',
+    onConfirm: async () => {
+      try {
+        await deleteArticle(id);
+        showToast('Artikel berhasil dihapus', 'success');
+        window.dispatchEvent(new CustomEvent('samudra:content-updated', { detail: { type: 'articles' } }));
+        if (onDeleted) onDeleted();
+      } catch (err) {
+        showToast(err.message || 'Gagal menghapus artikel', 'error');
+        throw err;
+      }
+    }
+  });
 }
 
 function escapeHtml(str) {

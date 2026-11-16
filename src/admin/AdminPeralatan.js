@@ -6,8 +6,19 @@
 
 import { fetchAdminPeralatan, createPeralatan, updatePeralatan, deletePeralatan, uploadStorageFile } from './adminApi.js';
 import { showToast } from './adminToast.js';
+import { showConfirmModal } from './adminConfirmModal.js';
 
 let peralatanState = [];
+
+function getModalPortal() {
+  let portal = document.getElementById('adm-peralatan-modal-root');
+  if (!portal) {
+    portal = document.createElement('div');
+    portal.id = 'adm-peralatan-modal-root';
+    document.body.appendChild(portal);
+  }
+  return portal;
+}
 
 export function renderAdminPeralatan(container) {
   container.innerHTML = `
@@ -33,17 +44,13 @@ export function renderAdminPeralatan(container) {
           <div style="margin-top: 12px; font-size: 14px;">Memuat peralatan siaga...</div>
         </div>
       </div>
-
-      <!-- Modal Container -->
-      <div id="adm-peralatan-modal-root"></div>
     </div>
   `;
 
   const btnCreate = container.querySelector('#adm-btn-create-peralatan');
-  const modalRoot = container.querySelector('#adm-peralatan-modal-root');
 
   btnCreate.onclick = () => {
-    openPeralatanModal(modalRoot, null, () => loadPeralatan(container));
+    openPeralatanModal(getModalPortal(), null, () => loadPeralatan(container));
   };
 
   loadPeralatan(container);
@@ -69,7 +76,6 @@ async function loadPeralatan(container) {
 
 function renderPeralatanCards(container) {
   const grid = container.querySelector('#adm-peralatan-grid');
-  const modalRoot = container.querySelector('#adm-peralatan-modal-root');
 
   if (peralatanState.length === 0) {
     grid.innerHTML = `
@@ -123,7 +129,7 @@ function renderPeralatanCards(container) {
     btn.onclick = () => {
       const id = btn.getAttribute('data-id');
       const item = peralatanState.find(p => p.id === id);
-      if (item) openPeralatanModal(modalRoot, item, () => loadPeralatan(container));
+      if (item) openPeralatanModal(getModalPortal(), item, () => loadPeralatan(container));
     };
   });
 
@@ -156,7 +162,7 @@ function openPeralatanModal(root, item = null, onSaved) {
             <input class="adm-input adm-input--no-icon" id="per-name" type="text" placeholder="Contoh: Kotak P3K, Senter Tahan Air..." value="${item ? escapeHtml(item.name || '') : ''}" required>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
             <div class="adm-form-group">
               <label class="adm-form-label" for="per-category">Kategori</label>
               <input class="adm-input adm-input--no-icon" id="per-category" type="text" placeholder="Kesehatan, Komunikasi, dll." value="${item ? escapeHtml(item.category || 'Umum') : 'Umum'}">
@@ -206,8 +212,18 @@ function openPeralatanModal(root, item = null, onSaved) {
   const uploadStatus = root.querySelector('#per-upload-status-text');
 
   const closeModal = () => {
+    document.removeEventListener('keydown', handleKey);
     modalEl.classList.remove('adm-modal-backdrop--open');
     setTimeout(() => { root.innerHTML = ''; }, 250);
+  };
+
+  const handleKey = (e) => {
+    if (e.key === 'Escape') closeModal();
+  };
+  document.addEventListener('keydown', handleKey);
+
+  modalEl.onclick = (e) => {
+    if (e.target === modalEl) closeModal();
   };
 
   closeBtn.onclick = closeModal;
@@ -283,16 +299,25 @@ function openPeralatanModal(root, item = null, onSaved) {
 }
 
 function confirmDeletePeralatan(id, name, onDeleted) {
-  if (!confirm(`Hapus peralatan "${name || 'ini'}"?`)) return;
-
-  deletePeralatan(id)
-    .then(() => {
-      showToast('Peralatan berhasil dihapus', 'success');
-      if (onDeleted) onDeleted();
-    })
-    .catch(err => {
-      showToast(err.message || 'Gagal menghapus peralatan', 'error');
-    });
+  showConfirmModal({
+    title: 'Hapus Peralatan Siaga',
+    subtitle: 'Apakah Anda yakin ingin menghapus data perlengkapan siaga ini?',
+    itemName: name || 'Peralatan',
+    itemDetails: `ID Peralatan: ${id}`,
+    warningText: 'Data perlengkapan ini akan dihapus permanen dari panduan mitigasi.',
+    confirmLabel: 'Hapus Peralatan',
+    confirmVariant: 'danger',
+    onConfirm: async () => {
+      try {
+        await deletePeralatan(id);
+        showToast('Peralatan berhasil dihapus', 'success');
+        if (onDeleted) onDeleted();
+      } catch (err) {
+        showToast(err.message || 'Gagal menghapus peralatan', 'error');
+        throw err;
+      }
+    }
+  });
 }
 
 function escapeHtml(str) {

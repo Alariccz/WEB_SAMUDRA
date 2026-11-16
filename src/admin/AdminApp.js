@@ -25,6 +25,7 @@ import { renderAdminMitigasi, openCreateMitigasiModalDirectly } from './AdminMit
 import { renderAdminPeralatan } from './AdminPeralatan.js';
 import { renderAdminAccounts } from './AdminAccounts.js';
 import { showToast } from './adminToast.js';
+import { showConfirmModal } from './adminConfirmModal.js';
 
 // Reset tab ke 'dashboard' setiap app di-mount ulang agar tidak nyangkut di tab yang tidak diizinkan
 let activeTab = 'dashboard';
@@ -215,13 +216,21 @@ export function renderAdminApp(container, onBackToWebsite) {
   // Logout button
   if (logoutBtn) {
     logoutBtn.onclick = () => {
-      if (confirm('Keluar dari sesi administrator SAMUDRA?')) {
-        logoutAdmin();
-        activeTab = 'dashboard';
-        window.history.replaceState({}, '', '/login');
-        showToast('Anda telah keluar dari sesi admin.', 'success');
-        renderAdminApp(container, onBackToWebsite);
-      }
+      showConfirmModal({
+        title: 'Keluar dari Sesi Administrator',
+        subtitle: 'Apakah Anda yakin ingin mengakhiri sesi administrator saat ini?',
+        confirmLabel: 'Keluar Sekarang',
+        cancelLabel: 'Tetap di Admin',
+        confirmVariant: 'amber',
+        warningText: 'Anda harus masuk kembali untuk mengelola konten dan sistem SAMUDRA.',
+        onConfirm: () => {
+          logoutAdmin();
+          activeTab = 'dashboard';
+          window.history.replaceState({}, '', '/login');
+          showToast('Anda telah keluar dari sesi admin.', 'success');
+          renderAdminApp(container, onBackToWebsite);
+        }
+      });
     };
   }
 
