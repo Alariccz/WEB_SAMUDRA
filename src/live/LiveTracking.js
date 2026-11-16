@@ -98,13 +98,13 @@ export function renderLiveTracking(container, trackingId) {
     attributionControl: false,
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: '© OpenStreetMap © CARTO'
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
 
   L.control.zoom({ position: 'bottomright' }).addTo(map);
-  L.control.attribution({ position: 'bottomleft', prefix: '© CARTO' }).addTo(map);
+  L.control.attribution({ position: 'bottomleft', prefix: '© OpenStreetMap' }).addTo(map);
 
   // Map objects we'll update
   let marker = null;
@@ -430,7 +430,7 @@ function getLiveStyles() {
     }
 
     .lt-map .leaflet-container {
-      background: #0f172a;
+      background: #e8e0d8;
     }
 
     /* -------- CARD -------- */
@@ -734,3 +734,4 @@ function getLiveStyles() {
     }
   `;
 }
+
