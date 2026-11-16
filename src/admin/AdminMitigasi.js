@@ -6,8 +6,19 @@
 
 import { fetchAdminMitigasi, createMitigasi, updateMitigasi, deleteMitigasi, uploadStorageFile } from './adminApi.js';
 import { showToast } from './adminToast.js';
+import { showConfirmModal } from './adminConfirmModal.js';
 
 let mitigasiState = [];
+
+function getModalPortal() {
+  let portal = document.getElementById('adm-mitigasi-modal-root');
+  if (!portal) {
+    portal = document.createElement('div');
+    portal.id = 'adm-mitigasi-modal-root';
+    document.body.appendChild(portal);
+  }
+  return portal;
+}
 
 export function renderAdminMitigasi(container) {
   container.innerHTML = `
@@ -49,18 +60,14 @@ export function renderAdminMitigasi(container) {
           <div style="margin-top: 12px; font-size: 14px;">Memuat langkah mitigasi...</div>
         </div>
       </div>
-
-      <!-- Modal Container -->
-      <div id="adm-mitigasi-modal-root"></div>
     </div>
   `;
 
   const btnCreate = container.querySelector('#adm-btn-create-mitigasi');
-  const modalRoot = container.querySelector('#adm-mitigasi-modal-root');
 
   btnCreate.onclick = () => {
     const nextStep = mitigasiState.length > 0 ? Math.max(...mitigasiState.map(m => m.stepNumber || 0)) + 1 : 1;
-    openMitigasiModal(modalRoot, null, nextStep, () => loadMitigasi(container));
+    openMitigasiModal(getModalPortal(), null, nextStep, () => loadMitigasi(container));
   };
 
   loadMitigasi(container);
@@ -68,9 +75,8 @@ export function renderAdminMitigasi(container) {
 
 // Expose open modal for dashboard shortcut
 export function openCreateMitigasiModalDirectly(container) {
-  const modalRoot = container.querySelector('#adm-mitigasi-modal-root') || container;
   const nextStep = mitigasiState.length > 0 ? Math.max(...mitigasiState.map(m => m.stepNumber || 0)) + 1 : 1;
-  openMitigasiModal(modalRoot, null, nextStep, () => loadMitigasi(container));
+  openMitigasiModal(getModalPortal(), null, nextStep, () => loadMitigasi(container));
 }
 
 async function loadMitigasi(container) {
@@ -156,7 +162,7 @@ function renderMitigasiCards(container) {
       const id = btn.getAttribute('data-id');
       const item = mitigasiState.find(m => m.id === id);
       if (item) {
-        openMitigasiModal(modalRoot, item, item.stepNumber || 1, () => loadMitigasi(container));
+        openMitigasiModal(getModalPortal(), item, item.stepNumber || 1, () => loadMitigasi(container));
       }
     };
   });
@@ -187,7 +193,7 @@ function openMitigasiModal(root, item = null, defaultStepNum = 1, onSaved) {
         </div>
 
         <form id="adm-mit-form" class="adm-modal__body">
-          <div style="display: grid; grid-template-columns: 120px 1fr; gap: 16px;">
+          <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px;">
             <div class="adm-form-group">
               <label class="adm-form-label" for="mit-step">Nomor SOP *</label>
               <input class="adm-input adm-input--no-icon" id="mit-step" type="number" min="1" max="99" value="${item ? item.stepNumber || 1 : defaultStepNum}" required>
@@ -239,8 +245,18 @@ function openMitigasiModal(root, item = null, defaultStepNum = 1, onSaved) {
   const uploadStatus = root.querySelector('#mit-upload-status-text');
 
   const closeModal = () => {
+    document.removeEventListener('keydown', handleKey);
     modalEl.classList.remove('adm-modal-backdrop--open');
     setTimeout(() => { root.innerHTML = ''; }, 250);
+  };
+
+  const handleKey = (e) => {
+    if (e.key === 'Escape') closeModal();
+  };
+  document.addEventListener('keydown', handleKey);
+
+  modalEl.onclick = (e) => {
+    if (e.target === modalEl) closeModal();
   };
 
   closeBtn.onclick = closeModal;
@@ -330,17 +346,26 @@ function openMitigasiModal(root, item = null, defaultStepNum = 1, onSaved) {
 }
 
 function confirmDeleteMitigasi(id, title, onDeleted) {
-  if (!confirm(`Hapus langkah mitigasi "${title || 'ini'}"? Tindakan ini tidak dapat dibatalkan.`)) return;
-
-  deleteMitigasi(id)
-    .then(() => {
-      showToast('Langkah mitigasi berhasil dihapus', 'success');
-      window.dispatchEvent(new CustomEvent('samudra:content-updated', { detail: { type: 'mitigasi' } }));
-      if (onDeleted) onDeleted();
-    })
-    .catch(err => {
-      showToast(err.message || 'Gagal menghapus langkah mitigasi', 'error');
-    });
+  showConfirmModal({
+    title: 'Hapus Langkah Mitigasi',
+    subtitle: 'Apakah Anda yakin ingin menghapus panduan langkah mitigasi SOP ini?',
+    itemName: title || 'Langkah Mitigasi',
+    itemDetails: `ID SOP: ${id}`,
+    warningText: 'Langkah ini akan dihapus permanen dari panduan evakuasi website publik.',
+    confirmLabel: 'Hapus Langkah',
+    confirmVariant: 'danger',
+    onConfirm: async () => {
+      try {
+        await deleteMitigasi(id);
+        showToast('Langkah mitigasi berhasil dihapus', 'success');
+        window.dispatchEvent(new CustomEvent('samudra:content-updated', { detail: { type: 'mitigasi' } }));
+        if (onDeleted) onDeleted();
+      } catch (err) {
+        showToast(err.message || 'Gagal menghapus langkah mitigasi', 'error');
+        throw err;
+      }
+    }
+  });
 }
 
 function escapeHtml(str) {

@@ -6,4 +6,5 @@
 export { renderAdminApp } from './AdminApp.js';
 export { renderAdminLogin } from './AdminLogin.js';
 export { handleAuthCallback } from './AuthCallback.js';
+export { showConfirmModal } from './adminConfirmModal.js';
 export * from './adminApi.js';
