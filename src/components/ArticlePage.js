@@ -1199,6 +1199,10 @@ export async function renderArticlePage(container, articleId, onBack) {
 
       /* RESPONSIVE BREAKPOINTS */
       @media (max-width: 960px) {
+        .artp-hero {
+          min-height: 400px;
+          padding: 112px var(--container-pad) 72px;
+        }
         .artp-related-grid {
           grid-template-columns: repeat(2, 1fr);
           gap: var(--space-5);
@@ -1207,15 +1211,43 @@ export async function renderArticlePage(container, articleId, onBack) {
 
       @media (max-width: 680px) {
         .artp-nav {
-          padding: 14px 18px;
+          padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px;
         }
         .artp-logo {
-          font-size: 14px;
-          letter-spacing: 0.32em;
+          font-size: 13.5px;
+          letter-spacing: 0.26em;
+        }
+        .artp-btn-back,
+        .artp-btn-share {
+          min-height: 40px;
+          padding: 7px 13px;
+          font-size: 11.5px;
+        }
+        .artp-hero {
+          min-height: 340px;
+          padding: 96px 18px 60px;
+        }
+        .artp-zoom-chip {
+          top: 70px;
+          right: 14px;
+          padding: 5px 10px;
+          font-size: 10px;
+        }
+        .artp-content-wrap {
+          margin-top: -36px;
+          padding: 0 14px;
+        }
+        .artp-card {
+          padding: 24px 20px;
+          border-radius: 18px;
         }
         .artp-related-grid {
           grid-template-columns: 1fr;
           gap: 18px;
+        }
+        .artp-related-card-title,
+        .artp-related-card-desc {
+          min-height: auto;
         }
         .artp-share-section {
           flex-direction: column;
@@ -1223,9 +1255,11 @@ export async function renderArticlePage(container, articleId, onBack) {
         }
         .artp-share-buttons {
           width: 100%;
+          flex-wrap: wrap;
         }
         .artp-action-btn {
-          flex: 1;
+          flex: 1 1 140px;
+          min-height: 44px;
           justify-content: center;
         }
         .artp-cta-actions {
@@ -1234,7 +1268,24 @@ export async function renderArticlePage(container, articleId, onBack) {
         }
         .artp-cta-actions button {
           width: 100%;
+          min-height: 44px;
           justify-content: center;
+        }
+        .artp-lightbox {
+          padding: 14px;
+        }
+        .artp-lightbox__toolbar {
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+      }
+
+      @media (max-width: 400px) {
+        .artp-btn-share span {
+          display: none;
+        }
+        .artp-btn-share {
+          padding: 8px 11px;
         }
       }
     </style>

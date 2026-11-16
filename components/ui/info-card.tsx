@@ -9,7 +9,7 @@ import {
   useMemo,
   useCallback,
 } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import React from "react";
 
@@ -284,7 +284,7 @@ const InfoCardMedia = ({
   }, [media.length]);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
     if (isHovered) {
       timeoutId = setTimeout(() => {
         setIsOverflowVisible(true);
@@ -346,10 +346,8 @@ const InfoCardMedia = ({
         }}
       >
         <div
-          className={cn(
-            "relative",
-            media.length > 0 ? { height: shrinkHeight } : "h-auto"
-          )}
+          className={cn("relative", media.length === 0 && "h-auto")}
+          style={media.length > 0 ? { height: shrinkHeight } : undefined}
         >
           {displayMedia.map((item, index) => {
             const {

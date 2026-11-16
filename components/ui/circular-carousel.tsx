@@ -75,8 +75,10 @@ const CIRCULAR_CAROUSEL_STYLES = `
     gap: 10px;
     width: 100%;
     padding: 18px 0 8px;
+    overflow: hidden;
     outline: none;
     user-select: none;
+    touch-action: pan-y;
   }
 
   .cc-track {
@@ -348,8 +350,8 @@ const CIRCULAR_CAROUSEL_STYLES = `
 
   .cc-btn {
     display: flex;
-    height: 42px;
-    width: 42px;
+    height: 44px;
+    width: 44px;
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-pill);
@@ -400,7 +402,7 @@ const CIRCULAR_CAROUSEL_STYLES = `
     background: var(--color-border-accent);
   }
 
-  @media (max-width: 960px) {
+  @media (max-width: 1040px) {
     .cc-track {
       height: 410px;
     }
@@ -442,6 +444,28 @@ const CIRCULAR_CAROUSEL_STYLES = `
       font-size: 40px;
     }
   }
+
+  @media (max-width: 440px) {
+    .cc-track {
+      height: 350px;
+    }
+    .cc-card {
+      width: 232px;
+      height: 256px;
+      margin-left: -116px;
+      margin-top: -128px;
+    }
+    .cc-card__graphic {
+      height: 168px;
+    }
+    .cc-card__content {
+      margin-top: -72px;
+      padding: 22px 15px 15px;
+    }
+    .cc-center__num {
+      font-size: 34px;
+    }
+  }
 `;
 
 export function CircularCarousel({
@@ -457,20 +481,25 @@ export function CircularCarousel({
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isInView, setIsInView] = useState(true);
-  const [compact, setCompact] = useState(false);
+  const [viewportTier, setViewportTier] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
 
   const activeIndex = controlledIndex ?? internalIndex;
   const total = items.length;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const mq = window.matchMedia("(max-width: 720px)");
-    const update = () => setCompact(mq.matches);
+    const update = () => {
+      const w = window.innerWidth;
+      if (w <= 640) setViewportTier("mobile");
+      else if (w <= 1040) setViewportTier("tablet");
+      else setViewportTier("desktop");
+    };
     update();
-    mq.addEventListener?.("change", update);
-    return () => mq.removeEventListener?.("change", update);
+    window.addEventListener("resize", update, { passive: true });
+    return () => window.removeEventListener("resize", update);
   }, []);
 
   useEffect(() => {
@@ -520,8 +549,10 @@ export function CircularCarousel({
   if (!items || total === 0) return null;
 
   const activeItem = items[activeIndex] || items[0];
-  const radiusX = compact ? 175 : RADIUS_X;
-  const radiusY = compact ? 88 : RADIUS_Y;
+  const radiusX =
+    viewportTier === "mobile" ? 132 : viewportTier === "tablet" ? 280 : RADIUS_X;
+  const radiusY =
+    viewportTier === "mobile" ? 72 : viewportTier === "tablet" ? 102 : RADIUS_Y;
 
   const handleCardClick = (item: CarouselItem, i: number) => {
     goTo(i);
@@ -539,6 +570,18 @@ export function CircularCarousel({
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
+      onTouchStart={(e) => {
+        touchStartXRef.current = e.touches[0]?.clientX ?? null;
+      }}
+      onTouchEnd={(e) => {
+        if (touchStartXRef.current === null) return;
+        const dx = (e.changedTouches[0]?.clientX ?? touchStartXRef.current) - touchStartXRef.current;
+        touchStartXRef.current = null;
+        if (Math.abs(dx) > 40) {
+          if (dx < 0) next();
+          else prev();
+        }
+      }}
       className={cn(
         "cc-root relative flex flex-col items-center justify-center gap-8 outline-none",
         className,

@@ -31,6 +31,8 @@ export interface IconPlaceholderProps extends Omit<LucideProps, "ref"> {
   hugeicons?: string;
   phosphor?: string;
   remixicon?: string;
+  className?: string;
+  size?: number | string;
   "data-icon"?: string;
 }
 

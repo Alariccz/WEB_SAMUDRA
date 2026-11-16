@@ -840,7 +840,7 @@ const Sky = React.forwardRef<HTMLElement, WeatherSkyProps>(
       (el: HTMLElement | null) => {
         watch(el);
         if (typeof ref === "function") ref(el);
-        else if (ref) ref.current = el;
+        else if (ref) (ref as any).current = el;
       },
       [watch, ref],
     );
