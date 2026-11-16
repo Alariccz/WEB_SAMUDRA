@@ -59,7 +59,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(import.meta.dirname, 'index.html'),
-        admin: resolve(import.meta.dirname, 'admin.html')
+        admin: resolve(import.meta.dirname, 'admin.html'),
+        live: resolve(import.meta.dirname, 'live.html')
       }
     }
   },
@@ -83,11 +84,18 @@ export default defineConfig({
   },
   plugins: [
     {
-      name: 'admin-spa-rewrite',
+      name: 'spa-rewrite',
       configureServer(server) {
         attachLanOriginMiddleware(server.middlewares);
         server.middlewares.use((req, res, next) => {
           const path = (req.url || '').split('?')[0];
+          // Live tracking routes → live.html
+          if (path === '/live' || path.startsWith('/live/')) {
+            req.url = '/live.html';
+            next();
+            return;
+          }
+          // Admin routes → admin.html
           if (
             path === '/auth/callback' ||
             path.startsWith('/auth/callback') ||
