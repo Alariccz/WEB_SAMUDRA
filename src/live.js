@@ -13,3 +13,4 @@ const liveIndex = pathParts.findIndex(p => p === 'live');
 const trackingId = liveIndex >= 0 ? pathParts[liveIndex + 1] : null;
 
 renderLiveTracking(root, trackingId);
+
