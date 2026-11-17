@@ -412,7 +412,8 @@ main.appendChild(ctaSection);
 mountPhone3DMockup(ctaSection.querySelector('#phone-3d-stage'), '/img/samudra-app-screen.png');
 
 const APK_FILENAME = 'SAMUDRA-Mobile-v2.4.1.apk';
-const CONFIGURED_APK_URL = (import.meta.env?.VITE_APK_URL || '').trim();
+const DEFAULT_R2_APK_URL = 'https://cdn.samudra.buzz/download/app-arm64-v8a-release.apk';
+const CONFIGURED_APK_URL = (import.meta.env?.VITE_APK_URL || DEFAULT_R2_APK_URL).trim();
 const LOCAL_APK_PATH = `/downloads/${APK_FILENAME}`;
 const LOCALHOST_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
 
@@ -422,7 +423,7 @@ function getApkDownloadUrl() {
     const stored = localStorage.getItem('samudra_apk_url');
     if (stored && stored.trim()) return stored.trim();
   } catch (_) {}
-  return LOCAL_APK_PATH;
+  return DEFAULT_R2_APK_URL;
 }
 
 async function resolveQrDownloadUrl() {

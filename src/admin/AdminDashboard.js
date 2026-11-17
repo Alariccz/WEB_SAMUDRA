@@ -219,7 +219,8 @@ function wireApkDistributionManager(container) {
   const saveUrlBtn = container.querySelector('#adm-apk-btn-save-url');
 
   const updateDisplay = () => {
-    const activeUrl = (import.meta.env?.VITE_APK_URL || localStorage.getItem('samudra_apk_url') || '').trim();
+    const defaultUrl = 'https://cdn.samudra.buzz/download/app-arm64-v8a-release.apk';
+    const activeUrl = (import.meta.env?.VITE_APK_URL || localStorage.getItem('samudra_apk_url') || defaultUrl).trim();
     if (activeUrl) {
       currentUrlEl.textContent = activeUrl;
       testLink.href = activeUrl;
@@ -227,8 +228,8 @@ function wireApkDistributionManager(container) {
       copyBtn.style.display = 'inline-flex';
       if (urlInput) urlInput.value = activeUrl;
     } else {
-      currentUrlEl.textContent = 'Belum dikonfigurasi (Menggunakan file lokal bawaan /downloads/SAMUDRA-Mobile-v2.4.1.apk)';
-      testLink.href = '/downloads/SAMUDRA-Mobile-v2.4.1.apk';
+      currentUrlEl.textContent = 'Belum dikonfigurasi';
+      testLink.href = defaultUrl;
       copyBtn.style.display = 'none';
     }
   };
