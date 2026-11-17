@@ -4,7 +4,7 @@
  * Features full CRUD, category filtering, search, and Cloudflare R2 image upload
  */
 
-import { fetchAdminArticles, createArticle, updateArticle, deleteArticle, uploadStorageFile } from './adminApi.js';
+import { fetchAdminArticles, createArticle, updateArticle, deleteArticle, uploadStorageFile, uploadMultipleStorageFiles } from './adminApi.js';
 import { showToast } from './adminToast.js';
 import { showConfirmModal } from './adminConfirmModal.js';
 
@@ -272,17 +272,25 @@ function openArticleModal(root, article = null, onSaved) {
             </div>
           </div>
 
-          <!-- Cover Image Upload & URL Section -->
+          <!-- Image Gallery & Cover Upload Section -->
           <div class="adm-form-group">
-            <label class="adm-form-label">Foto Sampul (Cloudflare R2 Storage)</label>
-            <div class="adm-upload-zone" id="art-upload-zone">
-              <input type="file" id="art-file-input" accept="image/*" style="display: none;">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--adm-cyan); margin-bottom: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-              <div style="font-size: 13px; font-weight: 600; color: #ffffff;" id="upload-status-text">Klik atau seret gambar untuk diunggah</div>
-              <small style="color: var(--adm-text-dim);">Format JPG, PNG, WEBP (Otomatis masuk CDN Cloudflare)</small>
-              <img id="art-img-preview" class="adm-upload-zone__preview" src="${article && article.coverImageUrl ? article.coverImageUrl : ''}" style="${article && article.coverImageUrl ? '' : 'display: none;'}">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <label class="adm-form-label" style="margin: 0;">Galeri Foto Artikel (Cloudflare R2 Storage)</label>
+              <span style="font-size: 11px; color: var(--adm-text-dim);">Pilih satu atau banyak gambar (gambar #1 otomatis jadi sampul)</span>
             </div>
-            <input class="adm-input adm-input--no-icon" id="art-cover-url" type="url" placeholder="Atau tempel URL gambar..." value="${article ? escapeHtml(article.coverImageUrl || '') : ''}" style="margin-top: 8px; font-size: 12px;">
+            <div class="adm-upload-zone" id="art-upload-zone" style="cursor: pointer; padding: 20px; text-align: center;">
+              <input type="file" id="art-file-input" multiple accept="image/*" style="display: none;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--adm-cyan); margin-bottom: 6px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+              <div style="font-size: 13px; font-weight: 600; color: #ffffff;" id="upload-status-text">+ Klik untuk memilih foto (bisa pilih banyak sekaligus)</div>
+              <small style="color: var(--adm-text-dim);">Format JPG, PNG, WEBP. Mendukung upload multi-gambar ke CDN Cloudflare R2</small>
+            </div>
+
+            <!-- Thumbnail Gallery Previews -->
+            <div id="art-gallery-previews" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-top: 12px;"></div>
+
+            <div style="margin-top: 8px;">
+              <input class="adm-input adm-input--no-icon" id="art-cover-url" type="url" placeholder="Atau tempel URL gambar eksternal (opsional)..." value="${article ? escapeHtml(article.coverImageUrl || '') : ''}" style="font-size: 12px;">
+            </div>
           </div>
 
           <!-- Content Markdown / Textarea -->
@@ -312,8 +320,72 @@ function openArticleModal(root, article = null, onSaved) {
   const uploadZone = root.querySelector('#art-upload-zone');
   const fileInput = root.querySelector('#art-file-input');
   const coverUrlInput = root.querySelector('#art-cover-url');
-  const previewImg = root.querySelector('#art-img-preview');
   const uploadStatus = root.querySelector('#upload-status-text');
+  const galleryPreviewsEl = root.querySelector('#art-gallery-previews');
+
+  // State gambar artikel
+  let existingImages = [];
+  if (article && Array.isArray(article.images) && article.images.length > 0) {
+    existingImages = [...article.images].filter(Boolean);
+  } else if (article && article.coverImageUrl) {
+    existingImages = [article.coverImageUrl];
+  }
+  let newFiles = []; // File-file baru yang dipilih dari komputer
+
+  const renderPreviews = () => {
+    galleryPreviewsEl.innerHTML = '';
+    const allItems = [
+      ...existingImages.map((url, idx) => ({ type: 'existing', url, index: idx })),
+      ...newFiles.map((file, idx) => ({ type: 'new', file, url: URL.createObjectURL(file), index: idx }))
+    ];
+
+    if (allItems.length === 0) {
+      galleryPreviewsEl.style.display = 'none';
+      uploadStatus.textContent = '+ Klik untuk memilih foto (bisa pilih banyak sekaligus)';
+      return;
+    }
+
+    galleryPreviewsEl.style.display = 'grid';
+    uploadStatus.textContent = `${allItems.length} foto siap (${newFiles.length} baru, foto pertama jadi sampul)`;
+
+    allItems.forEach((item, pos) => {
+      const card = document.createElement('div');
+      card.style.cssText = 'position: relative; width: 100%; aspect-ratio: 16/10; border-radius: 8px; overflow: hidden; border: 1px solid var(--adm-border); background: #0c1726;';
+
+      const img = document.createElement('img');
+      img.src = item.url;
+      img.alt = `Foto ${pos + 1}`;
+      img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block;';
+      card.appendChild(img);
+
+      // Label nomor / sampul
+      const badge = document.createElement('div');
+      badge.style.cssText = 'position: absolute; bottom: 4px; left: 4px; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); color: #fff; pointer-events: none;';
+      badge.textContent = pos === 0 ? '★ Sampul' : `#${pos + 1}`;
+      card.appendChild(badge);
+
+      // Tombol hapus
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.style.cssText = 'position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; background: rgba(220, 38, 38, 0.9); color: #fff; border: none; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: transform 0.15s;';
+      removeBtn.innerHTML = '✕';
+      removeBtn.title = 'Hapus gambar ini';
+      removeBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (item.type === 'existing') {
+          existingImages.splice(item.index, 1);
+        } else {
+          newFiles.splice(item.index, 1);
+        }
+        renderPreviews();
+      };
+      card.appendChild(removeBtn);
+
+      galleryPreviewsEl.appendChild(card);
+    });
+  };
+
+  renderPreviews();
 
   const closeModal = () => {
     document.removeEventListener('keydown', handleKey);
@@ -336,36 +408,19 @@ function openArticleModal(root, article = null, onSaved) {
   // File Upload to Cloudflare R2
   uploadZone.onclick = () => fileInput.click();
 
-  fileInput.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    uploadStatus.textContent = 'Mengunggah ke Cloudflare R2...';
-    try {
-      const publicUrl = await uploadStorageFile(file, 'articles');
-      coverUrlInput.value = publicUrl;
-      previewImg.src = publicUrl;
-      previewImg.style.display = 'block';
-      uploadStatus.textContent = 'Gambar berhasil diunggah!';
-      showToast('Gambar berhasil diunggah ke CDN R2', 'success');
-    } catch (err) {
-      console.warn('Gagal upload gambar:', err);
-      // Fallback: Local object URL preview
-      const localUrl = URL.createObjectURL(file);
-      coverUrlInput.value = localUrl;
-      previewImg.src = localUrl;
-      previewImg.style.display = 'block';
-      uploadStatus.textContent = 'Unggah gambar siap';
-    }
+  fileInput.onchange = (e) => {
+    const selected = Array.from(e.target.files || []);
+    if (selected.length === 0) return;
+    newFiles.push(...selected);
+    renderPreviews();
+    fileInput.value = ''; // Reset input agar bisa memilih file yang sama jika diinginkan
   };
 
-  coverUrlInput.oninput = (e) => {
+  coverUrlInput.onchange = (e) => {
     const val = e.target.value.trim();
-    if (val) {
-      previewImg.src = val;
-      previewImg.style.display = 'block';
-    } else {
-      previewImg.style.display = 'none';
+    if (val && !existingImages.includes(val)) {
+      existingImages.unshift(val);
+      renderPreviews();
     }
   };
 
@@ -375,7 +430,7 @@ function openArticleModal(root, article = null, onSaved) {
     const content = root.querySelector('#art-content').value.trim();
     const category = root.querySelector('#art-category').value;
     const status = root.querySelector('#art-status').value;
-    const coverImageUrl = coverUrlInput.value.trim();
+    const manualCover = coverUrlInput.value.trim();
 
     if (!title) {
       showToast('Judul artikel wajib diisi', 'error');
@@ -389,15 +444,30 @@ function openArticleModal(root, article = null, onSaved) {
     saveBtn.disabled = true;
     saveBtn.innerHTML = `<span>Menyimpan...</span>`;
 
-    const payload = {
-      title,
-      content,
-      category,
-      status,
-      coverImageUrl
-    };
-
     try {
+      let uploadedUrls = [];
+      if (newFiles.length > 0) {
+        saveBtn.innerHTML = `<span>Mengunggah ${newFiles.length} foto ke R2...</span>`;
+        uploadStatus.textContent = `Mengunggah ${newFiles.length} foto ke Cloudflare R2...`;
+        uploadedUrls = await uploadMultipleStorageFiles(newFiles, 'articles');
+      }
+
+      let finalImages = [...existingImages, ...uploadedUrls].filter(Boolean);
+      if (finalImages.length === 0 && manualCover) {
+        finalImages.push(manualCover);
+      }
+
+      const coverImageUrl = finalImages.length > 0 ? finalImages[0] : (manualCover || '');
+
+      const payload = {
+        title,
+        content,
+        category,
+        status,
+        coverImageUrl,
+        images: finalImages
+      };
+
       if (isEdit) {
         await updateArticle(article.id, payload);
         showToast('Artikel berhasil diperbarui!', 'success');
@@ -415,6 +485,7 @@ function openArticleModal(root, article = null, onSaved) {
       showToast(err.message || 'Gagal menyimpan artikel', 'error');
       saveBtn.disabled = false;
       saveBtn.innerHTML = `<span>${isEdit ? 'Simpan Perubahan' : 'Terbitkan Artikel'}</span>`;
+      uploadStatus.textContent = 'Terjadi kesalahan saat upload.';
     }
   };
 }

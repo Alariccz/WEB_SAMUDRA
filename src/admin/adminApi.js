@@ -338,6 +338,52 @@ export async function uploadStorageFile(file, folder = 'general') {
   return String(url);
 }
 
+/**
+ * Upload banyak file gambar ke Cloudflare R2
+ * @param {File[]|FileList} files
+ * @param {'articles'|'mitigasi'|'peralatan'|'general'} folder
+ * @returns {Promise<string[]>} array of public URLs
+ */
+export async function uploadMultipleStorageFiles(files, folder = 'articles') {
+  const fileArray = Array.from(files || []).filter(Boolean);
+  if (fileArray.length === 0) return [];
+
+  const formData = new FormData();
+  for (const file of fileArray) {
+    formData.append('files', file);
+  }
+
+  try {
+    const res = await authFetch(`/storage/upload-multiple?folder=${encodeURIComponent(folder)}`, {
+      method: 'POST',
+      body: formData
+    });
+
+    let urls = [];
+    if (Array.isArray(res.urls)) {
+      urls = res.urls;
+    } else if (res.data && Array.isArray(res.data.urls)) {
+      urls = res.data.urls;
+    } else if (Array.isArray(res)) {
+      urls = res.map(item => item.url || item.fileUrl || item);
+    } else if (res.files && Array.isArray(res.files)) {
+      urls = res.files.map(f => f.url || f.fileUrl || f);
+    } else if (res.url) {
+      urls = [res.url];
+    }
+    return urls.filter(u => typeof u === 'string' && u.length > 0);
+  } catch (err) {
+    console.warn('/storage/upload-multiple gagal, beralih ke upload satu per satu:', err);
+    // Fallback: upload file satu per satu jika endpoint upload-multiple belum siap
+    const urls = [];
+    for (const file of fileArray) {
+      const url = await uploadStorageFile(file, folder);
+      if (url) urls.push(url);
+    }
+    return urls;
+  }
+}
+
 // --- ARTICLES MANAGEMENT (CRUD) ---
 
 /**

@@ -494,6 +494,140 @@ export async function renderArticlePage(container, articleId, onBack) {
         pointer-events: none;
       }
 
+      /* MULTI-IMAGE GALLERY GRID */
+      .artp-gallery-section {
+        margin: clamp(28px, 4vw, 44px) 0;
+        padding: clamp(16px, 2.5vw, 24px);
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(13, 33, 54, 0.45) 0%, rgba(6, 19, 32, 0.65) 100%);
+        border: 1px solid rgba(0, 210, 255, 0.18);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+      }
+
+      .artp-gallery-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .artp-gallery-title-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--color-accent);
+      }
+
+      .artp-gallery-icon {
+        color: var(--color-accent);
+        flex-shrink: 0;
+      }
+
+      .artp-gallery-title {
+        font: 700 15px/1.3 var(--font-sans);
+        color: var(--color-text-strong);
+        margin: 0;
+      }
+
+      .artp-gallery-count-badge {
+        font: 600 11px/1 var(--font-mono);
+        color: var(--color-accent);
+        background: rgba(0, 210, 255, 0.1);
+        border: 1px solid rgba(0, 210, 255, 0.28);
+        padding: 4px 10px;
+        border-radius: var(--radius-pill);
+      }
+
+      .artp-gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 14px;
+      }
+
+      @media (max-width: 640px) {
+        .artp-gallery-grid {
+          grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+          gap: 10px;
+        }
+      }
+
+      .artp-gallery-item {
+        position: relative;
+        aspect-ratio: 16 / 10;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(0, 0, 0, 0.4);
+        cursor: zoom-in;
+        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      }
+
+      .artp-gallery-item:hover, .artp-gallery-item:focus-visible {
+        transform: translateY(-3px) scale(1.02);
+        border-color: var(--color-accent);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 16px rgba(0, 210, 255, 0.25);
+        outline: none;
+      }
+
+      .artp-gallery-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.4s ease;
+      }
+
+      .artp-gallery-item:hover .artp-gallery-img {
+        transform: scale(1.06);
+      }
+
+      .artp-gallery-item-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 40%, rgba(3, 10, 20, 0.75) 100%);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+        padding: 8px;
+      }
+
+      .artp-gallery-item:hover .artp-gallery-item-overlay,
+      .artp-gallery-item:focus-visible .artp-gallery-item-overlay {
+        opacity: 1;
+      }
+
+      .artp-gallery-zoom-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 8px;
+        border-radius: var(--radius-pill);
+        background: rgba(6, 19, 32, 0.85);
+        border: 1px solid rgba(0, 210, 255, 0.4);
+        color: var(--color-accent);
+        font: 600 10.5px/1 var(--font-sans);
+        backdrop-filter: blur(4px);
+      }
+
+      .artp-gallery-main-badge {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        padding: 3px 8px;
+        border-radius: 4px;
+        background: rgba(43, 78, 255, 0.9);
+        color: #ffffff;
+        font: 700 9.5px/1 var(--font-mono);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        pointer-events: none;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+      }
+
       /* FULLSCREEN IMAGE LIGHTBOX MODAL */
       .artp-lightbox {
         position: fixed;
@@ -1467,6 +1601,14 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
   const avatarUrl = safeImageUrl(articleData.author?.avatarUrl);
   const coverImage = safeImageUrl(articleData.coverImageUrl);
 
+  // MULTI-GAMBAR / GALERI FOTO DARI API
+  let galleryImages = [];
+  if (Array.isArray(articleData.images) && articleData.images.length > 0) {
+    galleryImages = articleData.images.map(safeImageUrl).filter(Boolean);
+  } else if (coverImage) {
+    galleryImages = [coverImage];
+  }
+
   // URL UNTUK DIBAGIKAN
   const shareArticleId = articleData.id || articleData.slug || articleId;
   const shareUrl = new URL(window.location.href);
@@ -1718,6 +1860,56 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
       return blockHtml;
     }).join('')}
 
+      <!-- 2.5 DOKUMENTASI & GALERI FOTO ARTIKEL (JIKA > 1 GAMBAR) -->
+      ${galleryImages.length > 1 ? `
+        <section class="artp-gallery-section" aria-label="Galeri Foto Artikel">
+          <div class="artp-gallery-header">
+            <div class="artp-gallery-title-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="artp-gallery-icon">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <h3 class="artp-gallery-title">Galeri Foto &amp; Dokumentasi</h3>
+            </div>
+            <span class="artp-gallery-count-badge">${galleryImages.length} Foto</span>
+          </div>
+
+          <div class="artp-gallery-grid">
+            ${galleryImages.map((imgUrl, idx) => `
+              <div
+                class="artp-gallery-item"
+                data-img-url="${escapeHTML(imgUrl)}"
+                data-img-caption="${escapeHTML(title)} — Foto ${idx + 1}"
+                tabindex="0"
+                role="button"
+                aria-label="Lihat foto ${idx + 1} ukuran penuh"
+              >
+                <img
+                  src="${escapeHTML(imgUrl)}"
+                  alt="${escapeHTML(title)} - Dokumentasi ${idx + 1}"
+                  class="artp-gallery-img"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div class="artp-gallery-item-overlay">
+                  <span class="artp-gallery-zoom-pill">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="15 3 21 3 21 9"/>
+                      <polyline points="9 21 3 21 3 15"/>
+                      <line x1="21" y1="3" x2="14" y2="10"/>
+                      <line x1="3" y1="21" x2="10" y2="14"/>
+                    </svg>
+                    <span>Perbesar</span>
+                  </span>
+                </div>
+                ${idx === 0 ? '<span class="artp-gallery-main-badge">Sampul</span>' : ''}
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      ` : ''}
+
       <!-- 3. NAVIGASI BERBAGI & INFORMASI TAMBAHAN -->
       <div class="artp-share-section">
         <div>
@@ -1888,6 +2080,23 @@ Peringatan dini dan informasi potensi tsunami harus selalu dipantau melalui kana
       }
     };
   }
+
+  // KONEKSI EVENT LIGHTBOX UNTUK ITEM GALERI FOTO
+  const galleryItemEls = contentSlot.querySelectorAll('.artp-gallery-item');
+  galleryItemEls.forEach((itemEl, idx) => {
+    const imgUrl = itemEl.getAttribute('data-img-url');
+    const caption = itemEl.getAttribute('data-img-caption');
+    if (!imgUrl) return;
+
+    const showItem = () => openLightbox(imgUrl, caption || `${title} (Foto ${idx + 1})`, 'GALERI FOTO');
+    itemEl.onclick = showItem;
+    itemEl.onkeydown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        showItem();
+      }
+    };
+  });
 
   if (lbClose) lbClose.onclick = closeLightbox;
   if (lightboxEl) {
