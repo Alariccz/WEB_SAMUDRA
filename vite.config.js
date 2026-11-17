@@ -89,6 +89,12 @@ export default defineConfig({
         attachLanOriginMiddleware(server.middlewares);
         server.middlewares.use((req, res, next) => {
           const path = (req.url || '').split('?')[0];
+          // Download APK auto-download route → index.html?download=apk
+          if (path === '/download/apk' || path === '/download/apk/') {
+            req.url = '/index.html?download=apk';
+            next();
+            return;
+          }
           // Live tracking routes → live.html
           if (path === '/live' || path.startsWith('/live/')) {
             req.url = '/live.html';

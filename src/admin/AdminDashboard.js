@@ -3,8 +3,9 @@
  * Metric cards, live BMKG earthquake pulse, and quick actions
  */
 
-import { fetchAdminArticles, fetchAdminMitigasi, fetchAdminPeralatan, getAdminUser } from './adminApi.js';
+import { fetchAdminArticles, fetchAdminMitigasi, fetchAdminPeralatan, getAdminUser, uploadStorageFile } from './adminApi.js';
 import { fetchLatestEarthquake } from '../api.js';
+import { showToast } from './adminToast.js';
 
 export function renderAdminDashboard(container, navigateToTab, onOpenArticleModal, onOpenMitigasiModal) {
   container.innerHTML = `
@@ -112,6 +113,68 @@ export function renderAdminDashboard(container, navigateToTab, onOpenArticleModa
         </div>
 
       </div>
+
+      <!-- APK Cloudflare R2 Distribution Card -->
+      <div style="margin-top: 28px; background: var(--adm-surface-card); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-lg); padding: 24px; backdrop-filter: blur(20px);">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(43, 78, 255, 0.15); display: flex; align-items: center; justify-content: center; color: #2B4EFF;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </div>
+            <div>
+              <h3 style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0;">Distribusi File APK (Cloudflare R2)</h3>
+              <p style="font-size: 12px; color: var(--adm-text-dim); margin: 2px 0 0 0;">Kelola sumber file Android APK untuk auto-download tombol dan scan QR Code di website.</p>
+            </div>
+          </div>
+          <span style="font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 9999px; background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+            Cloudflare R2 Connected
+          </span>
+        </div>
+
+        <!-- Active URL Display -->
+        <div style="background: rgba(12, 23, 38, 0.6); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-md); padding: 14px 16px; margin-bottom: 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--adm-text-dim); letter-spacing: 0.5px; text-transform: uppercase;">URL Download APK Aktif:</span>
+            <div style="display: flex; gap: 8px;">
+              <button class="adm-btn adm-btn--glass adm-btn--sm" id="adm-apk-btn-copy" style="padding: 2px 8px; font-size: 11px;" title="Salin URL APK">Salin URL</button>
+              <a href="#" target="_blank" rel="noopener noreferrer" class="adm-btn adm-btn--glass adm-btn--sm" id="adm-apk-btn-test" style="padding: 2px 8px; font-size: 11px; text-decoration: none;" title="Uji Unduh File">Test Unduh</a>
+            </div>
+          </div>
+          <div id="adm-apk-current-url" style="font-family: var(--adm-mono); font-size: 12px; color: #38bdf8; word-break: break-all;">
+            Memeriksa konfigurasi APK...
+          </div>
+        </div>
+
+        <!-- Action Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+          <!-- Box 1: Direct File Upload to R2 -->
+          <div style="background: rgba(12, 23, 38, 0.4); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: var(--adm-radius-md); padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px;">
+            <div>
+              <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">1. Upload APK ke Cloudflare R2</div>
+              <p style="font-size: 12px; color: var(--adm-text-dim); margin: 0; line-height: 1.5;">Pilih file APK dari komputer Anda. Sistem akan mengunggahnya langsung ke Cloudflare R2 via endpoint backend.</p>
+            </div>
+            <div>
+              <input type="file" id="adm-apk-file-input" accept=".apk,application/vnd.android.package-archive" style="display: none;" />
+              <button class="adm-btn adm-btn--white adm-btn--sm" id="adm-apk-btn-choose" style="width: 100%;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <span id="adm-apk-upload-text">Pilih & Upload File .APK</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Box 2: Manual R2 Link Input -->
+          <div style="background: rgba(12, 23, 38, 0.4); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-md); padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px;">
+            <div>
+              <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">2. Atau Tempel URL R2 Manual</div>
+              <p style="font-size: 12px; color: var(--adm-text-dim); margin: 0; line-height: 1.5;">Jika sudah mengunggah file langsung ke Cloudflare R2 dashboard, tempelkan public download URL-nya di sini.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input type="url" id="adm-apk-url-input" placeholder="https://pub-xxx.r2.dev/SAMUDRA-Mobile-v2.4.1.apk" style="flex: 1; min-width: 0; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-sm); color: #fff; padding: 7px 10px; font-size: 12px; font-family: var(--adm-mono);" />
+              <button class="adm-btn adm-btn--amber adm-btn--sm" id="adm-apk-btn-save-url">Simpan URL</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 
@@ -129,6 +192,9 @@ export function renderAdminDashboard(container, navigateToTab, onOpenArticleModa
     if (navigateToTab) navigateToTab('mitigasi');
   };
 
+  // Wire APK Cloudflare R2 Management
+  wireApkDistributionManager(container);
+
   // Set greeting with user name if available
   const user = getAdminUser();
   if (user && user.name) {
@@ -140,6 +206,103 @@ export function renderAdminDashboard(container, navigateToTab, onOpenArticleModa
 
   // Load metrics and lists
   loadMetricsAndLists(container);
+}
+
+function wireApkDistributionManager(container) {
+  const currentUrlEl = container.querySelector('#adm-apk-current-url');
+  const copyBtn = container.querySelector('#adm-apk-btn-copy');
+  const testLink = container.querySelector('#adm-apk-btn-test');
+  const fileInput = container.querySelector('#adm-apk-file-input');
+  const chooseBtn = container.querySelector('#adm-apk-btn-choose');
+  const uploadText = container.querySelector('#adm-apk-upload-text');
+  const urlInput = container.querySelector('#adm-apk-url-input');
+  const saveUrlBtn = container.querySelector('#adm-apk-btn-save-url');
+
+  const updateDisplay = () => {
+    const activeUrl = (import.meta.env?.VITE_APK_URL || localStorage.getItem('samudra_apk_url') || '').trim();
+    if (activeUrl) {
+      currentUrlEl.textContent = activeUrl;
+      testLink.href = activeUrl;
+      testLink.style.display = 'inline-flex';
+      copyBtn.style.display = 'inline-flex';
+      if (urlInput) urlInput.value = activeUrl;
+    } else {
+      currentUrlEl.textContent = 'Belum dikonfigurasi (Menggunakan file lokal bawaan /downloads/SAMUDRA-Mobile-v2.4.1.apk)';
+      testLink.href = '/downloads/SAMUDRA-Mobile-v2.4.1.apk';
+      copyBtn.style.display = 'none';
+    }
+  };
+
+  updateDisplay();
+
+  // Copy button
+  if (copyBtn) {
+    copyBtn.onclick = () => {
+      const text = currentUrlEl.textContent;
+      if (text && text.startsWith('http')) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('Tautan APK berhasil disalin ke clipboard!', 'success');
+        }).catch(() => {
+          showToast('Gagal menyalin tautan.', 'error');
+        });
+      }
+    };
+  }
+
+  // File upload handler
+  if (chooseBtn && fileInput) {
+    chooseBtn.onclick = () => fileInput.click();
+
+    fileInput.onchange = async () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+
+      if (!file.name.toLowerCase().endsWith('.apk')) {
+        showToast('Pilih file dengan ekstensi .apk', 'error');
+        fileInput.value = '';
+        return;
+      }
+
+      chooseBtn.disabled = true;
+      uploadText.textContent = `Mengunggah ${(file.size / (1024 * 1024)).toFixed(1)} MB ke R2...`;
+
+      try {
+        const uploadedUrl = await uploadStorageFile(file, 'apk');
+        if (uploadedUrl && typeof uploadedUrl === 'string') {
+          localStorage.setItem('samudra_apk_url', uploadedUrl);
+          updateDisplay();
+          showToast('APK berhasil diunggah ke Cloudflare R2! URL telah diperbarui.', 'success');
+        } else {
+          throw new Error('Gagal mendapatkan URL publik dari server R2.');
+        }
+      } catch (err) {
+        console.error('Gagal upload APK:', err);
+        showToast(err.message || 'Gagal mengunggah file APK ke Cloudflare R2.', 'error');
+      } finally {
+        chooseBtn.disabled = false;
+        uploadText.textContent = 'Pilih & Upload File .APK';
+        fileInput.value = '';
+      }
+    };
+  }
+
+  // Save manual URL
+  if (saveUrlBtn && urlInput) {
+    saveUrlBtn.onclick = () => {
+      const val = urlInput.value.trim();
+      if (!val) {
+        showToast('Harap masukkan URL Cloudflare R2 yang valid.', 'error');
+        return;
+      }
+      if (!val.startsWith('http://') && !val.startsWith('https://')) {
+        showToast('URL harus diawali dengan http:// atau https://', 'error');
+        return;
+      }
+      localStorage.setItem('samudra_apk_url', val);
+      updateDisplay();
+      showToast('URL APK Cloudflare R2 berhasil disimpan!', 'success');
+    };
+  }
 }
 
 async function loadMetricsAndLists(container) {

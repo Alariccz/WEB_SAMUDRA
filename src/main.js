@@ -416,8 +416,26 @@ const CONFIGURED_APK_URL = (import.meta.env?.VITE_APK_URL || '').trim();
 const LOCAL_APK_PATH = `/downloads/${APK_FILENAME}`;
 const LOCALHOST_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
 
-async function resolveQrDownloadUrl() {
+function getApkDownloadUrl() {
   if (CONFIGURED_APK_URL) return CONFIGURED_APK_URL;
+  try {
+    const stored = localStorage.getItem('samudra_apk_url');
+    if (stored && stored.trim()) return stored.trim();
+  } catch (_) {}
+  return LOCAL_APK_PATH;
+}
+
+async function resolveQrDownloadUrl() {
+  const directUrl = getApkDownloadUrl();
+  // Jika URL mengarah ke Cloudflare R2 / eksternal (bukan localhost), masukkan langsung ke QR Code
+  if (directUrl && directUrl.startsWith('http')) {
+    try {
+      const parsed = new URL(directUrl);
+      if (!LOCALHOST_HOSTNAMES.has(parsed.hostname)) {
+        return directUrl;
+      }
+    } catch (_) {}
+  }
 
   if (LOCALHOST_HOSTNAMES.has(window.location.hostname)) {
     try {
@@ -434,7 +452,7 @@ async function resolveQrDownloadUrl() {
     }
   }
 
-  return `${window.location.origin}${LOCAL_APK_PATH}`;
+  return `${window.location.origin}/?download=apk`;
 }
 
 // Render real scannable QR Code SVG
@@ -466,19 +484,27 @@ if (qrCodeContainer) {
 }
 
 function startBrowserDownload(url, filename) {
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.rel = 'noopener';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  try {
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename || APK_FILENAME);
+    link.setAttribute('target', '_blank');
+    link.setAttribute('rel', 'noopener noreferrer');
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      if (link.parentNode) link.parentNode.removeChild(link);
+    }, 200);
+  } catch (err) {
+    window.location.href = url;
+  }
 }
 
 async function triggerApkDownload() {
-  if (CONFIGURED_APK_URL) {
-    showToast(`Mengunduh ${APK_FILENAME}...`);
-    startBrowserDownload(CONFIGURED_APK_URL, APK_FILENAME);
+  const apkUrl = getApkDownloadUrl();
+  if (apkUrl && apkUrl.startsWith('http')) {
+    showToast(`Memulai unduhan ${APK_FILENAME}...`);
+    startBrowserDownload(apkUrl, APK_FILENAME);
     return;
   }
 
@@ -487,7 +513,7 @@ async function triggerApkDownload() {
     const contentType = (res.headers.get('content-type') || '').toLowerCase();
     // Vite/Nginx SPA fallback returns text/html for missing files; reject HTML responses
     if (res.ok && !contentType.includes('text/html')) {
-      showToast(`Mengunduh ${APK_FILENAME}...`);
+      showToast(`Memulai unduhan ${APK_FILENAME}...`);
       startBrowserDownload(LOCAL_APK_PATH, APK_FILENAME);
       return;
     }
@@ -495,7 +521,7 @@ async function triggerApkDownload() {
     console.warn('Gagal memeriksa file APK lokal:', err);
   }
 
-  showToast(`File APK belum tersedia di public/downloads/${APK_FILENAME}.`);
+  showToast(`Tautan download APK Cloudflare R2 sedang dipersiapkan.`);
 }
 
 const ctaApkBtn = ctaSection.querySelector('#cta-apk-btn');
@@ -1131,7 +1157,7 @@ if (oauthToken || isCallbackPath) {
   showArticle(urlParams.get('article'), false);
 } else {
   showHome(false);
-  if (urlParams.get('download') === 'apk') {
+  if (urlParams.get('download') === 'apk' || window.location.pathname.startsWith('/download/apk')) {
     setTimeout(() => {
       const target = document.getElementById('unduh-apk');
       if (target) {
