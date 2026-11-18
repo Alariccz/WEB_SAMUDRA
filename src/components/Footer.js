@@ -13,7 +13,6 @@ export function getSamudraFooterHTML({ isArticlePage = false } = {}) {
         <div class="sfooter__brand">
           <a href="${linkPrefix}#top" class="sfooter__logo" data-footer-top>
             <span class="sfooter__logo-text">SAMUDRA</span>
-            <span class="sfooter__logo-badge">3D</span>
           </a>
           <p class="sfooter__desc">
             Platform pemodelan gelombang 3D, pantauan cuaca maritim, dan kesiapsiagaan tsunami pesisir berbasis telemetri real-time.
@@ -96,7 +95,7 @@ export function getSamudraFooterHTML({ isArticlePage = false } = {}) {
 
       <div class="sfooter__bottom">
         <p class="sfooter__copy">
-          &copy; ${new Date().getFullYear()} SAMUDRA.3D &mdash; Sistem Informasi Kesiapsiagaan Tsunami Pesisir
+          &copy; ${new Date().getFullYear()} SAMUDRA &mdash; Sistem Informasi Kesiapsiagaan Tsunami Pesisir
         </p>
         <button type="button" class="sfooter__top-btn" data-footer-top aria-label="Kembali ke atas">
           <span>Kembali ke atas</span>
