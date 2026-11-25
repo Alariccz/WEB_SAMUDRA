@@ -366,7 +366,7 @@ ctaSection.innerHTML = `
           </div>
           <div class="apk-meta-item">
             <span class="apk-meta-label">UKURAN FILE</span>
-            <span class="apk-meta-val">59.0 MB</span>
+            <span class="apk-meta-val">24.2 MB</span>
           </div>
           <div class="apk-meta-item">
             <span class="apk-meta-label">SISTEM OPERASI</span>
